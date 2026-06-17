@@ -12,6 +12,7 @@ import 'blocs/order/order_bloc.dart';
 import 'blocs/notification/notification_bloc.dart';
 import 'blocs/chat/chat_bloc.dart';
 import 'services/auth_service.dart';
+import 'services/google_auth_service.dart';
 import 'services/product_service.dart';
 import 'services/cart_service.dart';
 import 'services/order_service.dart';
@@ -36,7 +37,9 @@ class BigStyleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => AuthBloc(AuthService())),
+        BlocProvider(
+          create: (_) => AuthBloc(AuthService(), GoogleAuthService()),
+        ),
         BlocProvider(create: (_) => ProductBloc(ProductService())),
         BlocProvider(create: (_) => CartBloc(CartService())),
         BlocProvider(create: (_) => OrderBloc(OrderService())),

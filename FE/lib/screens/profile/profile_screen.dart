@@ -175,7 +175,7 @@ class ProfileScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<AuthBloc>().add(const AuthSignOut());
+              context.read<AuthBloc>().add(const SignOutEvent());
             },
             child: const Text('Đăng xuất', style: TextStyle(color: AppColors.error)),
           ),

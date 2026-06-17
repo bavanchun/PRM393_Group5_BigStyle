@@ -8,34 +8,38 @@ abstract class AuthEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class AuthSendOtp extends AuthEvent {
+class SendOTPEvent extends AuthEvent {
   final String email;
-  const AuthSendOtp(this.email);
+  const SendOTPEvent(this.email);
 
   @override
   List<Object?> get props => [email];
 }
 
-class AuthVerifyOtp extends AuthEvent {
+class VerifyOTPEvent extends AuthEvent {
   final String email;
   final String otp;
-  const AuthVerifyOtp(this.email, this.otp);
+  const VerifyOTPEvent(this.email, this.otp);
 
   @override
   List<Object?> get props => [email, otp];
 }
 
-class AuthCheckSession extends AuthEvent {
-  const AuthCheckSession();
+class GoogleSignInEvent extends AuthEvent {
+  const GoogleSignInEvent();
 }
 
-class AuthSignOut extends AuthEvent {
-  const AuthSignOut();
+class CheckSessionEvent extends AuthEvent {
+  const CheckSessionEvent();
 }
 
-class AuthUpdateProfile extends AuthEvent {
+class SignOutEvent extends AuthEvent {
+  const SignOutEvent();
+}
+
+class UpdateProfileEvent extends AuthEvent {
   final UserModel user;
-  const AuthUpdateProfile(this.user);
+  const UpdateProfileEvent(this.user);
 
   @override
   List<Object?> get props => [user];

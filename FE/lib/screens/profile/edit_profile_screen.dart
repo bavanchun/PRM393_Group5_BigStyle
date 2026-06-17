@@ -133,7 +133,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       address: _addressController.text.trim(),
     );
 
-    context.read<AuthBloc>().add(AuthUpdateProfile(updated));
+    context.read<AuthBloc>().add(UpdateProfileEvent(updated));
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Cập nhật thành công')),

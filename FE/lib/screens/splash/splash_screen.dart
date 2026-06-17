@@ -16,7 +16,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AuthBloc>().add(const AuthCheckSession());
+    context.read<AuthBloc>().add(const CheckSessionEvent());
   }
 
   @override
@@ -24,9 +24,9 @@ class _SplashScreenState extends State<SplashScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         Future.delayed(const Duration(milliseconds: 1500), () {
-          if (state.status == AuthStatus.authenticated) {
+          if (state is AuthSuccess) {
             Navigator.pushReplacementNamed(context, '/home');
-          } else {
+          } else if (state is AuthInitial) {
             Navigator.pushReplacementNamed(context, '/login');
           }
         });
@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 child: const Center(
                   child: Text(
-                    'BS',
+                    'CF',
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.w700,
@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 24),
               const Text(
-                'BigStyle',
+                'CurveFit',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
