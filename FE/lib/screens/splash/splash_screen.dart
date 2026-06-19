@@ -25,7 +25,12 @@ class _SplashScreenState extends State<SplashScreen> {
       listener: (context, state) {
         Future.delayed(const Duration(milliseconds: 1500), () {
           if (state is AuthSuccess) {
-            Navigator.pushReplacementNamed(context, '/home');
+            final user = state.user;
+            if (user == null) return;
+            final route = user.role.name == 'manager'
+                ? '/manager'
+                : '/home';
+            Navigator.pushReplacementNamed(context, route);
           } else if (state is AuthInitial) {
             Navigator.pushReplacementNamed(context, '/login');
           }
@@ -46,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 child: const Center(
                   child: Text(
-                    'CF',
+                    'BS',
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.w700,
@@ -57,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 24),
               const Text(
-                'CurveFit',
+                'BigStyle',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,

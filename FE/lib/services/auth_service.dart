@@ -13,7 +13,7 @@ class AuthService {
 
   Future<UserModel?> _fetchUser(String userId) async {
     try {
-      final data = await _client.from('users').select().eq('id', userId).single();
+      final data = await _client.from('profiles').select().eq('id', userId).single();
       return UserModel.fromMap(data);
     } catch (_) {
       return null;
@@ -21,7 +21,10 @@ class AuthService {
   }
 
   Future<void> sendOtp(String email) async {
-    await _client.auth.signInWithOtp(email: email);
+    await _client.auth.signInWithOtp(
+      email: email,
+      emailRedirectTo: 'io.supabase.flutter://auth/callback',
+    );
   }
 
   Future<UserModel?> verifyOtp(String email, String otp) async {
@@ -30,9 +33,9 @@ class AuthService {
     final user = response.user;
     if (user == null) return null;
 
-    final existing = _client.from('users').select().eq('id', user.id).maybeSingle();
+    final existing = _client.from('profiles').select().eq('id', user.id).maybeSingle();
     if (await existing == null) {
-      await _client.from('users').insert({
+      await _client.from('profiles').insert({
         'id': user.id,
         'email': email,
         'full_name': email.split('@').first,
@@ -54,6 +57,6 @@ class AuthService {
   }
 
   Future<void> updateProfile(UserModel user) async {
-    await _client.from('users').update(user.toMap()).eq('id', user.id);
+    await _client.from('profiles').update(user.toMap()).eq('id', user.id);
   }
 }

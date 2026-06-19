@@ -7,23 +7,36 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final ProductService _productService;
 
   ProductBloc(this._productService) : super(const ProductState()) {
-    on<ProductLoad>(_onLoad);
+    on<LoadProducts>(_onLoad);
+    on<FilterByCategory>(_onFilterByCategory);
+    on<SearchProducts>(_onSearch);
+    on<SortProducts>(_onSort);
     on<ProductLoadFeatured>(_onLoadFeatured);
     on<ProductLoadDetail>(_onLoadDetail);
     on<ProductLoadCategories>(_onLoadCategories);
   }
 
-  Future<void> _onLoad(ProductLoad event, Emitter<ProductState> emit) async {
+  Future<void> _onLoad(LoadProducts event, Emitter<ProductState> emit) async {
     emit(state.copyWith(isLoading: true, error: null));
     try {
-      final products = await _productService.getProducts(
-        categoryId: event.categoryId,
-        searchQuery: event.searchQuery,
-      );
+      final products = await _productService.getProducts();
       emit(state.copyWith(isLoading: false, products: products));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: 'Tải sản phẩm thất bại'));
     }
+  }
+
+  void _onFilterByCategory(
+      FilterByCategory event, Emitter<ProductState> emit) {
+    emit(state.copyWith(selectedCategory: event.categoryId));
+  }
+
+  void _onSearch(SearchProducts event, Emitter<ProductState> emit) {
+    emit(state.copyWith(searchQuery: event.query));
+  }
+
+  void _onSort(SortProducts event, Emitter<ProductState> emit) {
+    emit(state.copyWith(sortBy: event.sortBy));
   }
 
   Future<void> _onLoadFeatured(
@@ -38,8 +51,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       ProductLoadDetail event, Emitter<ProductState> emit) async {
     emit(state.copyWith(isLoading: true, error: null));
     try {
-      final product =
-          await _productService.getProductById(event.productId);
+      final product = await _productService.getProductById(event.productId);
       emit(state.copyWith(isLoading: false, selectedProduct: product));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: 'Tải chi tiết thất bại'));

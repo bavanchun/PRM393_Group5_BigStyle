@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_router.dart';
 import 'config/supabase/supabase_config.dart';
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/product/product_bloc.dart';
+import 'blocs/product_detail/product_detail_bloc.dart';
 import 'blocs/cart/cart_bloc.dart';
 import 'blocs/checkout/checkout_bloc.dart';
 import 'blocs/order/order_bloc.dart';
@@ -21,6 +23,8 @@ import 'services/chat_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: 'assets/.env');
 
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
@@ -41,6 +45,8 @@ class BigStyleApp extends StatelessWidget {
           create: (_) => AuthBloc(AuthService(), GoogleAuthService()),
         ),
         BlocProvider(create: (_) => ProductBloc(ProductService())),
+        BlocProvider(
+            create: (_) => ProductDetailBloc(ProductService())),
         BlocProvider(create: (_) => CartBloc(CartService())),
         BlocProvider(create: (_) => OrderBloc(OrderService())),
         BlocProvider(

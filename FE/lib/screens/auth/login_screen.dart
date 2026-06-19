@@ -1,12 +1,13 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_spacing.dart';
-import '../../config/theme/app_typography.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../config/theme/app_colors.dart';
+import '../../config/theme/app_spacing.dart';
+import '../../config/theme/app_typography.dart';
 import 'otp_input.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -47,7 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 setState(() => _showOtp = true);
               }
               if (state is AuthSuccess) {
-                Navigator.pushReplacementNamed(context, '/home');
+                final user = state.user;
+                if (user == null) return;
+                final route = user.role.name == 'manager'
+                    ? '/manager'
+                    : '/home';
+                Navigator.pushReplacementNamed(context, route);
               }
               if (state is AuthError) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -84,7 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             _buildDivider(),
                             const SizedBox(height: 24),
                             _buildGoogleButton(state),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 20),
+                            _buildMockSection(state),
+                            const SizedBox(height: 20),
                             _buildSignUpLink(),
                           ],
                         ),
@@ -105,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         Text(
-          'CurveFit',
+          'BigStyle',
           style: GoogleFonts.playfairDisplay(
             fontSize: 32,
             fontWeight: FontWeight.w700,
@@ -305,24 +313,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: OutlinedButton.icon(
+      child: OutlinedButton(
         onPressed: state is AuthLoading
             ? null
             : () => context.read<AuthBloc>().add(const GoogleSignInEvent()),
-        icon: Image.network(
-          'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg',
-          width: 20,
-          height: 20,
-          errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, size: 24),
-        ),
-        label: const Text(
-          'Đăng nhập với Google',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D2D2D),
-          ),
-        ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Color(0xFFE8E0E2), width: 1.5),
           shape: RoundedRectangleBorder(
@@ -330,40 +324,154 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           backgroundColor: Colors.white,
         ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.network(
+              'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg',
+              width: 20,
+              height: 20,
+              errorBuilder: (_, _, _) => const Icon(Icons.g_mobiledata, size: 24),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                'Đăng nhập với Google',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2D2D2D),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMockSection(AuthState state) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'quick login',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textHint,
+                  fontSize: 11,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+            const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _mockButton(
+                label: 'Khách hàng',
+                icon: Icons.person_outline,
+                onTap: state is AuthLoading
+                    ? null
+                    : () => context
+                        .read<AuthBloc>()
+                        .add(const MockLoginEvent('customer')),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _mockButton(
+                label: 'Quản lý',
+                icon: Icons.admin_panel_settings_outlined,
+                onTap: state is AuthLoading
+                    ? null
+                    : () => context
+                        .read<AuthBloc>()
+                        .add(const MockLoginEvent('manager')),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _mockButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE8E0E2), width: 1.5),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: const Color(0xFFA03560)),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2D2D2D),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildSignUpLink() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Chưa có tài khoản? ',
+    return Center(
+      child: Text.rich(
+        TextSpan(
+          text: 'Chưa có tài khoản? ',
           style: AppTypography.bodyMedium.copyWith(
             color: AppColors.textSecondary,
             fontSize: 13,
           ),
-        ),
-        GestureDetector(
-          onTap: () {
-            if (_emailController.text.trim().isNotEmpty) {
-              context
-                  .read<AuthBloc>()
-                  .add(SendOTPEvent(_emailController.text.trim()));
-              setState(() => _showOtp = true);
-            }
-          },
-          child: Text(
-            'Đăng ký',
-            style: AppTypography.bodyMedium.copyWith(
-              color: const Color(0xFFC4517A),
-              fontWeight: FontWeight.w700,
-              fontSize: 13,
+          children: [
+            TextSpan(
+              text: 'Đăng ký',
+              style: AppTypography.bodyMedium.copyWith(
+                color: const Color(0xFFC4517A),
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  if (_emailController.text.trim().isNotEmpty) {
+                    context
+                        .read<AuthBloc>()
+                        .add(SendOTPEvent(_emailController.text.trim()));
+                    setState(() => _showOtp = true);
+                  }
+                },
             ),
-          ),
+          ],
         ),
-      ],
+        textAlign: TextAlign.center,
+      ),
     );
   }
 

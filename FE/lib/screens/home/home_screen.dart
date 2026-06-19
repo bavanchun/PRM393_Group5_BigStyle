@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ProductBloc>().add(const ProductLoad());
+    context.read<ProductBloc>().add(const LoadProducts());
     context.read<ProductBloc>().add(ProductLoadFeatured());
     context.read<ProductBloc>().add(ProductLoadCategories());
   }
@@ -94,10 +94,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ? product.images.first
                                 : '',
                             name: product.name,
-                            category: product.category?.name,
                             price: product.price,
                             originalPrice: product.originalPrice,
-                            rating: product.rating,
+                            sizes: product.sizes,
                             onTap: () => Navigator.pushNamed(
                               context,
                               '/product-detail',
@@ -140,10 +139,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ? product.images.first
                                 : '',
                             name: product.name,
-                            category: product.category?.name,
                             price: product.price,
                             originalPrice: product.originalPrice,
-                            rating: product.rating,
+                            sizes: product.sizes,
                             onTap: () => Navigator.pushNamed(
                               context,
                               '/product-detail',
@@ -284,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: state.categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final category = state.categories[index];
           return GestureDetector(
@@ -293,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '/products',
               arguments: category.id,
             ),
-            child: Container(
+            child: SizedBox(
               width: 72,
               child: Column(
                 children: [

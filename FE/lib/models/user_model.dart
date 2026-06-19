@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:equatable/equatable.dart';
 
 enum UserRole { customer, manager }
@@ -46,7 +47,7 @@ class UserModel extends Equatable {
           (e) => e.name == map['role'],
           orElse: () => UserRole.customer,
         ),
-        address: map['address'],
+        address: map['address'] is Map ? jsonEncode(map['address']) : map['address'],
         createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       );
 

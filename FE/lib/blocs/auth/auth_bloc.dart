@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
+import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/google_auth_service.dart';
 
@@ -14,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SendOTPEvent>(_onSendOtp);
     on<VerifyOTPEvent>(_onVerifyOtp);
     on<GoogleSignInEvent>(_onGoogleSignIn);
+    on<MockLoginEvent>(_onMockLogin);
     on<SignOutEvent>(_onSignOut);
     on<UpdateProfileEvent>(_onUpdateProfile);
   }
@@ -34,8 +36,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await _authService.sendOtp(event.email);
       emit(AuthOTPSent(event.email));
-    } catch (_) {
-      emit(const AuthError('Gửi mã OTP thất bại'));
+    } catch (e) {
+      emit(AuthError('Gửi mã OTP thất bại: ${e.toString()}'));
     }
   }
 
@@ -67,6 +69,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (_) {
       emit(const AuthError('Đăng nhập Google thất bại'));
     }
+  }
+
+  Future<void> _onMockLogin(
+      MockLoginEvent event, Emitter<AuthState> emit) async {
+    emit(const AuthLoading());
+    final user = UserModel(
+      id: event.role == 'manager' ? 'mock-manager-id' : 'mock-user-id',
+      email: event.role == 'manager'
+          ? 'manager@bigstyle.com'
+          : 'user@bigstyle.com',
+      fullName: event.role == 'manager' ? 'Quản lý BigStyle' : 'Nguyễn Văn A',
+      phone: '0123456789',
+      role: event.role == 'manager' ? UserRole.manager : UserRole.customer,
+      createdAt: DateTime.now(),
+    );
+    emit(AuthSuccess(user));
   }
 
   Future<void> _onSignOut(

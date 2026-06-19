@@ -3,13 +3,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
 
 class GoogleAuthService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-  );
+  GoogleSignIn? _googleSignIn;
+
+  GoogleSignIn _initGoogleSignIn() {
+    _googleSignIn ??= GoogleSignIn(scopes: ['email', 'profile']);
+    return _googleSignIn!;
+  }
+
   final SupabaseClient _supabase = Supabase.instance.client;
 
   Future<UserModel?> signInWithGoogle() async {
-    final googleUser = await _googleSignIn.signIn();
+    final googleUser = await _initGoogleSignIn().signIn();
     if (googleUser == null) return null;
 
     final googleAuth = await googleUser.authentication;
@@ -25,13 +29,13 @@ class GoogleAuthService {
     if (user == null) return null;
 
     final existing = await _supabase
-        .from('users')
+        .from('profiles')
         .select()
         .eq('id', user.id)
         .maybeSingle();
 
     if (existing == null) {
-      await _supabase.from('users').insert({
+      await _supabase.from('profiles').insert({
         'id': user.id,
         'email': user.email,
         'full_name': googleUser.displayName ?? user.email!.split('@').first,
@@ -42,7 +46,7 @@ class GoogleAuthService {
     }
 
     final data = await _supabase
-        .from('users')
+        .from('profiles')
         .select()
         .eq('id', user.id)
         .single();
@@ -51,6 +55,6 @@ class GoogleAuthService {
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    await _googleSignIn?.signOut();
   }
 }

@@ -1,142 +1,166 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_spacing.dart';
-import '../../config/theme/app_typography.dart';
 
 class ProductCard extends StatelessWidget {
   final String imageUrl;
   final String name;
-  final String? category;
   final double price;
   final double? originalPrice;
-  final double? rating;
-  final int? reviewCount;
+  final List<String> sizes;
+  final bool isWishlisted;
   final VoidCallback? onTap;
-  final VoidCallback? onAddToCart;
+  final VoidCallback? onWishlistToggle;
 
   const ProductCard({
     super.key,
     required this.imageUrl,
     required this.name,
-    this.category,
     required this.price,
     this.originalPrice,
-    this.rating,
-    this.reviewCount,
+    this.sizes = const [],
+    this.isWishlisted = false,
     this.onTap,
-    this.onAddToCart,
+    this.onWishlistToggle,
   });
+
+  bool get hasDiscount => originalPrice != null && originalPrice! > price;
 
   @override
   Widget build(BuildContext context) {
-    final hasDiscount =
-        originalPrice != null && originalPrice! > price;
-
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppSpacing.cardRadius),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.secondary.withValues(alpha: 0.3),
-                        child: const Icon(Icons.image_outlined,
-                            color: AppColors.textHint, size: 40),
-                      ),
-                    ),
-                    if (hasDiscount)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '-${((originalPrice! - price) / originalPrice! * 100).round()}%',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 3 / 4,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  if (category != null)
-                    Text(
-                      category!,
-                      style: AppTypography.caption,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      color: AppColors.secondary.withValues(alpha: 0.3),
+                      child: Icon(Icons.image_outlined,
+                          color: AppColors.textHint, size: 36),
                     ),
-                  const SizedBox(height: 2),
-                  Text(
-                    name,
-                    style: AppTypography.labelSmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        '${price.toStringAsFixed(0)}đ',
-                        style: AppTypography.priceSmall,
-                      ),
-                      if (hasDiscount) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          '${originalPrice!.toStringAsFixed(0)}đ',
-                          style: AppTypography.caption.copyWith(
-                            decoration: TextDecoration.lineThrough,
-                            color: AppColors.textHint,
+                  if (hasDiscount)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'SALE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                      ],
-                    ],
+                      ),
+                    ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: onWishlistToggle,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(
+                          isWishlisted
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          key: ValueKey(isWishlisted),
+                          color: isWishlisted
+                              ? AppColors.primary
+                              : Colors.white,
+                          size: 22,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            name,
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          if (sizes.isNotEmpty)
+            Row(
+              children: sizes.take(3).map((s) => Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        s,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textHint,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  )).toList(),
+            ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(
+                '${price.toStringAsFixed(0)}đ',
+                style: GoogleFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+              if (hasDiscount) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '${originalPrice!.toStringAsFixed(0)}đ',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textHint,
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
       ),
     );
   }
