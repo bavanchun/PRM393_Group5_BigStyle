@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Reviews CRU"
-status: pending
+status: completed
 priority: P3
 effort: "2.5h"
 dependencies: [1]
@@ -47,12 +47,13 @@ Replace hardcoded mock reviews on the product detail screen with real Supabase r
 9. Commit + PR via `/vchun-git prc`.
 
 ## Success Criteria
-- [ ] Product detail shows real reviews (mock removed)
-- [ ] Logged-in user can create and edit own review (upsert respects `unique(product_id,user_id)`)
-- [ ] `avg_rating`/`review_count` update via DB trigger (client does not recompute)
-- [ ] Non-logged-in user is guarded from writing
-- [ ] `flutter analyze` clean
-- [ ] ≥1 commit + PR via `/vchun-git prc`
+- [x] Product detail shows real reviews (mock removed)
+- [x] Logged-in user can create and edit own review (upsert respects `unique(product_id,user_id)`)
+- [x] `avg_rating`/`review_count` update via DB trigger (client does not recompute) — detail reloads product after submit; client never writes avg
+- [x] Non-logged-in user is guarded from writing
+- [x] `flutter analyze` clean
+- [ ] ≥1 commit + PR via `/vchun-git prc` — pending commit step
+- [ ] Runtime smoke (submit → row appears → avg changes) — needs live login session
 
 ## Risk Assessment
 - **Delete not supported** by RLS — scope is CRU. If user wants Delete, add a DELETE policy migration (`using auth.uid()=user_id`) in SQL Editor; out of default scope, flag in PR.

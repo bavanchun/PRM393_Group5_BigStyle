@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Wishlist full-stack"
-status: pending
+status: completed
 priority: P3
 effort: "3h"
 dependencies: [1]
@@ -64,13 +64,14 @@ Implement the Wishlist feature end-to-end. No backend exists today — everythin
 8. Commit + PR via `/vchun-git prc`.
 
 ## Success Criteria
-- [ ] `wishlist_items` table + RLS migration created and run by user
-- [ ] Heart toggles persist to Supabase for the logged-in user
-- [ ] `/favorites` route registered; Favorites screen lists wishlisted products
-- [ ] Heart state correct on cards + detail after reload
-- [ ] Guarded for non-logged-in users
-- [ ] `flutter analyze` clean
-- [ ] ≥1 commit + PR via `/vchun-git prc`
+- [x] `wishlist_items` table + RLS migration created (`FE/migrations/20260620_wishlist_items.sql`) — **user must run it in SQL Editor**
+- [x] Heart toggles persist to Supabase for the logged-in user (optimistic Set + rollback in WishlistBloc)
+- [x] `/favorites` route registered; Favorites screen lists wishlisted products
+- [x] Heart state correct on cards + detail after reload (single WishlistBloc Set is source of truth)
+- [x] Guarded for non-logged-in users (`toggleWishlist` bounces mock/anon to /login)
+- [x] `flutter analyze` clean
+- [ ] ≥1 commit + PR via `/vchun-git prc` — pending commit step
+- [ ] Runtime smoke (toggle persists across restart; Favorites lists items) — blocked until user runs migration
 
 ## Risk Assessment
 - **Migration is a user-action blocker** — feature can't be runtime-verified until the user runs it; ship code + clear instructions, mark PR "needs DB migration run".

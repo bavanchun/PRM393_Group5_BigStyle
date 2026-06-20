@@ -10,8 +10,16 @@ import '../../blocs/product_detail/product_detail_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/review/review_bloc.dart';
+import '../../blocs/review/review_event.dart';
+import '../../blocs/review/review_state.dart';
+import '../../blocs/wishlist/wishlist_bloc.dart';
+import '../../blocs/wishlist/wishlist_state.dart';
+import '../../blocs/wishlist/wishlist_actions.dart';
 import '../../models/variant_model.dart';
 import '../../widgets/expandable_text.dart';
+import 'product_review_section.dart';
+import 'review_editor_sheet.dart';
 import 'size_guide_sheet.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -22,12 +30,22 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  String? _loadedProductId;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final productId = ModalRoute.of(context)?.settings.arguments as String?;
-    if (productId != null) {
+    if (productId != null && productId != _loadedProductId) {
+      _loadedProductId = productId;
       context.read<ProductDetailBloc>().add(LoadProductDetail(productId));
+      final user = context.read<AuthBloc>().state.user;
+      context.read<ReviewBloc>().add(
+        ReviewLoad(
+          productId,
+          userId: _isRealUserId(user?.id) ? user!.id : null,
+        ),
+      );
     }
   }
 
@@ -37,149 +55,194 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
     final carouselHeight = screenHeight * 0.55;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: BlocBuilder<ProductDetailBloc, ProductDetailState>(
-        builder: (context, state) {
-          if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.error != null) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(state.error!, style: AppTypography.bodyMedium),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      final productId =
-                          ModalRoute.of(context)?.settings.arguments as String?;
-                      if (productId != null) {
-                        context
-                            .read<ProductDetailBloc>()
-                            .add(LoadProductDetail(productId));
-                      }
-                    },
-                    child: const Text('Thử lại'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final product = state.product;
-          if (product == null) return const SizedBox.shrink();
-
-          return Stack(
-            children: [
-              SizedBox(
-                height: carouselHeight,
-                child: _buildCarousel(state, product.images),
-              ),
-              Positioned(
-                top: topPadding + 8,
-                left: 16,
-                child: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.white,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back,
-                        size: 20, color: AppColors.textPrimary),
-                    onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: topPadding + 8,
-                right: 16,
-                child: Row(
+    return BlocListener<ReviewBloc, ReviewState>(
+      listenWhen: (previous, current) =>
+          !previous.submissionSucceeded && current.submissionSucceeded,
+      listener: (context, state) {
+        final productId = state.productId;
+        if (productId != null) {
+          context.read<ProductDetailBloc>().add(LoadProductDetail(productId));
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: BlocBuilder<ProductDetailBloc, ProductDetailState>(
+          builder: (context, state) {
+            if (state.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.error != null) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.white,
-                      child: IconButton(
-                        icon: const Icon(Icons.share_outlined,
-                            size: 20, color: AppColors.textPrimary),
-                        onPressed: () {},
-                        padding: EdgeInsets.zero,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.white,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.favorite_border,
-                          size: 20,
-                          color: AppColors.textPrimary,
-                        ),
-                        onPressed: () {},
-                        padding: EdgeInsets.zero,
-                      ),
+                    Text(state.error!, style: AppTypography.bodyMedium),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        final productId =
+                            ModalRoute.of(context)?.settings.arguments
+                                as String?;
+                        if (productId != null) {
+                          context.read<ProductDetailBloc>().add(
+                            LoadProductDetail(productId),
+                          );
+                        }
+                      },
+                      child: const Text('Thử lại'),
                     ),
                   ],
                 ),
-              ),
-              DraggableScrollableSheet(
-                initialChildSize:
-                    (screenHeight - carouselHeight + 20) / screenHeight,
-                minChildSize: 0.35,
-                maxChildSize: 0.85,
-                builder: (context, scrollController) {
-                  return Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(24)),
+              );
+            }
+
+            final product = state.product;
+            if (product == null) return const SizedBox.shrink();
+
+            return Stack(
+              children: [
+                SizedBox(
+                  height: carouselHeight,
+                  child: _buildCarousel(state, product.images),
+                ),
+                Positioned(
+                  top: topPadding + 8,
+                  left: 16,
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.white,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        size: 20,
+                        color: AppColors.textPrimary,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 12),
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: AppColors.border,
-                            borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Positioned(
+                  top: topPadding + 8,
+                  right: 16,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.share_outlined,
+                            size: 20,
+                            color: AppColors.textPrimary,
                           ),
+                          onPressed: () {},
+                          padding: EdgeInsets.zero,
                         ),
-                        Expanded(
-                          child: ListView(
-                            controller: scrollController,
-                            padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.md, 0, AppSpacing.md, 100),
-                            children: [
-                              _buildProductName(state),
-                              const SizedBox(height: 8),
-                              _buildRating(state),
-                              const SizedBox(height: 12),
-                              _buildPrice(state),
-                              const SizedBox(height: 20),
-                              _buildSizeGuideButton(),
-                              const SizedBox(height: 24),
-                              _buildColorSelector(state),
-                              const SizedBox(height: 24),
-                              _buildSizeSelector(state),
-                              const SizedBox(height: 24),
-                              _buildDescription(state),
-                              const SizedBox(height: 24),
-                              _buildReviews(state),
-                            ],
+                      ),
+                      const SizedBox(width: 8),
+                      BlocBuilder<WishlistBloc, WishlistState>(
+                        builder: (context, wishlist) {
+                          final isWishlisted = wishlist.contains(product.id);
+                          return CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.white,
+                            child: IconButton(
+                              icon: Icon(
+                                isWishlisted
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 20,
+                                color: isWishlisted
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
+                              ),
+                              onPressed: () =>
+                                  toggleWishlist(context, product.id),
+                              padding: EdgeInsets.zero,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                DraggableScrollableSheet(
+                  initialChildSize:
+                      (screenHeight - carouselHeight + 20) / screenHeight,
+                  minChildSize: 0.35,
+                  maxChildSize: 0.85,
+                  builder: (context, scrollController) {
+                    return Container(
+                      decoration: const BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 12),
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: AppColors.border,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
-          );
-        },
+                          Expanded(
+                            child: ListView(
+                              controller: scrollController,
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.md,
+                                0,
+                                AppSpacing.md,
+                                100,
+                              ),
+                              children: [
+                                _buildProductName(state),
+                                const SizedBox(height: 8),
+                                _buildRating(state),
+                                const SizedBox(height: 12),
+                                _buildPrice(state),
+                                const SizedBox(height: 20),
+                                _buildSizeGuideButton(),
+                                const SizedBox(height: 24),
+                                _buildColorSelector(state),
+                                const SizedBox(height: 24),
+                                _buildSizeSelector(state),
+                                const SizedBox(height: 24),
+                                _buildDescription(state),
+                                const SizedBox(height: 24),
+                                BlocBuilder<ReviewBloc, ReviewState>(
+                                  builder: (context, reviewState) {
+                                    return ProductReviewSection(
+                                      isLoading: reviewState.isLoading,
+                                    reviews: reviewState.reviews,
+                                    myReview: reviewState.myReview,
+                                    error: reviewState.error,
+                                    onWrite: () =>
+                                        _openReviewEditor(product.id),
+                                    onReload: () =>
+                                        _reloadReviews(product.id),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+        bottomNavigationBar: _buildBottomBar(),
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -190,16 +253,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       children: [
         PageView.builder(
           itemCount: displayImages.length,
-          onPageChanged: (index) => context
-              .read<ProductDetailBloc>()
-              .add(SetCurrentImageIndex(index)),
+          onPageChanged: (index) => context.read<ProductDetailBloc>().add(
+            SetCurrentImageIndex(index),
+          ),
           itemBuilder: (context, index) {
             if (displayImages.first.isEmpty) {
               return Container(
                 color: AppColors.secondary.withValues(alpha: 0.3),
                 child: const Center(
-                  child: Icon(Icons.image_outlined,
-                      size: 80, color: AppColors.textHint),
+                  child: Icon(
+                    Icons.image_outlined,
+                    size: 80,
+                    color: AppColors.textHint,
+                  ),
                 ),
               );
             }
@@ -210,8 +276,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               errorBuilder: (_, _, _) => Container(
                 color: AppColors.secondary.withValues(alpha: 0.3),
                 child: const Center(
-                  child: Icon(Icons.image_outlined,
-                      size: 80, color: AppColors.textHint),
+                  child: Icon(
+                    Icons.image_outlined,
+                    size: 80,
+                    color: AppColors.textHint,
+                  ),
                 ),
               ),
             );
@@ -409,7 +478,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ],
                 ),
                 child: isSelected
-                    ? const Icon(Icons.check, size: 18, color: AppColors.primary)
+                    ? const Icon(
+                        Icons.check,
+                        size: 18,
+                        color: AppColors.primary,
+                      )
                     : null,
               ),
             );
@@ -438,23 +511,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   context.read<ProductDetailBloc>().add(SelectSize(size)),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
-                  color:
-                      isSelected ? AppColors.primary : AppColors.background,
+                  color: isSelected ? AppColors.primary : AppColors.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color:
-                        isSelected ? AppColors.primary : AppColors.border,
+                    color: isSelected ? AppColors.primary : AppColors.border,
                     width: 1.5,
                   ),
                 ),
                 child: Text(
                   size,
                   style: AppTypography.labelLarge.copyWith(
-                    color:
-                        isSelected ? Colors.white : AppColors.textPrimary,
+                    color: isSelected ? Colors.white : AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -476,110 +548,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       children: [
         Text('Mô tả sản phẩm', style: AppTypography.headlineSmall),
         const SizedBox(height: 12),
-        ExpandableText(
-          text: product.description,
-          maxLines: 3,
-        ),
+        ExpandableText(text: product.description, maxLines: 3),
       ],
-    );
-  }
-
-  Widget _buildReviews(ProductDetailState state) {
-    if (state.reviews.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Đánh giá', style: AppTypography.headlineSmall),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'Xem tất cả',
-                style: AppTypography.labelLarge.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ...state.reviews.map((review) => _buildReviewItem(review)),
-      ],
-    );
-  }
-
-  Widget _buildReviewItem(ProductReview review) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: AppColors.secondary,
-                child: Text(
-                  review.name.isNotEmpty ? review.name[0].toUpperCase() : '?',
-                  style: AppTypography.labelLarge.copyWith(
-                    color: AppColors.primary,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(review.name,
-                        style:
-                            AppTypography.labelLarge.copyWith(fontSize: 13)),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        ...List.generate(
-                          review.rating.round(),
-                          (_) => const Icon(Icons.star,
-                              size: 14, color: AppColors.warning),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(review.date, style: AppTypography.caption),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            review.comment,
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
   Widget _buildBottomBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
@@ -600,7 +581,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: OutlinedButton(
                   onPressed: _addToCart,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.primary, width: 1.5),
+                    side: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -662,9 +646,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     // Auth guard — require a real (non-mock) authenticated user
     final user = context.read<AuthBloc>().state.user;
-    if (user == null ||
-        user.id.isEmpty ||
-        user.id.startsWith('mock-')) {
+    if (user == null || user.id.isEmpty || user.id.startsWith('mock-')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Vui lòng đăng nhập để mua hàng'),
@@ -690,13 +672,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final selectedColor = detailState.selectedColor;
 
     VariantModel? variant = product.variants.cast<VariantModel?>().firstWhere(
-          (v) => v!.size == selectedSize && v.colorHex == selectedColor,
-          orElse: () => null,
-        );
+      (v) => v!.size == selectedSize && v.colorHex == selectedColor,
+      orElse: () => null,
+    );
     variant ??= product.variants.cast<VariantModel?>().firstWhere(
-          (v) => v!.size == selectedSize,
-          orElse: () => null,
-        );
+      (v) => v!.size == selectedSize,
+      orElse: () => null,
+    );
     variant ??= product.variants.isNotEmpty ? product.variants.first : null;
 
     if (variant == null) {
@@ -733,6 +715,64 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
     _addToCart();
     Navigator.pushNamed(context, '/cart');
+  }
+
+  Future<void> _openReviewEditor(String productId) async {
+    final user = context.read<AuthBloc>().state.user;
+    if (!_isRealUserId(user?.id)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để viết đánh giá'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.pushNamed(context, '/login');
+      return;
+    }
+    final userId = user!.id;
+
+    final reviewBloc = context.read<ReviewBloc>();
+    var reviewState = reviewBloc.state;
+    if (reviewState.productId != productId || reviewState.userId != userId) {
+      final loaded = reviewBloc.stream.firstWhere(
+        (state) =>
+            state.productId == productId &&
+            state.userId == userId &&
+            !state.isLoading,
+      );
+      reviewBloc.add(ReviewLoad(productId, userId: userId));
+      reviewState = await loaded;
+    } else if (reviewState.isLoading) {
+      reviewState = await reviewBloc.stream.firstWhere(
+        (state) => !state.isLoading,
+      );
+    }
+    if (!mounted) return;
+
+    final saved = await ReviewEditorSheet.show(
+      context,
+      productId: productId,
+      userId: userId,
+      existingReview: reviewState.myReview,
+    );
+    if (!mounted || saved != true) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Đã lưu đánh giá')));
+  }
+
+  void _reloadReviews(String productId) {
+    final user = context.read<AuthBloc>().state.user;
+    context.read<ReviewBloc>().add(
+          ReviewLoad(
+            productId,
+            userId: _isRealUserId(user?.id) ? user!.id : null,
+          ),
+        );
+  }
+
+  bool _isRealUserId(String? userId) {
+    return userId != null && userId.isNotEmpty && !userId.startsWith('mock-');
   }
 
   Color _parseHexColor(String hex) {

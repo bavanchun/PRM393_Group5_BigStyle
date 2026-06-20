@@ -14,6 +14,8 @@ import 'blocs/order/order_bloc.dart';
 import 'blocs/notification/notification_bloc.dart';
 import 'blocs/chat/chat_bloc.dart';
 import 'blocs/manager/manager_bloc.dart';
+import 'blocs/review/review_bloc.dart';
+import 'blocs/wishlist/wishlist_bloc.dart';
 import 'services/auth_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/product_service.dart';
@@ -21,6 +23,8 @@ import 'services/cart_service.dart';
 import 'services/order_service.dart';
 import 'services/notification_service.dart';
 import 'services/chat_service.dart';
+import 'services/review_service.dart';
+import 'services/wishlist_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +59,8 @@ class BigStyleApp extends StatelessWidget {
         BlocProvider(create: (_) => NotificationBloc(NotificationService())),
         BlocProvider(create: (_) => ChatBloc(ChatService())),
         BlocProvider(create: (_) => ManagerBloc(OrderService())),
+        BlocProvider(create: (_) => ReviewBloc(ReviewService())),
+        BlocProvider(create: (_) => WishlistBloc(WishlistService())),
       ],
       child: MaterialApp(
         title: 'BigStyle',
