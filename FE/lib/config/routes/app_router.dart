@@ -14,6 +14,7 @@ import '../../screens/chat/chat_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/delivery/delivery_map_screen.dart';
 import '../../screens/manager/manager_shell.dart';
+import '../../screens/favorites/favorites_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -48,6 +49,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const DeliveryMapScreen());
       case '/manager':
         return MaterialPageRoute(builder: (_) => const ManagerShell());
+      case '/favorites':
+        return MaterialPageRoute(builder: (_) => const FavoritesScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
