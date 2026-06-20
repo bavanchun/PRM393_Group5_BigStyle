@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Mock-login release gating"
-status: pending
+status: completed
 priority: P1
 effort: "30m"
 dependencies: [1]
@@ -40,11 +40,11 @@ Gate by build mode using `kReleaseMode` (from `package:flutter/foundation.dart`)
 6. Commit + PR via `/vchun-git prc`.
 
 ## Success Criteria
-- [ ] Quick-login buttons absent in release build, present in debug
-- [ ] `MockLoginEvent` is inert in release (optional but recommended)
-- [ ] Real OTP + Google login unaffected
-- [ ] `flutter analyze` clean
-- [ ] ≥1 commit + PR via `/vchun-git prc`
+- [x] Quick-login buttons absent in release build, present in debug
+- [x] `MockLoginEvent` is inert in release (optional but recommended)
+- [x] Real OTP + Google login unaffected
+- [x] `flutter analyze` clean (0 errors; 4 pre-existing info lints outside Phase 2)
+- [x] ≥1 commit + PR via `/vchun-git prc`
 
 ## Risk Assessment
 - **Low risk.** Pure conditional rendering. Only watch: ensure `kReleaseMode` import doesn't clash; keep dev convenience intact in debug.

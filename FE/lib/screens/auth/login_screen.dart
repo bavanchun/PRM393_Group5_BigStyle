@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -67,7 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (context, state) {
               return SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: Column(
                     children: [
                       const SizedBox(height: 48),
@@ -90,8 +93,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             _buildDivider(),
                             const SizedBox(height: 24),
                             _buildGoogleButton(state),
-                            const SizedBox(height: 20),
-                            _buildMockSection(state),
+                            if (!kReleaseMode) ...[
+                              const SizedBox(height: 20),
+                              _buildMockSection(state),
+                            ],
                             const SizedBox(height: 20),
                             _buildSignUpLink(),
                           ],
@@ -277,7 +282,9 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 20),
         OtpInput(
           onCompleted: (code) {
-            final email = (state is AuthOTPSent) ? state.email : _emailController.text.trim();
+            final email = (state is AuthOTPSent)
+                ? state.email
+                : _emailController.text.trim();
             context.read<AuthBloc>().add(VerifyOTPEvent(email, code));
           },
           onResend: () {
@@ -299,9 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'hoặc',
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textHint,
-            ),
+            style: AppTypography.caption.copyWith(color: AppColors.textHint),
           ),
         ),
         const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
@@ -332,7 +337,8 @@ class _LoginScreenState extends State<LoginScreen> {
               'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg',
               width: 20,
               height: 20,
-              errorBuilder: (_, _, _) => const Icon(Icons.g_mobiledata, size: 24),
+              errorBuilder: (_, _, _) =>
+                  const Icon(Icons.g_mobiledata, size: 24),
             ),
             const SizedBox(width: 10),
             Flexible(
@@ -381,9 +387,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 icon: Icons.person_outline,
                 onTap: state is AuthLoading
                     ? null
-                    : () => context
-                        .read<AuthBloc>()
-                        .add(const MockLoginEvent('customer')),
+                    : () => context.read<AuthBloc>().add(
+                        const MockLoginEvent('customer'),
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -393,9 +399,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 icon: Icons.admin_panel_settings_outlined,
                 onTap: state is AuthLoading
                     ? null
-                    : () => context
-                        .read<AuthBloc>()
-                        .add(const MockLoginEvent('manager')),
+                    : () => context.read<AuthBloc>().add(
+                        const MockLoginEvent('manager'),
+                      ),
               ),
             ),
           ],
@@ -461,9 +467,9 @@ class _LoginScreenState extends State<LoginScreen> {
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
                   if (_emailController.text.trim().isNotEmpty) {
-                    context
-                        .read<AuthBloc>()
-                        .add(SendOTPEvent(_emailController.text.trim()));
+                    context.read<AuthBloc>().add(
+                      SendOTPEvent(_emailController.text.trim()),
+                    );
                     setState(() => _showOtp = true);
                   }
                 },
@@ -477,8 +483,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _sendOtp() {
     if (!_formKey.currentState!.validate()) return;
-    context
-        .read<AuthBloc>()
-        .add(SendOTPEvent(_emailController.text.trim()));
+    context.read<AuthBloc>().add(SendOTPEvent(_emailController.text.trim()));
   }
 }

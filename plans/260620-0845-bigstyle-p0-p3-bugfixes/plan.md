@@ -1,7 +1,7 @@
 ---
 title: "BigStyle P0-P3 Bugfixes & Features"
 description: ""
-status: pending
+status: in-progress
 priority: P2
 branch: "main"
 tags: []
@@ -31,7 +31,7 @@ Fix all P0→P3 issues found in the runtime trace of BigStyle FE (Flutter + BLoC
 | Phase | Name | Priority | Status |
 |-------|------|----------|--------|
 | 1 | [Cart user_id & checkout guard](./phase-01-cart-user-id-checkout-guard.md) | P0 | Done (code; runtime write pending auth smoke-test) |
-| 2 | [Mock-login release gating](./phase-02-mock-login-release-gating.md) | P1 | Pending |
+| 2 | [Mock-login release gating](./phase-02-mock-login-release-gating.md) | P1 | Completed |
 | 3 | [Manager real data](./phase-03-manager-real-data.md) | P2 | Pending |
 | 4 | [Reviews CRU](./phase-04-reviews-cru.md) | P3 | Pending |
 | 5 | [Wishlist full-stack](./phase-05-wishlist-full-stack.md) | P3 | Pending |
