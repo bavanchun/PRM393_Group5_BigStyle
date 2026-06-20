@@ -10,7 +10,7 @@ class ProductService {
     String? searchQuery,
     bool? featured,
   }) async {
-    var query = _client.from('products').select('*, category:categories(*)');
+    var query = _client.from('products').select('*, category:categories(*), variants:product_variants(*)');
 
     if (categoryId != null) {
       query = query.eq('category_id', categoryId);
@@ -29,7 +29,7 @@ class ProductService {
   Future<ProductModel?> getProductById(String id) async {
     final data = await _client
         .from('products')
-        .select('*, category:categories(*)')
+        .select('*, category:categories(*), variants:product_variants(*)')
         .eq('id', id)
         .maybeSingle();
     return data != null ? ProductModel.fromMap(data) : null;

@@ -7,6 +7,7 @@ import '../../blocs/order/order_bloc.dart';
 import '../../blocs/order/order_event.dart';
 import '../../blocs/order/order_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../models/order_status.dart';
 import '../../widgets/app_card.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -99,7 +100,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       ...order.items.take(2).map((item) => Padding(
                             padding: const EdgeInsets.only(bottom: 4),
                             child: Text(
-                              '${item.product?.name ?? 'Sản phẩm'} x${item.quantity}',
+                              '${item.productName.isNotEmpty ? item.productName : 'Sản phẩm'} x${item.quantity}',
                               style: AppTypography.bodySmall,
                             ),
                           )),
@@ -133,21 +134,20 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Color _statusColor(dynamic status) {
+  Color _statusColor(OrderStatus status) {
     switch (status) {
-      case 'pending':
+      case OrderStatus.pending:
         return AppColors.warning;
-      case 'confirmed':
-      case 'preparing':
+      case OrderStatus.confirmed:
+      case OrderStatus.processing:
         return AppColors.primary;
-      case 'shipping':
+      case OrderStatus.shipping:
         return Colors.blue;
-      case 'delivered':
+      case OrderStatus.delivered:
         return AppColors.success;
-      case 'cancelled':
+      case OrderStatus.cancelled:
+      case OrderStatus.refunded:
         return AppColors.error;
-      default:
-        return AppColors.textHint;
     }
   }
 

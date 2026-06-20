@@ -37,6 +37,20 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+-- Helper: check manager role without triggering RLS (avoids recursion on profiles)
+create or replace function public.is_manager()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'manager'
+  );
+$$;
+
 -- RLS
 alter table public.profiles enable row level security;
 
@@ -50,12 +64,7 @@ create policy "Users can update own profile"
 
 create policy "Managers can view all profiles"
   on public.profiles for select
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'manager'
-    )
-  );
+  using (public.is_manager());
 
 
 -- ============================================================
@@ -79,12 +88,7 @@ create policy "Anyone can view active categories"
 
 create policy "Managers can manage categories"
   on public.categories for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'manager'
-    )
-  );
+  using (public.is_manager());
 
 
 -- ============================================================
@@ -118,12 +122,7 @@ create policy "Anyone can view active products"
 
 create policy "Managers can manage products"
   on public.products for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'manager'
-    )
-  );
+  using (public.is_manager());
 
 
 -- ============================================================
@@ -147,12 +146,7 @@ create policy "Anyone can view variants"
 
 create policy "Managers can manage variants"
   on public.product_variants for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'manager'
-    )
-  );
+  using (public.is_manager());
 
 
 -- ============================================================
@@ -250,12 +244,7 @@ create policy "Users can insert orders"
 
 create policy "Managers manage all orders"
   on public.orders for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'manager'
-    )
-  );
+  using (public.is_manager());
 
 create policy "Users see own order items"
   on public.order_items for select
@@ -268,12 +257,7 @@ create policy "Users see own order items"
 
 create policy "Managers see all order items"
   on public.order_items for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'manager'
-    )
-  );
+  using (public.is_manager());
 
 
 -- ============================================================
@@ -301,12 +285,7 @@ create policy "Users see own payments"
 
 create policy "Managers manage all payments"
   on public.payments for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'manager'
-    )
-  );
+  using (public.is_manager());
 
 
 -- ============================================================
@@ -450,7 +429,7 @@ create policy "Managers upload product images"
   on storage.objects for insert
   with check (
     bucket_id = 'products' and
-    exists (select 1 from public.profiles where id = auth.uid() and role = 'manager')
+    public.is_manager()
   );
 
 create policy "Users manage own avatars"

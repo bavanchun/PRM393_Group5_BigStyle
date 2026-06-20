@@ -9,7 +9,8 @@ import '../../blocs/product_detail/product_detail_event.dart';
 import '../../blocs/product_detail/product_detail_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
-import '../../models/cart_item_model.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../models/variant_model.dart';
 import '../../widgets/expandable_text.dart';
 import 'size_guide_sheet.dart';
 
@@ -21,10 +22,6 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  final List<String> _availableColors = [
-    '#000000', '#FFFFFF', '#C4517A', '#2D2D2D', '#8B4513', '#4A90D9',
-  ];
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -114,7 +111,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       radius: 20,
                       backgroundColor: Colors.white,
                       child: IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.favorite_border,
                           size: 20,
                           color: AppColors.textPrimary,
@@ -135,8 +132,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   return Container(
                     decoration: const BoxDecoration(
                       color: AppColors.background,
-                      borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(24)),
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(24)),
                     ),
                     child: Column(
                       children: [
@@ -227,14 +224,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children:
-                  List.generate(displayImages.length, (i) {
+              children: List.generate(displayImages.length, (i) {
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   width: state.currentImageIndex == i ? 24 : 8,
                   height: 8,
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 3),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
                     color: state.currentImageIndex == i
@@ -363,28 +358,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.chevron_right,
-                size: 18, color: AppColors.primary),
+            const Icon(Icons.chevron_right, size: 18, color: AppColors.primary),
           ],
         ),
       ),
     );
   }
 
+  /// Colors derived from product variants (distinct colorHex values).
   Widget _buildColorSelector(ProductDetailState state) {
+    final product = state.product!;
+    // Distinct color hex values from loaded variants
+    final colorHexList = product.variants
+        .map((v) => v.colorHex)
+        .where((h) => h.isNotEmpty)
+        .toSet()
+        .toList();
+
+    if (colorHexList.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Chọn màu sắc', style: AppTypography.headlineSmall),
         const SizedBox(height: 12),
         Row(
-          children: _availableColors.map((hex) {
+          children: colorHexList.map((hex) {
             final color = _parseHexColor(hex);
             final isSelected = state.selectedColor == hex;
             return GestureDetector(
-              onTap: () => context
-                  .read<ProductDetailBloc>()
-                  .add(SelectColor(hex)),
+              onTap: () =>
+                  context.read<ProductDetailBloc>().add(SelectColor(hex)),
               child: Container(
                 width: 40,
                 height: 40,
@@ -397,7 +401,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     width: isSelected ? 3 : 1.5,
                   ),
                   boxShadow: [
-                    if (hex == '#FFFFFF')
+                    if (hex.toUpperCase() == '#FFFFFF')
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 4,
@@ -405,8 +409,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ],
                 ),
                 child: isSelected
-                    ? const Icon(Icons.check,
-                        size: 18, color: AppColors.primary)
+                    ? const Icon(Icons.check, size: 18, color: AppColors.primary)
                     : null,
               ),
             );
@@ -431,17 +434,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           children: product.sizes.map((size) {
             final isSelected = state.selectedSize == size;
             return GestureDetector(
-              onTap: () => context
-                  .read<ProductDetailBloc>()
-                  .add(SelectSize(size)),
+              onTap: () =>
+                  context.read<ProductDetailBloc>().add(SelectSize(size)),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.background,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color:
@@ -452,9 +453,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: Text(
                   size,
                   style: AppTypography.labelLarge.copyWith(
-                    color: isSelected
-                        ? Colors.white
-                        : AppColors.textPrimary,
+                    color:
+                        isSelected ? Colors.white : AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -530,9 +530,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 radius: 16,
                 backgroundColor: AppColors.secondary,
                 child: Text(
-                  review.name.isNotEmpty
-                      ? review.name[0].toUpperCase()
-                      : '?',
+                  review.name.isNotEmpty ? review.name[0].toUpperCase() : '?',
                   style: AppTypography.labelLarge.copyWith(
                     color: AppColors.primary,
                     fontSize: 12,
@@ -545,8 +543,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(review.name,
-                        style: AppTypography.labelLarge.copyWith(
-                            fontSize: 13)),
+                        style:
+                            AppTypography.labelLarge.copyWith(fontSize: 13)),
                     const SizedBox(height: 2),
                     Row(
                       children: [
@@ -556,8 +554,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               size: 14, color: AppColors.warning),
                         ),
                         const SizedBox(width: 6),
-                        Text(review.date,
-                            style: AppTypography.caption),
+                        Text(review.date, style: AppTypography.caption),
                       ],
                     ),
                   ],
@@ -566,12 +563,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          Text(review.comment,
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                height: 1.5,
-              )),
+          Text(
+            review.comment,
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.5,
+            ),
+          ),
         ],
       ),
     );
@@ -579,8 +578,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Widget _buildBottomBar() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm,
-          AppSpacing.md, AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
@@ -601,8 +600,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: OutlinedButton(
                   onPressed: _addToCart,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                        color: AppColors.primary, width: 1.5),
+                    side: const BorderSide(color: AppColors.primary, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -624,10 +622,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   gradient: const LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primaryDark,
-                    ],
+                    colors: [AppColors.primary, AppColors.primaryDark],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -647,9 +642,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: Center(
                       child: Text(
                         'Mua ngay',
-                        style: AppTypography.button.copyWith(
-                          fontSize: 14,
-                        ),
+                        style: AppTypography.button.copyWith(fontSize: 14),
                       ),
                     ),
                   ),
@@ -663,11 +656,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _addToCart() {
-    final state = context.read<ProductDetailBloc>().state;
-    final product = state.product;
+    final detailState = context.read<ProductDetailBloc>().state;
+    final product = detailState.product;
     if (product == null) return;
 
-    if (state.selectedSize == null) {
+    // Auth guard — require a real (non-mock) authenticated user
+    final user = context.read<AuthBloc>().state.user;
+    if (user == null ||
+        user.id.isEmpty ||
+        user.id.startsWith('mock-')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để mua hàng'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.pushNamed(context, '/login');
+      return;
+    }
+
+    if (detailState.selectedSize == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Vui lòng chọn size'),
@@ -677,16 +685,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
-    context.read<CartBloc>().add(CartAddItem(
-      CartItemModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        productId: product.id,
-        product: product,
-        size: state.selectedSize!,
-        quantity: 1,
-        addedAt: DateTime.now(),
-      ),
-    ));
+    // Resolve variant: prefer size + color match, fallback to size-only, then first
+    final selectedSize = detailState.selectedSize!;
+    final selectedColor = detailState.selectedColor;
+
+    VariantModel? variant = product.variants.cast<VariantModel?>().firstWhere(
+          (v) => v!.size == selectedSize && v.colorHex == selectedColor,
+          orElse: () => null,
+        );
+    variant ??= product.variants.cast<VariantModel?>().firstWhere(
+          (v) => v!.size == selectedSize,
+          orElse: () => null,
+        );
+    variant ??= product.variants.isNotEmpty ? product.variants.first : null;
+
+    if (variant == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sản phẩm tạm hết hàng'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    context.read<CartBloc>().add(CartAddItem(user.id, variant.id, 1));
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -708,7 +731,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
       return;
     }
-
     _addToCart();
     Navigator.pushNamed(context, '/cart');
   }

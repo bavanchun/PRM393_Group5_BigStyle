@@ -23,15 +23,20 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     try {
       final orderId = const Uuid().v4();
       final total = event.subtotal + event.shippingFee;
+
+      // Build OrderItems from normalized CartItemModel fields
+      final orderItems = event.items.map((item) => OrderItem(
+            variantId: item.variantId,
+            productName: item.product?.name ?? '',
+            size: item.size,
+            quantity: item.quantity,
+            unitPrice: item.product?.price ?? 0,
+          )).toList();
+
       final order = OrderModel(
         id: orderId,
         userId: event.userId,
-        items: event.items.map((item) => OrderItem(
-              productId: item.productId,
-              size: item.size,
-              quantity: item.quantity,
-              price: item.product?.price ?? 0,
-            )).toList(),
+        items: orderItems,
         subtotal: event.subtotal,
         shippingFee: event.shippingFee,
         total: total,

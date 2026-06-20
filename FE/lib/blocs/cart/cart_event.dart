@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import '../../models/cart_item_model.dart';
 
 abstract class CartEvent extends Equatable {
   const CartEvent();
@@ -16,12 +15,17 @@ class CartLoad extends CartEvent {
   List<Object?> get props => [userId];
 }
 
+/// Add a variant to the user's cart. The bloc delegates to CartService which
+/// handles get-or-create cart and quantity increment if already present.
 class CartAddItem extends CartEvent {
-  final CartItemModel item;
-  const CartAddItem(this.item);
+  final String userId;
+  final String variantId;
+  final int quantity;
+
+  const CartAddItem(this.userId, this.variantId, this.quantity);
 
   @override
-  List<Object?> get props => [item];
+  List<Object?> get props => [userId, variantId, quantity];
 }
 
 class CartUpdateQuantity extends CartEvent {

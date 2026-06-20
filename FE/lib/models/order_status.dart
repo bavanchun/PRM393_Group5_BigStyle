@@ -1,10 +1,11 @@
 enum OrderStatus {
   pending,
   confirmed,
-  preparing,
+  processing,
   shipping,
   delivered,
-  cancelled;
+  cancelled,
+  refunded;
 
   String get label {
     switch (this) {
@@ -12,16 +13,21 @@ enum OrderStatus {
         return 'Chờ xác nhận';
       case OrderStatus.confirmed:
         return 'Đã xác nhận';
-      case OrderStatus.preparing:
-        return 'Đang chuẩn bị';
+      case OrderStatus.processing:
+        return 'Đang xử lý';
       case OrderStatus.shipping:
         return 'Đang giao hàng';
       case OrderStatus.delivered:
         return 'Đã giao hàng';
       case OrderStatus.cancelled:
         return 'Đã hủy';
+      case OrderStatus.refunded:
+        return 'Đã hoàn tiền';
     }
   }
 
-  bool get isActive => this != OrderStatus.cancelled && this != OrderStatus.delivered;
+  bool get isActive =>
+      this != OrderStatus.cancelled &&
+      this != OrderStatus.delivered &&
+      this != OrderStatus.refunded;
 }

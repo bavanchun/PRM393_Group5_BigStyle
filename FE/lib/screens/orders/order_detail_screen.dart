@@ -80,7 +80,7 @@ class OrderDetailScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    item.product?.name ?? 'Sản phẩm',
+                                    item.productName.isNotEmpty ? item.productName : 'Sản phẩm',
                                     style: AppTypography.bodyMedium
                                         .copyWith(fontWeight: FontWeight.w600),
                                   ),
@@ -92,7 +92,7 @@ class OrderDetailScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Text('${item.price.toStringAsFixed(0)}đ',
+                            Text('${item.unitPrice.toStringAsFixed(0)}đ',
                                 style: AppTypography.priceSmall),
                           ],
                         ),

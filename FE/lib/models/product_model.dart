@@ -1,21 +1,27 @@
 import 'package:equatable/equatable.dart';
 import 'category_model.dart';
+import 'variant_model.dart';
+
+/// Canonical size ordering for Vietnamese bigsize apparel.
+const _kSizeOrder = ['M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
 
 class ProductModel extends Equatable {
   final String id;
   final String name;
   final String description;
+  // price = sale_price ?? base_price (resolved in fromMap)
   final double price;
+  // originalPrice = base_price when sale_price is present (shows strikethrough)
   final double? originalPrice;
   final List<String> images;
-  final List<String> sizes;
   final String? categoryId;
   final CategoryModel? category;
-  final int stock;
   final double? rating;
   final int reviewCount;
   final bool isFeatured;
   final DateTime createdAt;
+  // Variants loaded via product_variants(*) join
+  final List<VariantModel> variants;
 
   const ProductModel({
     required this.id,
@@ -24,15 +30,26 @@ class ProductModel extends Equatable {
     required this.price,
     this.originalPrice,
     required this.images,
-    required this.sizes,
     this.categoryId,
     this.category,
-    this.stock = 0,
     this.rating,
     this.reviewCount = 0,
     this.isFeatured = false,
     required this.createdAt,
+    this.variants = const [],
   });
+
+  /// Distinct sizes from variants in canonical order.
+  List<String> get sizes {
+    final variantSizes = variants.map((v) => v.size).toSet();
+    final ordered = _kSizeOrder.where(variantSizes.contains).toList();
+    // Append any non-standard sizes not in canonical list
+    final extras = variantSizes.where((s) => !_kSizeOrder.contains(s)).toList()..sort();
+    return [...ordered, ...extras];
+  }
+
+  /// Total stock across all variants.
+  int get stock => variants.fold(0, (sum, v) => sum + v.stockQty);
 
   double get discountPercent {
     if (originalPrice == null || originalPrice! <= price) return 0;
@@ -45,36 +62,50 @@ class ProductModel extends Equatable {
         'id': id,
         'name': name,
         'description': description,
-        'price': price,
-        'original_price': originalPrice,
+        'base_price': originalPrice ?? price,
+        'sale_price': originalPrice != null ? price : null,
         'images': images,
-        'sizes': sizes,
         'category_id': categoryId,
-        'stock': stock,
-        'rating': rating,
+        'avg_rating': rating,
         'review_count': reviewCount,
         'is_featured': isFeatured,
         'created_at': createdAt.toIso8601String(),
       };
 
-  factory ProductModel.fromMap(Map<String, dynamic> map) => ProductModel(
-        id: map['id'] ?? '',
-        name: map['name'] ?? '',
-        description: map['description'] ?? '',
-        price: (map['price'] ?? 0).toDouble(),
-        originalPrice: map['original_price']?.toDouble(),
-        images: List<String>.from(map['images'] ?? []),
-        sizes: List<String>.from(map['sizes'] ?? []),
-        categoryId: map['category_id'],
-        category: map['category'] != null
-            ? CategoryModel.fromMap(map['category'])
-            : null,
-        stock: map['stock'] ?? 0,
-        rating: map['rating']?.toDouble(),
-        reviewCount: map['review_count'] ?? 0,
-        isFeatured: map['is_featured'] ?? false,
-        createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
-      );
+  factory ProductModel.fromMap(Map<String, dynamic> map) {
+    final basePrice = (map['base_price'] ?? 0).toDouble();
+    final salePrice = map['sale_price'] != null
+        ? (map['sale_price'] as num).toDouble()
+        : null;
+
+    // Resolve price and originalPrice from normalized columns
+    final price = salePrice ?? basePrice;
+    final originalPrice = salePrice != null ? basePrice : null;
+
+    // Parse variants from joined product_variants(*) array
+    final variantsList = (map['variants'] as List?)
+            ?.map((v) => VariantModel.fromMap(v as Map<String, dynamic>))
+            .toList() ??
+        const <VariantModel>[];
+
+    return ProductModel(
+      id: map['id'] ?? '',
+      name: map['name'] ?? '',
+      description: map['description'] ?? '',
+      price: price,
+      originalPrice: originalPrice,
+      images: List<String>.from(map['images'] ?? []),
+      categoryId: map['category_id'],
+      category: map['category'] != null
+          ? CategoryModel.fromMap(map['category'] as Map<String, dynamic>)
+          : null,
+      rating: map['avg_rating']?.toDouble(),
+      reviewCount: map['review_count'] ?? 0,
+      isFeatured: map['is_featured'] ?? false,
+      createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
+      variants: variantsList,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -84,13 +115,12 @@ class ProductModel extends Equatable {
         price,
         originalPrice,
         images,
-        sizes,
         categoryId,
         category,
-        stock,
         rating,
         reviewCount,
         isFeatured,
         createdAt,
+        variants,
       ];
 }

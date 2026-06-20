@@ -24,11 +24,11 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     }
   }
 
-  Future<void> _onAddItem(
-      CartAddItem event, Emitter<CartState> emit) async {
+  Future<void> _onAddItem(CartAddItem event, Emitter<CartState> emit) async {
     try {
-      await _cartService.addToCart(event.item);
-      final items = [...state.items, event.item];
+      await _cartService.addToCart(event.userId, event.variantId, event.quantity);
+      // Reload from DB to get accurate state (quantity merge, product join)
+      final items = await _cartService.getCartItems(event.userId);
       emit(state.copyWith(items: items));
     } catch (e) {
       emit(state.copyWith(error: 'Thêm sản phẩm thất bại'));
