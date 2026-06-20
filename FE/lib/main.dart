@@ -13,6 +13,7 @@ import 'blocs/checkout/checkout_bloc.dart';
 import 'blocs/order/order_bloc.dart';
 import 'blocs/notification/notification_bloc.dart';
 import 'blocs/chat/chat_bloc.dart';
+import 'blocs/manager/manager_bloc.dart';
 import 'services/auth_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/product_service.dart';
@@ -45,18 +46,15 @@ class BigStyleApp extends StatelessWidget {
           create: (_) => AuthBloc(AuthService(), GoogleAuthService()),
         ),
         BlocProvider(create: (_) => ProductBloc(ProductService())),
-        BlocProvider(
-            create: (_) => ProductDetailBloc(ProductService())),
+        BlocProvider(create: (_) => ProductDetailBloc(ProductService())),
         BlocProvider(create: (_) => CartBloc(CartService())),
         BlocProvider(create: (_) => OrderBloc(OrderService())),
         BlocProvider(
-          create: (ctx) => CheckoutBloc(
-            OrderService(),
-            CartService(),
-          ),
+          create: (ctx) => CheckoutBloc(OrderService(), CartService()),
         ),
         BlocProvider(create: (_) => NotificationBloc(NotificationService())),
         BlocProvider(create: (_) => ChatBloc(ChatService())),
+        BlocProvider(create: (_) => ManagerBloc(OrderService())),
       ],
       child: MaterialApp(
         title: 'BigStyle',

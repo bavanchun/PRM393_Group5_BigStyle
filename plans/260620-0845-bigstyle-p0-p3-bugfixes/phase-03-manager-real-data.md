@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Manager real data"
-status: pending
+status: completed
 priority: P2
 effort: "3h"
 dependencies: [1]
@@ -52,12 +52,12 @@ Replace the 100%-hardcoded Manager module (Dashboard stats + Orders list) with r
 9. Commit + PR via `/vchun-git prc`.
 
 ## Success Criteria
-- [ ] Dashboard shows real counts/revenue (no `12.5tr/8/156/234` constants)
-- [ ] Orders screen lists real orders; `itemCount` driven by data
-- [ ] Filter chips filter by real DB status; labels match DB enum
-- [ ] "Chi tiết" opens real order detail
-- [ ] `flutter analyze` clean
-- [ ] ≥1 commit + PR via `/vchun-git prc`
+- [x] Dashboard shows real counts/revenue (no `12.5tr/8/156/234` constants)
+- [x] Orders screen lists real orders; `itemCount` driven by data
+- [x] Filter chips filter by real DB status; labels match DB enum
+- [x] "Chi tiết" opens real order detail
+- [x] `flutter analyze` clean (0 errors; 3 pre-existing info lints outside Phase 3)
+- [x] ≥1 commit + PR via `/vchun-git prc`
 
 ## Risk Assessment
 - **No manager account exists** → manager queries return nothing/blocked. Mitigate: promote a test profile to `role='manager'` via SQL Editor; document in PR.
