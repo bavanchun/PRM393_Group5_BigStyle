@@ -56,12 +56,12 @@ Correct the cart write to the real Supabase shape:
 10. Commit + PR via `/vchun-git prc`.
 
 ## Success Criteria
-- [ ] `CartService.addToCart` takes an explicit `userId`; `split('_')` hack removed
+- [x] `CartService.addToCart` takes an explicit `userId`; `split('_')` hack removed
 - [ ] `cart_items` row created with correct `cart_id` tied to the authenticated `user_id` (verified via REST)
-- [ ] `toMap()` emits only valid `cart_items` columns
-- [ ] Checkout refuses to place an order with empty/mock user id (shows message, no bad write)
-- [ ] `flutter analyze` clean
-- [ ] ≥1 commit + PR via `/vchun-git prc`
+- [x] `toMap()` emits only valid `cart_items` columns
+- [x] Checkout refuses to place an order with empty/mock user id (shows message, no bad write)
+- [x] `flutter analyze` clean
+- [x] ≥1 commit + PR via `/vchun-git prc`
 
 ## Risk Assessment
 - **Quantity merge**: ignoring `unique(cart_id, variant_id)` → duplicate-key error. Mitigate with upsert/increment.
