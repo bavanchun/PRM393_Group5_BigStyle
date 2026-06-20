@@ -213,10 +213,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authState = context.read<AuthBloc>().state;
+    final user = authState.user;
+
+    // Auth guard — require a real (non-mock) authenticated user
+    if (user == null || user.id.isEmpty || user.id.startsWith('mock-')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng đăng nhập để đặt hàng')),
+      );
+      return;
+    }
+
     final cartState = context.read<CartBloc>().state;
 
     context.read<CheckoutBloc>().add(CheckoutPlaceOrder(
-          userId: authState.user?.id ?? '',
+          userId: user.id,
           items: cartState.items,
           subtotal: cartState.subtotal,
           shippingFee: 30000,
