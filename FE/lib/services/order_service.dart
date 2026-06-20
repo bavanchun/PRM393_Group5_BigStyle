@@ -1,22 +1,60 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/manager_dashboard_stats.dart';
 import '../models/order_model.dart';
 
 class OrderService {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient _client;
+
+  OrderService({SupabaseClient? client})
+    : _client = client ?? Supabase.instance.client;
 
   Future<List<OrderModel>> getOrders(String userId) async {
     final data = await _client
         .from('orders')
-        .select('*, items:order_items(*, variant:product_variants(*, product:products(*)))')
+        .select(
+          '*, items:order_items(*, variant:product_variants(*, product:products(*)))',
+        )
         .eq('user_id', userId)
         .order('created_at', ascending: false);
     return data.map((e) => OrderModel.fromMap(e)).toList();
   }
 
+  Future<List<OrderModel>> getAllOrders({String? status}) async {
+    var query = _client
+        .from('orders')
+        .select(
+          '*, customer:profiles!orders_user_id_fkey(full_name), items:order_items(*, variant:product_variants(*, product:products(*)))',
+        );
+    if (status != null && status.isNotEmpty) {
+      query = query.eq('status', status);
+    }
+    final data = await query.order('created_at', ascending: false);
+    return data.map((e) => OrderModel.fromMap(e)).toList();
+  }
+
+  Future<ManagerDashboardStats> getDashboardStats() async {
+    final results = await Future.wait([
+      _client.from('orders').select('total,status,created_at'),
+      _client.from('products').select('id'),
+      _client.from('profiles').select('id,role'),
+    ]);
+
+    final orders = List<Map<String, dynamic>>.from(results[0]);
+    final products = List<Map<String, dynamic>>.from(results[1]);
+    final profiles = List<Map<String, dynamic>>.from(results[2]);
+    return ManagerDashboardStats.fromRows(
+      orders: orders,
+      products: products,
+      profiles: profiles,
+    );
+  }
+
   Future<OrderModel?> getOrderById(String id) async {
     final data = await _client
         .from('orders')
-        .select('*, items:order_items(*, variant:product_variants(*, product:products(*)))')
+        .select(
+          '*, items:order_items(*, variant:product_variants(*, product:products(*)))',
+        )
         .eq('id', id)
         .maybeSingle();
     return data != null ? OrderModel.fromMap(data) : null;
@@ -35,9 +73,6 @@ class OrderService {
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {
-    await _client
-        .from('orders')
-        .update({'status': status})
-        .eq('id', orderId);
+    await _client.from('orders').update({'status': status}).eq('id', orderId);
   }
 }
