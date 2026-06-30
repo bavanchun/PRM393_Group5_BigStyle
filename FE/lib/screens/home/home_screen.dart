@@ -81,8 +81,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                if (state.featuredProducts.isEmpty)
+                if (state.isLoading)
                   _buildShimmerGrid()
+                else if (state.featuredProducts.isEmpty)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.xl),
+                      child: Center(child: Text('Chưa có sản phẩm nổi bật')),
+                    ),
+                  )
                 else
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -131,8 +138,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                if (state.products.isEmpty)
+                if (state.isLoading)
                   _buildShimmerGrid()
+                else if (state.products.isEmpty)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.xl),
+                      child: Center(child: Text('Chưa có sản phẩm mới')),
+                    ),
+                  )
                 else
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),

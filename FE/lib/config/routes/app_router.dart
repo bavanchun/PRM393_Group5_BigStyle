@@ -20,37 +20,37 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const SplashScreen());
       case '/login':
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const LoginScreen());
       case '/home':
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const HomeScreen());
       case '/products':
-        return MaterialPageRoute(builder: (_) => const ProductListScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const ProductListScreen());
       case '/product-detail':
-        return MaterialPageRoute(builder: (_) => const ProductDetailScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const ProductDetailScreen());
       case '/cart':
-        return MaterialPageRoute(builder: (_) => const CartScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const CartScreen());
       case '/checkout':
-        return MaterialPageRoute(builder: (_) => const CheckoutScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const CheckoutScreen());
       case '/orders':
-        return MaterialPageRoute(builder: (_) => const OrdersScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const OrdersScreen());
       case '/order-detail':
-        return MaterialPageRoute(builder: (_) => const OrderDetailScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const OrderDetailScreen());
       case '/profile':
-        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const ProfileScreen());
       case '/edit-profile':
-        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const EditProfileScreen());
       case '/chat':
-        return MaterialPageRoute(builder: (_) => const ChatScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const ChatScreen());
       case '/notifications':
-        return MaterialPageRoute(builder: (_) => const NotificationsScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const NotificationsScreen());
       case '/delivery-map':
-        return MaterialPageRoute(builder: (_) => const DeliveryMapScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const DeliveryMapScreen());
       case '/manager':
-        return MaterialPageRoute(builder: (_) => const ManagerShell());
+        return MaterialPageRoute(settings: settings, builder: (_) => const ManagerShell());
       case '/favorites':
-        return MaterialPageRoute(builder: (_) => const FavoritesScreen());
+        return MaterialPageRoute(settings: settings, builder: (_) => const FavoritesScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

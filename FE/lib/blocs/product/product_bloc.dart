@@ -21,7 +21,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     try {
       final products = await _productService.getProducts();
       emit(state.copyWith(isLoading: false, products: products));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('LoadProducts error: $e\n$stackTrace');
       emit(state.copyWith(isLoading: false, error: 'Tải sản phẩm thất bại'));
     }
   }
@@ -44,7 +45,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     try {
       final products = await _productService.getProducts(featured: true);
       emit(state.copyWith(featuredProducts: products));
-    } catch (_) {}
+    } catch (e, stackTrace) {
+      print('ProductLoadFeatured error: $e\n$stackTrace');
+    }
   }
 
   Future<void> _onLoadDetail(
