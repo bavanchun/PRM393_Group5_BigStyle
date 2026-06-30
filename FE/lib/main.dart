@@ -29,7 +29,7 @@ import 'services/wishlist_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: 'assets/.env');
+  await dotenv.load(fileName: '.env');
 
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
