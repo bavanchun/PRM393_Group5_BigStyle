@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_event.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
 import 'manager_orders_screen.dart';
+import 'products/manager_product_list_screen.dart';
 
 class ManagerShell extends StatefulWidget {
   const ManagerShell({super.key});
@@ -16,9 +21,9 @@ class _ManagerShellState extends State<ManagerShell> {
 
   final _screens = const [
     ManagerDashboard(),
-    _PlaceholderScreen(title: 'Quản lý sản phẩm', icon: Icons.inventory_2),
+    ManagerProductListScreen(),
     ManagerOrdersScreen(),
-    _PlaceholderScreen(title: 'Cá nhân', icon: Icons.person),
+    _ManagerProfileScreen(),
   ];
 
   @override
@@ -32,6 +37,69 @@ class _ManagerShellState extends State<ManagerShell> {
       bottomNavigationBar: ManagerBottomNav(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
+      ),
+    );
+  }
+}
+
+class _ManagerProfileScreen extends StatelessWidget {
+  const _ManagerProfileScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Cá nhân (Quản lý)'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+      ),
+      body: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          final user = state.user;
+          return Column(
+            children: [
+              const SizedBox(height: 32),
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: AppColors.secondary,
+                child: Text(
+                  (user?.fullName.isNotEmpty == true ? user!.fullName[0] : 'M')
+                      .toUpperCase(),
+                  style: const TextStyle(fontSize: 32, color: AppColors.primary),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                user?.fullName ?? 'Quản lý',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                user?.email ?? '',
+                style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 32),
+              const Divider(),
+              if (user != null)
+                ListTile(
+                  leading: const Icon(Icons.logout, color: AppColors.error),
+                  title: const Text('Đăng xuất',
+                      style: TextStyle(color: AppColors.error)),
+                  onTap: () {
+                    context.read<AuthBloc>().add(const SignOutEvent());
+                  },
+                )
+              else
+                ListTile(
+                  leading: const Icon(Icons.login, color: AppColors.primary),
+                  title: const Text('Đăng nhập',
+                      style: TextStyle(color: AppColors.primary)),
+                  onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                ),
+              const Divider(),
+            ],
+          );
+        },
       ),
     );
   }

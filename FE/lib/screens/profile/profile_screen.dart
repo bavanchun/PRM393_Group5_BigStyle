@@ -127,13 +127,22 @@ class ProfileScreen extends StatelessWidget {
                     onTap: () => _showMap(context),
                   ),
                   const Divider(indent: 56, endIndent: 16),
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.logout,
-                    title: 'Đăng xuất',
-                    color: AppColors.error,
-                    onTap: () => _logout(context),
-                  ),
+                  if (user != null)
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.logout,
+                      title: 'Đăng xuất',
+                      color: AppColors.error,
+                      onTap: () => _logout(context),
+                    )
+                  else
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.login,
+                      title: 'Đăng nhập',
+                      color: AppColors.primary,
+                      onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                    ),
                   const SizedBox(height: 48),
                 ],
               ),

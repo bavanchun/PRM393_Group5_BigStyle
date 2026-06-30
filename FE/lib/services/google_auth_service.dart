@@ -39,14 +39,11 @@ class GoogleAuthService {
         .maybeSingle();
 
     if (existing == null) {
-      await _supabase.from('profiles').insert({
-        'id': user.id,
-        'email': user.email,
+      // Profile already created by database trigger, we just need to update it with Google data
+      await _supabase.from('profiles').update({
         'full_name': googleUser.displayName ?? user.email!.split('@').first,
         'avatar_url': googleUser.photoUrl,
-        'role': 'customer',
-        'created_at': DateTime.now().toIso8601String(),
-      });
+      }).eq('id', user.id);
     }
 
     final data = await _supabase
@@ -59,6 +56,10 @@ class GoogleAuthService {
   }
 
   Future<void> signOut() async {
-    await _googleSignIn?.signOut();
+    try {
+      final googleSignIn = _initGoogleSignIn();
+      await googleSignIn.signOut();
+      await googleSignIn.disconnect();
+    } catch (_) {}
   }
 }

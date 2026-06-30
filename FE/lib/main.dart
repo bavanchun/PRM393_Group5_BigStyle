@@ -26,6 +26,8 @@ import 'services/chat_service.dart';
 import 'services/review_service.dart';
 import 'services/wishlist_service.dart';
 
+import 'blocs/manager_product/manager_product_bloc.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -44,30 +46,38 @@ class BigStyleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    final productService = ProductService();
+
+    return MultiRepositoryProvider(
       providers: [
-        BlocProvider(
-          create: (_) => AuthBloc(AuthService(), GoogleAuthService()),
-        ),
-        BlocProvider(create: (_) => ProductBloc(ProductService())),
-        BlocProvider(create: (_) => ProductDetailBloc(ProductService())),
-        BlocProvider(create: (_) => CartBloc(CartService())),
-        BlocProvider(create: (_) => OrderBloc(OrderService())),
-        BlocProvider(
-          create: (ctx) => CheckoutBloc(OrderService(), CartService()),
-        ),
-        BlocProvider(create: (_) => NotificationBloc(NotificationService())),
-        BlocProvider(create: (_) => ChatBloc(ChatService())),
-        BlocProvider(create: (_) => ManagerBloc(OrderService())),
-        BlocProvider(create: (_) => ReviewBloc(ReviewService())),
-        BlocProvider(create: (_) => WishlistBloc(WishlistService())),
+        RepositoryProvider.value(value: productService),
       ],
-      child: MaterialApp(
-        title: 'BigStyle',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        initialRoute: '/',
-        onGenerateRoute: AppRouter.generateRoute,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => AuthBloc(AuthService(), GoogleAuthService()),
+          ),
+          BlocProvider(create: (_) => ProductBloc(productService)),
+          BlocProvider(create: (_) => ProductDetailBloc(productService)),
+          BlocProvider(create: (_) => ManagerProductBloc(productService)),
+          BlocProvider(create: (_) => CartBloc(CartService())),
+          BlocProvider(create: (_) => OrderBloc(OrderService())),
+          BlocProvider(
+            create: (ctx) => CheckoutBloc(OrderService(), CartService()),
+          ),
+          BlocProvider(create: (_) => NotificationBloc(NotificationService())),
+          BlocProvider(create: (_) => ChatBloc(ChatService())),
+          BlocProvider(create: (_) => ManagerBloc(OrderService())),
+          BlocProvider(create: (_) => ReviewBloc(ReviewService())),
+          BlocProvider(create: (_) => WishlistBloc(WishlistService())),
+        ],
+        child: MaterialApp(
+          title: 'BigStyle',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          initialRoute: '/',
+          onGenerateRoute: AppRouter.generateRoute,
+        ),
       ),
     );
   }

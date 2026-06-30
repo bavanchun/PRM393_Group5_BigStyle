@@ -19,6 +19,9 @@ class ProductModel extends Equatable {
   final double? rating;
   final int reviewCount;
   final bool isFeatured;
+  final bool isActive;
+  final String? material;
+  final String? elasticity;
   final DateTime createdAt;
   // Variants loaded via product_variants(*) join
   final List<VariantModel> variants;
@@ -35,6 +38,9 @@ class ProductModel extends Equatable {
     this.rating,
     this.reviewCount = 0,
     this.isFeatured = false,
+    this.isActive = true,
+    this.material,
+    this.elasticity,
     required this.createdAt,
     this.variants = const [],
   });
@@ -69,6 +75,9 @@ class ProductModel extends Equatable {
         'avg_rating': rating,
         'review_count': reviewCount,
         'is_featured': isFeatured,
+        'is_active': isActive,
+        'material': material,
+        'elasticity': elasticity,
         'created_at': createdAt.toIso8601String(),
       };
 
@@ -102,6 +111,9 @@ class ProductModel extends Equatable {
       rating: map['avg_rating']?.toDouble(),
       reviewCount: map['review_count'] ?? 0,
       isFeatured: map['is_featured'] ?? false,
+      isActive: map['is_active'] ?? true,
+      material: map['material'],
+      elasticity: map['elasticity'],
       createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       variants: variantsList,
     );
@@ -120,6 +132,9 @@ class ProductModel extends Equatable {
         rating,
         reviewCount,
         isFeatured,
+        isActive,
+        material,
+        elasticity,
         createdAt,
         variants,
       ];

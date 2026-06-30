@@ -72,7 +72,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(const AuthError('Đăng nhập Google thất bại'));
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      print('=== GOOGLE LOGIN ERROR ===');
+      print(e);
+      print(stackTrace);
       emit(const AuthError('Đăng nhập Google thất bại'));
     }
   }
@@ -99,6 +102,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onSignOut(SignOutEvent event, Emitter<AuthState> emit) async {
     await _authService.signOut();
+    await _googleAuthService.signOut();
     emit(const AuthInitial());
   }
 

@@ -35,13 +35,10 @@ class AuthService {
 
     final existing = _client.from('profiles').select().eq('id', user.id).maybeSingle();
     if (await existing == null) {
-      await _client.from('profiles').insert({
-        'id': user.id,
-        'email': email,
+      // Profile is already created by database trigger, update with name
+      await _client.from('profiles').update({
         'full_name': email.split('@').first,
-        'role': 'customer',
-        'created_at': DateTime.now().toIso8601String(),
-      });
+      }).eq('id', user.id);
     }
     return _fetchUser(user.id);
   }

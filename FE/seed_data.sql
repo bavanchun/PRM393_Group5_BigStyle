@@ -1,11 +1,10 @@
-﻿-- ============================================================
+-- ============================================================
 -- CurveFit — Seed Data
 -- File: 02_seed_data.sql
 -- Chạy file này SAU 01_schema.sql
 -- Gồm: 5 categories, 15 sản phẩm, variants, 2 test profiles,
 --       sample orders, reviews, notifications
 -- ============================================================
-
 
 -- ============================================================
 -- CATEGORIES (5 danh mục)

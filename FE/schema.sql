@@ -105,6 +105,8 @@ create table public.products (
   sale_price      numeric(12,0),
   is_featured     boolean default false,
   is_active       boolean default true,
+  material        text,
+  elasticity      text,
   body_type_fit   text[] default '{}',
   -- body_type_fit values: 'apple','pear','hourglass','rectangle'
   tags            text[] default '{}',
@@ -134,9 +136,17 @@ create table public.product_variants (
   size        text not null check (size in ('M','L','XL','2XL','3XL','4XL','5XL')),
   color       text not null,
   color_hex   text,
-  stock_qty   int not null default 0 check (stock_qty >= 0),
-  sku         text unique,
-  created_at  timestamptz default now()
+  stock_qty       int not null default 0 check (stock_qty >= 0),
+  sku             text unique,
+  height_range    text,
+  weight_range    text,
+  bust_range      text,
+  waist_range     text,
+  hips_range      text,
+  arm_range       text,
+  thigh_range     text,
+  shoulder_range  text,
+  created_at      timestamptz default now()
 );
 
 alter table public.product_variants enable row level security;
