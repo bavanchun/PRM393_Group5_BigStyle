@@ -255,6 +255,15 @@ create policy "Users see own order items"
     )
   );
 
+create policy "Users can insert order items"
+  on public.order_items for insert
+  with check (
+    exists (
+      select 1 from public.orders
+      where id = order_id and user_id = auth.uid()
+    )
+  );
+
 create policy "Managers see all order items"
   on public.order_items for all
   using (public.is_manager());

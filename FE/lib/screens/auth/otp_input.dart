@@ -13,9 +13,9 @@ class OtpInput extends StatefulWidget {
 }
 
 class _OtpInputState extends State<OtpInput> {
-  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+      List.generate(6, (_) => TextEditingController());
   @override
   void dispose() {
     for (final node in _focusNodes) {
@@ -33,12 +33,12 @@ class _OtpInputState extends State<OtpInput> {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(4, (index) {
+          children: List.generate(6, (index) {
             return Padding(
-              padding: EdgeInsets.symmetric(horizontal: index < 4 ? 8 : 0),
+              padding: EdgeInsets.symmetric(horizontal: index < 6 ? 4 : 0),
               child: SizedBox(
-                width: 56,
-                height: 64,
+                width: 44,
+                height: 54,
                 child: TextField(
                   controller: _controllers[index],
                   focusNode: _focusNodes[index],
@@ -46,7 +46,7 @@ class _OtpInputState extends State<OtpInput> {
                   textAlign: TextAlign.center,
                   maxLength: 1,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     letterSpacing: 0,
@@ -86,11 +86,11 @@ class _OtpInputState extends State<OtpInput> {
                     ),
                   ),
                   onChanged: (value) {
-                    if (value.isNotEmpty && index < 3) {
+                    if (value.isNotEmpty && index < 5) {
                       _focusNodes[index + 1].requestFocus();
                     }
 
-                    if (index == 3 && value.isNotEmpty) {
+                    if (index == 5 && value.isNotEmpty) {
                       _focusNodes[index].unfocus();
                       final code = _controllers.map((c) => c.text).join();
                       widget.onCompleted(code);

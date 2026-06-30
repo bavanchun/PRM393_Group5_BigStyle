@@ -7,7 +7,9 @@ import 'product_model.dart';
 class OrderItem extends Equatable {
   final String variantId;
   final String productName;
+  final String? productImage;
   final String size;
+  final String color;
   final int quantity;
   final double unitPrice;
   // Resolved from variant.product join — may be null if product was deleted
@@ -16,7 +18,9 @@ class OrderItem extends Equatable {
   const OrderItem({
     required this.variantId,
     required this.productName,
+    this.productImage,
     required this.size,
+    required this.color,
     required this.quantity,
     required this.unitPrice,
     this.product,
@@ -25,7 +29,9 @@ class OrderItem extends Equatable {
   Map<String, dynamic> toMap() => {
     'variant_id': variantId,
     'product_name': productName,
+    'product_image': productImage,
     'size': size,
+    'color': color,
     'quantity': quantity,
     'unit_price': unitPrice,
   };
@@ -42,7 +48,9 @@ class OrderItem extends Equatable {
     return OrderItem(
       variantId: map['variant_id'] ?? '',
       productName: map['product_name'] ?? '',
+      productImage: map['product_image'] as String?,
       size: map['size'] ?? '',
+      color: map['color'] ?? '',
       quantity: map['quantity'] ?? 1,
       unitPrice: (map['unit_price'] ?? 0).toDouble(),
       product: product,
@@ -53,7 +61,9 @@ class OrderItem extends Equatable {
   List<Object?> get props => [
     variantId,
     productName,
+    productImage,
     size,
+    color,
     quantity,
     unitPrice,
     product,

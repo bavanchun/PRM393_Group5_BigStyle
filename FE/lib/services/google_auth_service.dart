@@ -1,12 +1,16 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
+import '../config/app_config.dart';
 
 class GoogleAuthService {
   GoogleSignIn? _googleSignIn;
 
   GoogleSignIn _initGoogleSignIn() {
-    _googleSignIn ??= GoogleSignIn(scopes: ['email', 'profile']);
+    _googleSignIn ??= GoogleSignIn(
+      scopes: ['email', 'profile'],
+      serverClientId: AppConfig.googleWebClientId,
+    );
     return _googleSignIn!;
   }
 

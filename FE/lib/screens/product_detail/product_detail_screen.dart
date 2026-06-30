@@ -657,10 +657,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
-    if (detailState.selectedSize == null) {
+    final hasSizes = product.sizes.isNotEmpty;
+    if (hasSizes && detailState.selectedSize == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Vui lòng chọn size'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final hasColors = product.variants.any((v) => v.colorHex.isNotEmpty);
+    if (hasColors && detailState.selectedColor.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng chọn màu sắc'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -704,7 +716,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   void _buyNow() {
     final state = context.read<ProductDetailBloc>().state;
-    if (state.selectedSize == null) {
+    final product = state.product;
+    if (product == null) return;
+
+    final hasSizes = product.sizes.isNotEmpty;
+    if (hasSizes && state.selectedSize == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Vui lòng chọn size'),
@@ -713,6 +729,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
       return;
     }
+
+    final hasColors = product.variants.any((v) => v.colorHex.isNotEmpty);
+    if (hasColors && state.selectedColor.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng chọn màu sắc'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     _addToCart();
     Navigator.pushNamed(context, '/cart');
   }

@@ -28,7 +28,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       final orderItems = event.items.map((item) => OrderItem(
             variantId: item.variantId,
             productName: item.product?.name ?? '',
-            size: item.size,
+            productImage: item.product?.images.isNotEmpty == true ? item.product!.images.first : null,
+            size: item.variant?.size ?? '',
+            color: item.variant?.color ?? '',
             quantity: item.quantity,
             unitPrice: item.product?.price ?? 0,
           )).toList();
