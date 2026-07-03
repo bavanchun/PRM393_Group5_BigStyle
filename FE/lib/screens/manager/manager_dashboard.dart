@@ -14,6 +14,7 @@ import 'products/manager_create_product_screen.dart';
 import 'manager_order_card.dart';
 import 'manager_order_detail_screen.dart';
 import 'manager_orders_screen.dart';
+import 'vouchers/manager_voucher_list_screen.dart';
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
@@ -66,9 +67,9 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                   ManagerStatsGrid(stats: state.dashboardStats!),
                 const SizedBox(height: AppSpacing.lg),
                 ManagerQuickActions(
-                  onComingSoon: _showComingSoon,
                   onManageCategories: _openCategoryManager,
                   onAddProduct: _openCreateProduct,
+                  onManageVouchers: _openVoucherManager,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _buildRecentOrdersHeader(),
@@ -158,12 +159,12 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     );
   }
 
-  void _showComingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng đang phát triển'),
-        behavior: SnackBarBehavior.floating,
-      ),
+  void _openVoucherManager() {
+    // ManagerVoucherBloc is provided app-wide in main.dart, so the pushed
+    // screen can read it directly.
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ManagerVoucherListScreen()),
     );
   }
 }

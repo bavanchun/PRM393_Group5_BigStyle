@@ -12,6 +12,8 @@ class ProductState extends Equatable {
   final String searchQuery;
   final String sortBy;
   final String? error;
+  final String? selectedSize;
+  final bool saleOnly;
 
   const ProductState({
     this.isLoading = false,
@@ -23,6 +25,8 @@ class ProductState extends Equatable {
     this.searchQuery = '',
     this.sortBy = 'newest',
     this.error,
+    this.selectedSize,
+    this.saleOnly = false,
   });
 
   List<ProductModel> get filteredProducts {
@@ -39,6 +43,14 @@ class ProductState extends Equatable {
       result = result.where((p) =>
           p.name.toLowerCase().contains(q) ||
           (p.category?.name.toLowerCase().contains(q) ?? false)).toList();
+    }
+
+    if (selectedSize != null) {
+      result = result.where((p) => p.sizes.contains(selectedSize)).toList();
+    }
+
+    if (saleOnly) {
+      result = result.where((p) => p.hasDiscount).toList();
     }
 
     switch (sortBy) {
@@ -66,6 +78,9 @@ class ProductState extends Equatable {
     String? searchQuery,
     String? sortBy,
     String? error,
+    String? selectedSize,
+    bool? saleOnly,
+    bool clearSize = false,
   }) =>
       ProductState(
         isLoading: isLoading ?? this.isLoading,
@@ -77,6 +92,8 @@ class ProductState extends Equatable {
         searchQuery: searchQuery ?? this.searchQuery,
         sortBy: sortBy ?? this.sortBy,
         error: error,
+        selectedSize: clearSize ? null : (selectedSize ?? this.selectedSize),
+        saleOnly: saleOnly ?? this.saleOnly,
       );
 
   @override
@@ -90,5 +107,7 @@ class ProductState extends Equatable {
         searchQuery,
         sortBy,
         error,
+        selectedSize,
+        saleOnly,
       ];
 }

@@ -378,6 +378,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
     switch (label) {
       case 'Tất cả':
         context.read<ProductBloc>().add(const FilterByCategory(null, 'all'));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
       case 'Đầm':
       case 'Áo':
       case 'Quần':
@@ -392,14 +394,26 @@ class _ProductListScreenState extends State<ProductListScreen> {
         context
             .read<ProductBloc>()
             .add(FilterByCategory(matched?.id ?? label, label));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
       case 'Size XL':
       case 'Size 2XL':
       case 'Size 3XL':
-        context.read<ProductBloc>().add(SearchProducts(label));
+        // Chips are single-select — a size facet clears category + sale so only
+        // one dimension is ever active.
+        context.read<ProductBloc>().add(const FilterByCategory(null, 'all'));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
+        context
+            .read<ProductBloc>()
+            .add(FilterBySize(label.replaceFirst('Size ', '')));
       case 'Mới về':
         context.read<ProductBloc>().add(const SortProducts('newest'));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
       case 'Sale':
-        context.read<ProductBloc>().add(const SortProducts('price-asc'));
+        context.read<ProductBloc>().add(const FilterByCategory(null, 'all'));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(true));
     }
   }
 

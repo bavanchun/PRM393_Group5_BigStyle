@@ -14,6 +14,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ProductLoadFeatured>(_onLoadFeatured);
     on<ProductLoadDetail>(_onLoadDetail);
     on<ProductLoadCategories>(_onLoadCategories);
+    on<FilterBySize>(_onFilterBySize);
+    on<ToggleSaleOnly>(_onToggleSaleOnly);
   }
 
   Future<void> _onLoad(LoadProducts event, Emitter<ProductState> emit) async {
@@ -67,5 +69,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final categories = await _productService.getCategories();
       emit(state.copyWith(categories: categories));
     } catch (_) {}
+  }
+
+  void _onFilterBySize(FilterBySize event, Emitter<ProductState> emit) {
+    emit(state.copyWith(
+      selectedSize: event.size,
+      clearSize: event.size == null,
+    ));
+  }
+
+  void _onToggleSaleOnly(ToggleSaleOnly event, Emitter<ProductState> emit) {
+    emit(state.copyWith(saleOnly: event.saleOnly));
   }
 }

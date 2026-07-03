@@ -1,8 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
 import 'checkout_event.dart';
 import 'checkout_state.dart';
-import '../../models/order_model.dart';
 import '../../services/order_service.dart';
 import '../../services/cart_service.dart';
 import '../../services/payment_service.dart';
@@ -38,36 +36,26 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       error: null,
     ));
     try {
-      final orderId = const Uuid().v4();
-      final total = event.subtotal + event.shippingFee;
+      // shipping_address jsonb payload — mirrors the shape create_order
+      // expects; latitude/longitude are optional.
+      final shippingAddress = <String, dynamic>{
+        'address': event.address,
+        if (event.latitude != null) 'latitude': event.latitude,
+        if (event.longitude != null) 'longitude': event.longitude,
+      };
 
-      // Build OrderItems from normalized CartItemModel fields
-      final orderItems = event.items.map((item) => OrderItem(
-            variantId: item.variantId,
-            productName: item.product?.name ?? '',
-            productImage: item.product?.images.isNotEmpty == true ? item.product!.images.first : null,
-            size: item.variant?.size ?? '',
-            color: item.variant?.color ?? '',
-            quantity: item.quantity,
-            unitPrice: item.product?.price ?? 0,
-          )).toList();
-
-      final order = OrderModel(
-        id: orderId,
-        userId: event.userId,
-        items: orderItems,
-        subtotal: event.subtotal,
+      // Authoritative write path: create_order (SECURITY DEFINER) recomputes
+      // subtotal from real variant prices and re-derives the discount
+      // server-side — the client no longer sends/trusts any money fields.
+      final created = await _orderService.createOrderViaRpc(
+        items: event.items,
+        shippingAddress: shippingAddress,
         shippingFee: event.shippingFee,
-        total: total,
-        address: event.address,
-        latitude: event.latitude,
-        longitude: event.longitude,
-        note: event.note,
         paymentMethod: event.paymentMethod,
-        createdAt: DateTime.now(),
+        notes: event.note,
+        promoCode: event.promoCode,
       );
-
-      final created = await _orderService.createOrder(order);
+      final total = created.total;
 
       if (event.paymentMethod == 'bank_transfer') {
         await _createPendingBankPayment(

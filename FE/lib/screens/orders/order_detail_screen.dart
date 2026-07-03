@@ -6,6 +6,8 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/order/order_bloc.dart';
 import '../../blocs/order/order_event.dart';
 import '../../blocs/order/order_state.dart';
+import '../../models/order_model.dart';
+import '../../models/order_status.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 
@@ -108,6 +110,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      AppCard(child: _buildTimeline(order.status)),
+                      const SizedBox(height: 16),
                       Text('Sản phẩm', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
                       ...order.items.map((item) => Padding(
@@ -149,6 +153,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             _row('Tạm tính', order.subtotal),
                             const SizedBox(height: 8),
                             _row('Phí vận chuyển', order.shippingFee),
+                            if (order.discountAmount != null &&
+                                order.discountAmount! > 0) ...[
+                              const SizedBox(height: 8),
+                              _row('Giảm giá', -order.discountAmount!),
+                            ],
                             const Divider(height: 16),
                             _row('Tổng cộng', order.total, isBold: true),
                           ],
@@ -174,12 +183,118 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                         ),
                       ],
+                      if (order.status == OrderStatus.pending ||
+                          order.status == OrderStatus.confirmed) ...[
+                        const SizedBox(height: 24),
+                        AppButton(
+                          label: 'Huỷ đơn hàng',
+                          backgroundColor: AppColors.error,
+                          onPressed: () => _confirmCancel(order),
+                        ),
+                      ],
                     ],
                   ),
                 );
               },
             ),
     );
+  }
+
+  /// Renders the linear happy-path stepper, or a terminal badge when the
+  /// order was cancelled/refunded (those statuses aren't part of the path).
+  Widget _buildTimeline(OrderStatus status) {
+    if (status == OrderStatus.cancelled || status == OrderStatus.refunded) {
+      return Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              status.label,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final steps = OrderStatus.happyPath;
+    final currentIndex = steps.indexOf(status);
+
+    return Row(
+      children: [
+        for (var i = 0; i < steps.length; i++) ...[
+          Expanded(
+            child: Column(
+              children: [
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: i <= currentIndex
+                        ? AppColors.primary
+                        : AppColors.textHint.withValues(alpha: 0.3),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  steps[i].label,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.caption.copyWith(
+                    color: i <= currentIndex
+                        ? AppColors.primary
+                        : AppColors.textHint,
+                    fontWeight:
+                        i == currentIndex ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (i != steps.length - 1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Container(
+                width: 16,
+                height: 2,
+                color: i < currentIndex
+                    ? AppColors.primary
+                    : AppColors.textHint.withValues(alpha: 0.3),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _confirmCancel(OrderModel order) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Huỷ đơn hàng?'),
+        content: const Text(
+            'Bạn có chắc chắn muốn huỷ đơn hàng này? Hành động này không thể hoàn tác.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Đóng'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Xác nhận'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    context.read<OrderBloc>().add(OrderCancel(order.id, order.userId));
   }
 
   Widget _buildError(String message, {required bool canRetry}) {

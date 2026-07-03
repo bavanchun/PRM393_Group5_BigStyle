@@ -125,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                     context,
                     icon: Icons.location_on_outlined,
                     title: 'Cửa hàng',
-                    onTap: () => _showMap(context),
+                    onTap: () => Navigator.pushNamed(context, '/delivery-map'),
                   ),
                   const Divider(indent: 56, endIndent: 16),
                   if (user != null)
@@ -190,54 +190,6 @@ class ProfileScreen extends StatelessWidget {
             child: const Text('Đăng xuất', style: TextStyle(color: AppColors.error)),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showMap(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.bottomSheetRadius),
-        ),
-      ),
-      builder: (_) => SizedBox(
-        height: 400,
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('Cửa hàng BigStyle',
-                style: AppTypography.headlineMedium),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.map,
-                        size: 64, color: AppColors.textHint),
-                    const SizedBox(height: 16),
-                    Text('Bản đồ sẽ hiển thị tại đây',
-                        style: AppTypography.bodyMedium),
-                    const SizedBox(height: 8),
-                    Text('123 Nguyễn Huệ, Quận 1, TP.HCM',
-                        style: AppTypography.bodySmall),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

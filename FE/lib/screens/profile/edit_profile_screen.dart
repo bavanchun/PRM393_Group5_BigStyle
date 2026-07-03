@@ -1,10 +1,13 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../services/product_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 
@@ -24,6 +27,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // AuthError emitted by *this* save attempt, not unrelated auth emissions.
   bool _saving = false;
 
+  final ProductService _productService = ProductService();
+  XFile? _pickedAvatar;
+  Uint8List? _pickedAvatarBytes;
+  bool _uploadingAvatar = false;
+  String? _avatarUrl;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +50,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneController.dispose();
     _addressController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAvatar() async {
+    try {
+      final XFile? file = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (file == null) return;
+
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _pickedAvatar = file;
+        _pickedAvatarBytes = bytes;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi chọn ảnh: $e')),
+      );
+    }
   }
 
   @override
@@ -72,16 +103,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Column(
                 children: [
                   Center(
-                    child: CircleAvatar(
-                      radius: 48,
-                      backgroundColor: AppColors.secondary,
-                      backgroundImage: state.user?.avatarUrl != null
-                          ? NetworkImage(state.user!.avatarUrl!)
-                          : null,
-                      child: state.user?.avatarUrl == null
-                          ? Icon(Icons.person,
-                              size: 48, color: AppColors.primary)
-                          : null,
+                    child: GestureDetector(
+                      onTap: _uploadingAvatar ? null : _pickAvatar,
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 48,
+                            backgroundColor: AppColors.secondary,
+                            backgroundImage: _pickedAvatarBytes != null
+                                ? MemoryImage(_pickedAvatarBytes!)
+                                : (state.user?.avatarUrl != null
+                                    ? NetworkImage(state.user!.avatarUrl!)
+                                    : null) as ImageProvider?,
+                            child:
+                                _pickedAvatarBytes == null &&
+                                    state.user?.avatarUrl == null
+                                ? Icon(Icons.person,
+                                    size: 48, color: AppColors.primary)
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -109,8 +171,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: 32),
                   AppButton(
                     label: 'Lưu thay đổi',
-                    isLoading: _saving,
-                    onPressed: _saving ? null : _save,
+                    isLoading: _saving || _uploadingAvatar,
+                    onPressed: (_saving || _uploadingAvatar) ? null : _save,
                   ),
                 ],
               ),
@@ -122,18 +184,46 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_saving || _uploadingAvatar) return;
 
     final currentUser = context.read<AuthBloc>().state.user;
     if (currentUser == null) return;
+
+    if (_pickedAvatar != null && _pickedAvatarBytes != null) {
+      setState(() => _uploadingAvatar = true);
+      // The `avatars` bucket's RLS requires the object path to start with the
+      // caller's uid, so upload to `<uid>/<timestamp>.jpg` (not the manager-only
+      // `products` bucket, which customers cannot write to).
+      final fileName =
+          '${currentUser.id}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final uploadedUrl = await _productService.uploadProductImage(
+        fileName,
+        _pickedAvatarBytes!,
+        'image/jpeg',
+        bucket: 'avatars',
+      );
+      if (!mounted) return;
+      setState(() => _uploadingAvatar = false);
+
+      if (uploadedUrl == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tải ảnh đại diện thất bại')),
+        );
+        return;
+      }
+      _avatarUrl = uploadedUrl;
+    }
 
     final updated = currentUser.copyWith(
       fullName: _nameController.text.trim(),
       phone: _phoneController.text.trim(),
       address: _addressController.text.trim(),
+      avatarUrl: _avatarUrl ?? currentUser.avatarUrl,
     );
 
+    if (!mounted) return;
     setState(() => _saving = true);
     context.read<AuthBloc>().add(UpdateProfileEvent(updated));
   }

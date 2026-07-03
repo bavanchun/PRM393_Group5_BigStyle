@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
@@ -10,6 +11,7 @@ import '../../blocs/checkout/checkout_event.dart';
 import '../../blocs/checkout/checkout_state.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../services/voucher_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import 'payment_qr_screen.dart';
@@ -24,18 +26,65 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _addressController = TextEditingController();
   final _noteController = TextEditingController();
+  final _promoController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _voucherService = VoucherService();
   // 'cod' | 'bank_transfer'
   String _paymentMethod = 'cod';
   // Phí vận chuyển cố định (flat). Dùng chung cho hiển thị và khi đặt hàng để
   // số tiền trên màn khớp với total của đơn tạo ra.
   static const double _shippingFee = 30000;
 
+  // Promo code preview state — validated client-side for UI feedback only;
+  // the create_order RPC re-derives the discount authoritatively.
+  String? _promoCode;
+  double _discountAmount = 0;
+  bool _applyingPromo = false;
+  String? _promoError;
+
   @override
   void dispose() {
     _addressController.dispose();
     _noteController.dispose();
+    _promoController.dispose();
     super.dispose();
+  }
+
+  Future<void> _applyPromoCode(double subtotal) async {
+    final code = _promoController.text.trim();
+    if (code.isEmpty) return;
+
+    setState(() {
+      _applyingPromo = true;
+      _promoError = null;
+    });
+
+    try {
+      final discount = await _voucherService.validate(code, subtotal);
+      if (!mounted) return;
+      setState(() {
+        _discountAmount = discount;
+        _promoCode = code;
+        _promoError = null;
+        _applyingPromo = false;
+      });
+    } on PostgrestException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _discountAmount = 0;
+        _promoCode = null;
+        _promoError = e.message;
+        _applyingPromo = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _discountAmount = 0;
+        _promoCode = null;
+        _promoError = 'Áp dụng mã giảm giá thất bại. Vui lòng thử lại.';
+        _applyingPromo = false;
+      });
+    }
   }
 
   @override
@@ -136,7 +185,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         builder: (context, checkoutState) {
           return BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
-              final total = cartState.subtotal + _shippingFee;
+              // Preview only — server (create_order RPC) is the source of
+              // truth for the persisted subtotal/discount/total.
+              final total =
+                  cartState.subtotal + _shippingFee - _discountAmount;
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -211,6 +263,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       const SizedBox(height: 12),
                       _buildPaymentMethodSelector(),
                       const SizedBox(height: 24),
+                      Text('Mã giảm giá', style: AppTypography.headlineSmall),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              controller: _promoController,
+                              hint: 'Nhập mã giảm giá',
+                              prefixIcon:
+                                  const Icon(Icons.local_offer_outlined),
+                              errorText: _promoError,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          AppButton(
+                            label: 'Áp dụng',
+                            width: 110,
+                            isLoading: _applyingPromo,
+                            onPressed: () =>
+                                _applyPromoCode(cartState.subtotal),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
@@ -224,6 +301,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             const SizedBox(height: 8),
                             _buildPriceRow(
                                 'Phí vận chuyển', _shippingFee),
+                            if (_discountAmount > 0) ...[
+                              const SizedBox(height: 8),
+                              _buildPriceRow('Giảm giá', -_discountAmount),
+                            ],
                             const Divider(height: 24),
                             _buildPriceRow('Tổng cộng', total, isTotal: true),
                           ],
@@ -353,6 +434,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           address: _addressController.text,
           note: _noteController.text.isNotEmpty ? _noteController.text : null,
           paymentMethod: _paymentMethod,
+          promoCode: _promoCode,
         ));
   }
 }

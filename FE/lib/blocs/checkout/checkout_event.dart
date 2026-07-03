@@ -19,6 +19,9 @@ class CheckoutPlaceOrder extends CheckoutEvent {
   final String? note;
   // 'cod' | 'bank_transfer'
   final String paymentMethod;
+  // Voucher code applied at checkout (already preview-validated client-side
+  // via VoucherService); re-derived authoritatively by the create_order RPC.
+  final String? promoCode;
 
   const CheckoutPlaceOrder({
     required this.userId,
@@ -30,6 +33,7 @@ class CheckoutPlaceOrder extends CheckoutEvent {
     this.longitude,
     this.note,
     this.paymentMethod = 'cod',
+    this.promoCode,
   });
 
   @override
@@ -43,6 +47,7 @@ class CheckoutPlaceOrder extends CheckoutEvent {
         longitude,
         note,
         paymentMethod,
+        promoCode,
       ];
 }
 

@@ -32,7 +32,9 @@ import 'services/payment_service.dart';
 
 import 'blocs/manager_product/manager_product_bloc.dart';
 import 'blocs/manager_category/manager_category_bloc.dart';
+import 'blocs/manager_voucher/manager_voucher_bloc.dart';
 import 'services/category_service.dart';
+import 'services/voucher_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -72,6 +74,7 @@ class BigStyleApp extends StatelessWidget {
             create: (_) =>
                 ManagerCategoryBloc(CategoryService(), productService),
           ),
+          BlocProvider(create: (_) => ManagerVoucherBloc(VoucherService())),
           BlocProvider(create: (_) => CartBloc(CartService())),
           BlocProvider(create: (_) => OrderBloc(OrderService())),
           BlocProvider(

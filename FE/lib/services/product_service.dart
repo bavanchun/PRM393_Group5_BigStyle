@@ -120,13 +120,22 @@ class ProductService {
     await _client.from('products').delete().eq('id', id);
   }
 
-  Future<String?> uploadProductImage(String fileName, List<int> bytes, String mimeType) async {
+  /// Uploads bytes to a public Storage bucket and returns the public URL.
+  /// [bucket] defaults to `products` (manager-gated). Pass `avatars` for
+  /// customer profile photos — that bucket's RLS requires the object path to
+  /// start with the caller's uid (e.g. `<uid>/<file>.jpg`).
+  Future<String?> uploadProductImage(
+    String fileName,
+    List<int> bytes,
+    String mimeType, {
+    String bucket = 'products',
+  }) async {
     try {
       final supabaseUrl = SupabaseConfig.supabaseUrl;
       final anonKey = SupabaseConfig.supabaseAnonKey;
       // Use user's JWT so RLS allows the upload (anon key is blocked by policy)
       final accessToken = _client.auth.currentSession?.accessToken ?? anonKey;
-      final url = Uri.parse('$supabaseUrl/storage/v1/object/products/$fileName');
+      final url = Uri.parse('$supabaseUrl/storage/v1/object/$bucket/$fileName');
 
       final response = await _httpClient.post(
         url,
@@ -139,7 +148,7 @@ class ProductService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return '$supabaseUrl/storage/v1/object/public/products/$fileName';
+        return '$supabaseUrl/storage/v1/object/public/$bucket/$fileName';
       } else {
         print('Upload failed: ${response.statusCode} - ${response.body}');
         return null;

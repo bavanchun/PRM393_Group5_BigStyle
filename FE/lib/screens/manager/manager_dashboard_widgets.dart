@@ -109,15 +109,15 @@ class _StatCard extends StatelessWidget {
 }
 
 class ManagerQuickActions extends StatelessWidget {
-  final VoidCallback onComingSoon;
   final VoidCallback onManageCategories;
   final VoidCallback onAddProduct;
+  final VoidCallback onManageVouchers;
 
   const ManagerQuickActions({
     super.key,
-    required this.onComingSoon,
     required this.onManageCategories,
     required this.onAddProduct,
+    required this.onManageVouchers,
   });
 
   @override
@@ -147,7 +147,7 @@ class ManagerQuickActions extends StatelessWidget {
               icon: Icons.local_offer_outlined,
               label: 'Khuyến mãi',
               color: AppColors.success,
-              onTap: onComingSoon,
+              onTap: onManageVouchers,
             ),
           ],
         ),

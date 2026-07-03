@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/manager_dashboard_stats.dart';
 import '../models/order_model.dart';
+import '../models/cart_item_model.dart';
 
 class OrderService {
   final SupabaseClient _client;
@@ -100,7 +101,84 @@ class OrderService {
     );
   }
 
+  /// Authoritative order writer — calls the `create_order` SECURITY DEFINER
+  /// RPC, which recomputes subtotal from real variant prices, re-derives the
+  /// discount server-side via `validate_voucher`, and ignores any client
+  /// money fields. [items] are converted to the `{variant_id, quantity}`
+  /// shape the RPC expects.
+  Future<OrderModel> createOrderViaRpc({
+    required List<CartItemModel> items,
+    required Map<String, dynamic> shippingAddress,
+    required double shippingFee,
+    required String paymentMethod,
+    String? notes,
+    String? promoCode,
+  }) async {
+    final pItems = items
+        .map((i) => {'variant_id': i.variantId, 'quantity': i.quantity})
+        .toList();
+
+    final res = await _client.rpc('create_order', params: {
+      'p_items': pItems,
+      'p_shipping_address': shippingAddress,
+      'p_shipping_fee': shippingFee,
+      'p_payment_method': paymentMethod,
+      'p_notes': notes,
+      'p_promo_code': promoCode,
+    });
+
+    // The RPC returns the orders row — Supabase may surface it as a Map or
+    // as a single-element List depending on the return type shape.
+    final map = res is List ? res.first as Map<String, dynamic> : res as Map<String, dynamic>;
+    final saved = OrderModel.fromMap(map);
+
+    // The orders row has no 'items' key, so OrderModel.fromMap() returns an
+    // empty items list — rebuild from the cart items passed in so the
+    // success screen has product details to display (mirrors createOrder).
+    final orderItems = items
+        .map((item) => OrderItem(
+              variantId: item.variantId,
+              productName: item.product?.name ?? '',
+              productImage: item.product?.images.isNotEmpty == true
+                  ? item.product!.images.first
+                  : null,
+              size: item.variant?.size ?? '',
+              color: item.variant?.color ?? '',
+              quantity: item.quantity,
+              unitPrice: item.product?.price ?? 0,
+            ))
+        .toList();
+
+    return OrderModel(
+      id: saved.id,
+      userId: saved.userId,
+      customerName: saved.customerName,
+      items: orderItems,
+      subtotal: saved.subtotal,
+      shippingFee: saved.shippingFee,
+      total: saved.total,
+      status: saved.status,
+      address: saved.address,
+      latitude: saved.latitude,
+      longitude: saved.longitude,
+      note: saved.note,
+      discountAmount: saved.discountAmount,
+      orderNumber: saved.orderNumber,
+      paymentMethod: saved.paymentMethod,
+      createdAt: saved.createdAt,
+      updatedAt: saved.updatedAt,
+    );
+  }
+
   Future<void> updateOrderStatus(String orderId, String status) async {
     await _client.from('orders').update({'status': status}).eq('id', orderId);
+  }
+
+  /// Cancels the caller's own order via the `cancel_my_order` RPC.
+  /// The DB function atomically checks ownership + status (pending/confirmed)
+  /// and raises if the order cannot be cancelled — customers have no direct
+  /// UPDATE right on `orders`.
+  Future<void> cancelOrder(String orderId) async {
+    await _client.rpc('cancel_my_order', params: {'p_order_id': orderId});
   }
 }

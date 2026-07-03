@@ -9,6 +9,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   OrderBloc(this._orderService) : super(const OrderState()) {
     on<OrderLoad>(_onLoad);
     on<OrderLoadDetail>(_onLoadDetail);
+    on<OrderCancel>(_onCancel);
   }
 
   Future<void> _onLoad(OrderLoad event, Emitter<OrderState> emit) async {
@@ -36,6 +37,18 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         error: 'Tải chi tiết thất bại',
         clearSelectedOrder: true,
       ));
+    }
+  }
+
+  Future<void> _onCancel(OrderCancel event, Emitter<OrderState> emit) async {
+    try {
+      await _orderService.cancelOrder(event.orderId);
+      // Reload detail + list so the cancelled status/hidden button reflect
+      // the server's authoritative state (RPC is the source of truth).
+      await _onLoadDetail(OrderLoadDetail(event.orderId), emit);
+      await _onLoad(OrderLoad(event.userId), emit);
+    } catch (e) {
+      emit(state.copyWith(error: 'Không thể huỷ đơn hàng'));
     }
   }
 }

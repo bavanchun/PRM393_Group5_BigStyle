@@ -34,7 +34,15 @@ class _ManagerCreateProductScreenState
   bool _allowPop = false;
   bool _isSaving = false;
 
+  // Swatch = product-global color hex; per-row `color` text field (see
+  // _variantsList) is the variant color *name*, kept independent by design.
   String _selectedSwatchColor = 'Đất nung';
+  String _selectedSwatchHex = '#914B34';
+  static const Map<String, String> _swatchHexByName = {
+    'Đất nung': '#914B34',
+    'Xanh ngọc': '#2A6767',
+    'Đen': '#313030',
+  };
   final List<String> _imageUrls = [];
   final List<Map<String, dynamic>> _variantsList = [];
 
@@ -205,7 +213,7 @@ class _ManagerCreateProductScreenState
           productId: '',
           size: size,
           color: colorStr,
-          colorHex: '#914B34', // default hex
+          colorHex: _selectedSwatchHex,
           stockQty: int.tryParse(stockStr) ?? 0,
           heightRange: (map['height'] as TextEditingController).text.trim(),
           weightRange: (map['weight'] as TextEditingController).text.trim(),
@@ -1054,6 +1062,7 @@ class _ManagerCreateProductScreenState
       onTap: () {
         setState(() {
           _selectedSwatchColor = name;
+          _selectedSwatchHex = _swatchHexByName[name] ?? _selectedSwatchHex;
         });
       },
       child: Column(
