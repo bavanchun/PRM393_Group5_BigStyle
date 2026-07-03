@@ -7,8 +7,10 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
+import '../../blocs/manager_product/manager_product_bloc.dart';
 import 'categories/manager_category_list_screen.dart';
 import 'manager_dashboard_widgets.dart';
+import 'products/manager_create_product_screen.dart';
 import 'manager_order_card.dart';
 import 'manager_order_detail_screen.dart';
 import 'manager_orders_screen.dart';
@@ -66,6 +68,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 ManagerQuickActions(
                   onComingSoon: _showComingSoon,
                   onManageCategories: _openCategoryManager,
+                  onAddProduct: _openCreateProduct,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _buildRecentOrdersHeader(),
@@ -128,6 +131,21 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => ManagerOrderDetailScreen(order: order)),
+    );
+  }
+
+  void _openCreateProduct() {
+    // Same route the products tab FAB uses: re-provide the app-wide
+    // ManagerProductBloc so the create screen can read it.
+    final bloc = context.read<ManagerProductBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: bloc,
+          child: const ManagerCreateProductScreen(),
+        ),
+      ),
     );
   }
 

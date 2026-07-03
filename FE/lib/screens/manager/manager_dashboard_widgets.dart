@@ -111,11 +111,13 @@ class _StatCard extends StatelessWidget {
 class ManagerQuickActions extends StatelessWidget {
   final VoidCallback onComingSoon;
   final VoidCallback onManageCategories;
+  final VoidCallback onAddProduct;
 
   const ManagerQuickActions({
     super.key,
     required this.onComingSoon,
     required this.onManageCategories,
+    required this.onAddProduct,
   });
 
   @override
@@ -131,7 +133,7 @@ class ManagerQuickActions extends StatelessWidget {
               icon: Icons.add_circle_outline,
               label: 'Thêm sản phẩm',
               color: AppColors.primary,
-              onTap: onComingSoon,
+              onTap: onAddProduct,
             ),
             const SizedBox(width: AppSpacing.sm),
             _ActionCard(
