@@ -20,6 +20,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  // Guards the BlocListener below so it only reacts to the AuthSuccess/
+  // AuthError emitted by *this* save attempt, not unrelated auth emissions.
+  bool _saving = false;
 
   @override
   void initState() {
@@ -45,8 +48,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Chỉnh sửa hồ sơ')),
-      body: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (!_saving) return;
+          _saving = false;
+          if (state is AuthSuccess) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cập nhật thành công')),
+            );
+          } else if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Form(
@@ -110,13 +128,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: 32),
                   AppButton(
                     label: 'Lưu thay đổi',
-                    onPressed: _save,
+                    isLoading: _saving,
+                    onPressed: _saving ? null : _save,
                   ),
                 ],
               ),
             ),
           );
-        },
+          },
+        ),
       ),
     );
   }
@@ -133,10 +153,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       address: _addressController.text.trim(),
     );
 
+    setState(() => _saving = true);
     context.read<AuthBloc>().add(UpdateProfileEvent(updated));
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Cập nhật thành công')),
-    );
   }
 }

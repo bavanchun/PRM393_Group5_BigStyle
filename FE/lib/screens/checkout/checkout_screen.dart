@@ -8,6 +8,7 @@ import '../../blocs/cart/cart_state.dart';
 import '../../blocs/checkout/checkout_bloc.dart';
 import '../../blocs/checkout/checkout_event.dart';
 import '../../blocs/checkout/checkout_state.dart';
+import '../../blocs/cart/cart_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
@@ -59,6 +60,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             );
           } else if (state.isSuccess) {
+            // COD order placed — CartBloc is the single owner of cart
+            // clearing (see checkout_bloc._onPlaceOrder comment).
+            final authState = context.read<AuthBloc>().state;
+            final userId = authState.user?.id;
+            if (userId != null) {
+              context.read<CartBloc>().add(CartClear(userId));
+            }
             showDialog(
               context: context,
               barrierDismissible: false,

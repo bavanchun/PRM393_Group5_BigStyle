@@ -12,6 +12,7 @@ import '../../blocs/cart/cart_state.dart';
 import '../../blocs/wishlist/wishlist_bloc.dart';
 import '../../blocs/wishlist/wishlist_state.dart';
 import '../../blocs/wishlist/wishlist_actions.dart';
+import '../../models/category_model.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/app_bottom_nav.dart';
 
@@ -31,12 +32,35 @@ class _ProductListScreenState extends State<ProductListScreen> {
     'Size XL', 'Size 2XL', 'Size 3XL',
     'Mới về', 'Sale',
   ];
+  bool _appliedArg = false;
 
   @override
   void initState() {
     super.initState();
     context.read<ProductBloc>().add(const LoadProducts());
     context.read<ProductBloc>().add(const ProductLoadCategories());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_appliedArg) return;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      _appliedArg = true;
+      final categories = context.read<ProductBloc>().state.categories;
+      CategoryModel? matched;
+      for (final c in categories) {
+        if (c.id == args) {
+          matched = c;
+          break;
+        }
+      }
+      setState(() => _selectedFilter = matched?.name ?? 'Tất cả');
+      context
+          .read<ProductBloc>()
+          .add(FilterByCategory(args, matched?.name ?? args));
+    }
   }
 
   @override
@@ -357,9 +381,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
       case 'Đầm':
       case 'Áo':
       case 'Quần':
+        final categories = context.read<ProductBloc>().state.categories;
+        CategoryModel? matched;
+        for (final c in categories) {
+          if (c.name == label) {
+            matched = c;
+            break;
+          }
+        }
         context
             .read<ProductBloc>()
-            .add(FilterByCategory(label.toLowerCase(), label));
+            .add(FilterByCategory(matched?.id ?? label, label));
       case 'Size XL':
       case 'Size 2XL':
       case 'Size 3XL':

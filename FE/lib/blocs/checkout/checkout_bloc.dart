@@ -10,11 +10,16 @@ import '../../services/payment_service.dart';
 
 class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   final OrderService _orderService;
-  final CartService _cartService;
   final PaymentService _paymentService;
 
-  CheckoutBloc(this._orderService, this._cartService, this._paymentService)
-      : super(const CheckoutState()) {
+  // CartService param kept for constructor-signature compatibility with
+  // main.dart's wiring — cart clearing now lives solely in CartBloc (see
+  // _onPlaceOrder comment), so it's intentionally unused here.
+  CheckoutBloc(
+    this._orderService,
+    CartService cartService,
+    this._paymentService,
+  ) : super(const CheckoutState()) {
     on<CheckoutPlaceOrder>(_onPlaceOrder);
     on<CheckoutRetryPayment>(_onRetryPayment);
     on<CheckoutCalculateShipping>(_onCalculateShipping);
@@ -85,7 +90,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         method: 'cod',
         amount: total,
       );
-      await _cartService.clearCart(event.userId);
+      // Cart is cleared by CartBloc (CartClear) from the success listener in
+      // checkout_screen — keeps CartBloc as the single owner of cart state so
+      // the in-memory items/badge don't go stale after a direct DB clear here.
 
       emit(state.copyWith(
         isLoading: false,

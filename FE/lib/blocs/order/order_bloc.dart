@@ -23,12 +23,19 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
 
   Future<void> _onLoadDetail(
       OrderLoadDetail event, Emitter<OrderState> emit) async {
-    emit(state.copyWith(isLoading: true));
+    // Clear any previously selected order so a new/failed detail load never
+    // renders the stale order from a prior view (the error/not-found UI in
+    // order_detail_screen keys off selectedOrder == null).
+    emit(state.copyWith(isLoading: true, clearSelectedOrder: true));
     try {
       final order = await _orderService.getOrderById(event.orderId);
       emit(state.copyWith(isLoading: false, selectedOrder: order));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: 'Tải chi tiết thất bại'));
+      emit(state.copyWith(
+        isLoading: false,
+        error: 'Tải chi tiết thất bại',
+        clearSelectedOrder: true,
+      ));
     }
   }
 }

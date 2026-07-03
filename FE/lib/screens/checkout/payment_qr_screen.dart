@@ -9,6 +9,8 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/payment/payment_bloc.dart';
 import '../../blocs/payment/payment_event.dart';
 import '../../blocs/payment/payment_state.dart';
+import '../../blocs/cart/cart_bloc.dart';
+import '../../blocs/cart/cart_event.dart';
 import '../../services/payment_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
@@ -19,12 +21,17 @@ class PaymentQrArgs {
   final String? orderNumber;
   final double total;
   final String userId;
+  // Whether completing this payment should clear the user's cart. True for a
+  // fresh checkout; false when re-paying an old pending order (that order's
+  // items are long gone from the cart — don't wipe items added since).
+  final bool clearCartOnPaid;
 
   const PaymentQrArgs({
     required this.orderId,
     required this.orderNumber,
     required this.total,
     required this.userId,
+    this.clearCartOnPaid = true,
   });
 }
 
@@ -94,6 +101,12 @@ class _PaymentQrScreenState extends State<PaymentQrScreen> {
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
           if (state.isPaid) {
+            // Payment confirmed — CartBloc is the single owner of cart
+            // clearing (see payment_bloc._onStatusReceived comment). Skip for
+            // re-payment of an old order so the current cart isn't wiped.
+            if (args.clearCartOnPaid) {
+              context.read<CartBloc>().add(CartClear(args.userId));
+            }
             _showSuccessDialog(context);
           }
           if (state.error != null) {

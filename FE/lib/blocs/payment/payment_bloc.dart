@@ -7,15 +7,17 @@ import '../../services/cart_service.dart';
 
 class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   final PaymentService _paymentService;
-  final CartService _cartService;
 
   StreamSubscription<bool>? _watchSub;
   // Realtime + polling can both fire "paid" before the subscription is
-  // cancelled — this latch ensures clearCart runs exactly once per order.
+  // cancelled — this latch ensures the isPaid state is emitted exactly once
+  // per order (cart clearing is dispatched by the UI listener via CartBloc).
   bool _paidHandled = false;
-  String? _watchedUserId;
 
-  PaymentBloc(this._paymentService, this._cartService)
+  // CartService param kept for constructor-signature compatibility with
+  // main.dart's wiring — cart clearing now lives solely in CartBloc (see
+  // _onStatusReceived comment), so it's intentionally unused here.
+  PaymentBloc(this._paymentService, CartService cartService)
       : super(const PaymentState()) {
     on<PaymentWatchStarted>(_onWatchStarted);
     on<PaymentStatusReceived>(_onStatusReceived);
@@ -27,7 +29,6 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       PaymentWatchStarted event, Emitter<PaymentState> emit) async {
     await _watchSub?.cancel();
     _paidHandled = false;
-    _watchedUserId = event.userId;
     emit(const PaymentState());
 
     _watchSub = _paymentService.watchPaymentStatus(event.orderId).listen(
@@ -42,15 +43,9 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     await _watchSub?.cancel();
     _watchSub = null;
 
-    if (_watchedUserId != null) {
-      try {
-        await _cartService.clearCart(_watchedUserId!);
-      } catch (_) {
-        // Payment is confirmed regardless of cart-clear outcome — do not
-        // block the success state on a non-critical cleanup failure.
-      }
-    }
-
+    // Cart is cleared by CartBloc (CartClear) from the isPaid listener in
+    // payment_qr_screen — keeps CartBloc as the single owner of cart state so
+    // the in-memory items/badge don't go stale after a direct DB clear here.
     emit(state.copyWith(isPaid: true, isChecking: false));
   }
 
@@ -80,7 +75,6 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       PaymentWatchStopped event, Emitter<PaymentState> emit) async {
     await _watchSub?.cancel();
     _watchSub = null;
-    _watchedUserId = null;
   }
 
   @override

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_router.dart';
 import 'config/supabase/supabase_config.dart';
 import 'blocs/auth/auth_bloc.dart';
+import 'blocs/auth/auth_state.dart';
 import 'blocs/product/product_bloc.dart';
 import 'blocs/product_detail/product_detail_bloc.dart';
 import 'blocs/cart/cart_bloc.dart';
@@ -17,6 +18,7 @@ import 'blocs/manager/manager_bloc.dart';
 import 'blocs/review/review_bloc.dart';
 import 'blocs/wishlist/wishlist_bloc.dart';
 import 'blocs/payment/payment_bloc.dart';
+import 'blocs/cart/cart_event.dart';
 import 'services/auth_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/product_service.dart';
@@ -79,12 +81,21 @@ class BigStyleApp extends StatelessWidget {
             create: (_) => PaymentBloc(paymentService, CartService()),
           ),
         ],
-        child: MaterialApp(
-          title: 'BigStyle',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          initialRoute: '/',
-          onGenerateRoute: AppRouter.generateRoute,
+        child: BlocListener<AuthBloc, AuthState>(
+          listenWhen: (previous, current) =>
+              current is AuthSuccess &&
+              current.user != null &&
+              !current.user!.id.startsWith('mock-'),
+          listener: (context, state) {
+            context.read<CartBloc>().add(CartLoad(state.user!.id));
+          },
+          child: MaterialApp(
+            title: 'BigStyle',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            initialRoute: '/',
+            onGenerateRoute: AppRouter.generateRoute,
+          ),
         ),
       ),
     );

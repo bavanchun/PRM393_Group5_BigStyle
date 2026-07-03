@@ -7,133 +7,207 @@ import '../../blocs/order/order_bloc.dart';
 import '../../blocs/order/order_event.dart';
 import '../../blocs/order/order_state.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/app_button.dart';
 
-class OrderDetailScreen extends StatelessWidget {
+class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final orderId = ModalRoute.of(context)?.settings.arguments as String;
-    context.read<OrderBloc>().add(OrderLoadDetail(orderId));
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+}
 
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  String? _orderId;
+  bool _loadDispatched = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_loadDispatched) return;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    _orderId = args is String ? args : null;
+    _loadDispatched = true;
+    if (_orderId != null) {
+      final orderId = _orderId!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.read<OrderBloc>().add(OrderLoadDetail(orderId));
+      });
+    }
+  }
+
+  void _retry() {
+    final orderId = _orderId;
+    if (orderId == null) return;
+    context.read<OrderBloc>().add(OrderLoadDetail(orderId));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Chi tiết đơn hàng')),
-      body: BlocBuilder<OrderBloc, OrderState>(
-        builder: (context, state) {
-          final order = state.selectedOrder;
-          if (state.isLoading || order == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: _orderId == null
+          ? _buildError('Không tìm thấy mã đơn hàng.', canRetry: false)
+          : BlocBuilder<OrderBloc, OrderState>(
+              builder: (context, state) {
+                final order = state.selectedOrder;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppCard(
+                if (state.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (order == null) {
+                  return _buildError(
+                    state.error ?? 'Không tìm thấy đơn hàng.',
+                    canRetry: true,
+                  );
+                }
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Đơn hàng',
-                              style: AppTypography.headlineSmall),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              order.status.label,
-                              style: AppTypography.caption.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Mã: ${order.id.substring(0, 8).toUpperCase()}',
-                          style: AppTypography.bodySmall),
-                      const SizedBox(height: 4),
-                      Text(
-                          'Ngày: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
-                          style: AppTypography.bodySmall),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text('Sản phẩm', style: AppTypography.headlineSmall),
-                const SizedBox(height: 12),
-                ...order.items.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: AppCard(
-                        child: Row(
+                      AppCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.productName.isNotEmpty ? item.productName : 'Sản phẩm',
-                                    style: AppTypography.bodyMedium
-                                        .copyWith(fontWeight: FontWeight.w600),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Đơn hàng',
+                                    style: AppTypography.headlineSmall),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Size ${item.size} x${item.quantity}',
-                                    style: AppTypography.caption,
+                                  child: Text(
+                                    order.status.label,
+                                    style: AppTypography.caption.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            Text('${item.unitPrice.toStringAsFixed(0)}đ',
-                                style: AppTypography.priceSmall),
+                            const SizedBox(height: 8),
+                            Text(
+                                'Mã: ${order.id.substring(0, 8).toUpperCase()}',
+                                style: AppTypography.bodySmall),
+                            const SizedBox(height: 4),
+                            Text(
+                                'Ngày: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
+                                style: AppTypography.bodySmall),
                           ],
                         ),
                       ),
-                    )),
-                const SizedBox(height: 24),
-                AppCard(
-                  child: Column(
-                    children: [
-                      _row('Tạm tính', order.subtotal),
-                      const SizedBox(height: 8),
-                      _row('Phí vận chuyển', order.shippingFee),
-                      const Divider(height: 16),
-                      _row('Tổng cộng', order.total, isBold: true),
+                      const SizedBox(height: 16),
+                      Text('Sản phẩm', style: AppTypography.headlineSmall),
+                      const SizedBox(height: 12),
+                      ...order.items.map((item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: AppCard(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.productName.isNotEmpty
+                                              ? item.productName
+                                              : 'Sản phẩm',
+                                          style: AppTypography.bodyMedium
+                                              .copyWith(
+                                                  fontWeight: FontWeight.w600),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Size ${item.size} x${item.quantity}',
+                                          style: AppTypography.caption,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text('${item.unitPrice.toStringAsFixed(0)}đ',
+                                      style: AppTypography.priceSmall),
+                                ],
+                              ),
+                            ),
+                          )),
+                      const SizedBox(height: 24),
+                      AppCard(
+                        child: Column(
+                          children: [
+                            _row('Tạm tính', order.subtotal),
+                            const SizedBox(height: 8),
+                            _row('Phí vận chuyển', order.shippingFee),
+                            const Divider(height: 16),
+                            _row('Tổng cộng', order.total, isBold: true),
+                          ],
+                        ),
+                      ),
+                      if (order.address != null) ...[
+                        const SizedBox(height: 16),
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Địa chỉ giao hàng',
+                                  style: AppTypography.headlineSmall),
+                              const SizedBox(height: 8),
+                              Text(order.address!,
+                                  style: AppTypography.bodyMedium),
+                              if (order.note != null) ...[
+                                const SizedBox(height: 8),
+                                Text('Ghi chú: ${order.note}',
+                                    style: AppTypography.bodySmall),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
-                ),
-                if (order.address != null) ...[
-                  const SizedBox(height: 16),
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Địa chỉ giao hàng',
-                            style: AppTypography.headlineSmall),
-                        const SizedBox(height: 8),
-                        Text(order.address!,
-                            style: AppTypography.bodyMedium),
-                        if (order.note != null) ...[
-                          const SizedBox(height: 8),
-                          Text('Ghi chú: ${order.note}',
-                              style: AppTypography.bodySmall),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+                );
+              },
             ),
-          );
-        },
+    );
+  }
+
+  Widget _buildError(String message, {required bool canRetry}) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline_rounded,
+                size: 56, color: AppColors.textHint),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: AppTypography.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            if (canRetry)
+              AppButton(label: 'Thử lại', onPressed: _retry)
+            else
+              AppButton(
+                label: 'Quay lại',
+                onPressed: () => Navigator.pop(context),
+              ),
+          ],
+        ),
       ),
     );
   }
