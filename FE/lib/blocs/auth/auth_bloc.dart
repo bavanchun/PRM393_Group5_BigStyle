@@ -25,11 +25,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     CheckSessionEvent event,
     Emitter<AuthState> emit,
   ) async {
-    final user = await _authService.getCurrentUser();
-    if (user != null) {
-      emit(AuthSuccess(user));
-    } else {
-      emit(const AuthInitial());
+    // Emit a loading state first so a repeated failure produces a real
+    // AuthError -> AuthLoading -> AuthError transition on retry (identical
+    // AuthError messages would otherwise be deduped by Equatable and the
+    // splash listener would never fire again).
+    emit(const AuthLoading());
+    try {
+      final user = await _authService.getCurrentUser();
+      if (user != null) {
+        emit(AuthSuccess(user));
+      } else {
+        emit(const AuthUnauthenticated());
+      }
+    } catch (_) {
+      emit(const AuthError('Không thể kiểm tra phiên đăng nhập. Vui lòng thử lại.'));
     }
   }
 

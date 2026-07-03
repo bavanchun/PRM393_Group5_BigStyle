@@ -13,27 +13,46 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _navigated = false;
+  String? _error;
+
   @override
   void initState() {
     super.initState();
     context.read<AuthBloc>().add(const CheckSessionEvent());
   }
 
+  void _retry() {
+    setState(() => _error = null);
+    context.read<AuthBloc>().add(const CheckSessionEvent());
+  }
+
+  void _handleState(AuthState state) {
+    if (!mounted) return;
+    if (state is AuthError) {
+      setState(() => _error = state.message);
+      return;
+    }
+    if (_navigated) return;
+    if (state is AuthSuccess) {
+      final user = state.user;
+      if (user == null) return;
+      _navigated = true;
+      final route = user.role.name == 'manager' ? '/manager' : '/home';
+      Navigator.pushReplacementNamed(context, route);
+    } else if (state is AuthUnauthenticated) {
+      _navigated = true;
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
+        // Keep a brief branded splash, then act on the resolved auth state.
         Future.delayed(const Duration(milliseconds: 1500), () {
-          if (state is AuthSuccess) {
-            final user = state.user;
-            if (user == null) return;
-            final route = user.role.name == 'manager'
-                ? '/manager'
-                : '/home';
-            Navigator.pushReplacementNamed(context, route);
-          } else if (state is AuthInitial) {
-            Navigator.pushReplacementNamed(context, '/login');
-          }
+          _handleState(state);
         });
       },
       child: Scaffold(
@@ -79,10 +98,33 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              const CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
+              if (_error == null)
+                const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                )
+              else ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    _error!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: _retry,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white),
+                  ),
+                  child: const Text('Thử lại'),
+                ),
+              ],
             ],
           ),
         ),
