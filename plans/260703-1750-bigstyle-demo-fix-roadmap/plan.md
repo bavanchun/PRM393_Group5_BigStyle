@@ -35,7 +35,7 @@ Turn `docs/ux-flow-audit.md` (111 findings, 2026-07-03, audit-only) into a **dem
 |-------|------|----------|--------|
 | 1 | [Demo Environment & Seed Data](./phase-01-demo-environment-seed-data.md) | P1 | Pending |
 | 2 | [Splash & Auth Unblock](./phase-02-splash-auth-unblock.md) | P0 | ✅ Completed |
-| 3 | [Customer Purchase-Flow Blockers](./phase-03-customer-purchase-flow-blockers.md) | P1 | Pending |
+| 3 | [Customer Purchase-Flow Blockers](./phase-03-customer-purchase-flow-blockers.md) | P1 | ✅ Completed |
 | 4 | [Manager Operations Blockers](./phase-04-manager-operations-blockers.md) | P1 | Pending |
 | 5 | [On-Camera Polish](./phase-05-on-camera-polish.md) | P2 | Pending |
 
