@@ -39,7 +39,7 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio
-/android/app/debug
+#/android/app/debug
 /android/app/profile
 /android/app/release
 
