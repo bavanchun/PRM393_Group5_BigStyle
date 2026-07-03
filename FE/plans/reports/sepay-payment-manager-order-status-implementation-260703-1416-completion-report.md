@@ -21,6 +21,7 @@ Migration applied to Supabase `agbnpqgxsppdrpbqoipo`. Edge Function `sepay-webho
   - Idempotency: chạy lại → notif vẫn 1 (conditional update hit 0 rows) ✓
   - Race (manager cancel rồi webhook đến): order giữ `cancelled` ✓
 - **Webhook auth (HTTP curl)**: no-auth + wrong-key → 401 từ code (verify_jwt thật sự tắt) ✓
+- **HTTP E2E success-path (LIVE, secret đã set)**: curl webhook Apikey đúng + content `"CT DEN:CF-20260703-HTTPX1..."` → normalize khớp order_number → order `confirmed`, payment `success`, `paid_at` set, `transaction_id`=referenceCode, gateway_response lưu full body, notification tạo bởi trigger; gửi lặp → idempotent (notif vẫn 1). Test data cleaned. ✓
 - **RLS confirm** (DB thật): payments SELECT buyer ("Users see own payments") + manager ("Managers manage all payments" ALL) + INSERT (auth.uid()=user_id); orders insert không chặn bank_transfer. → buyer watch + manager panel hoạt động ✓
 - **Code review**: cả 6 red-team fix verified đúng trong code, 0 BLOCKER.
 
@@ -37,12 +38,17 @@ Migration applied to Supabase `agbnpqgxsppdrpbqoipo`. Edge Function `sepay-webho
 4. `createPayment` comment nói "idempotent" — thực chất unique index chặn trùng bằng throw.
 5. Migration không re-runnable (drop constraint không IF EXISTS) — one-shot, đã apply.
 
-## Còn lại (user-gated — chưa đóng được từ phía code)
+## Đã tự setup giúp user (qua Management API + SePay API)
 
-- [ ] Set secret `SEPAY_WEBHOOK_KEY` trong Supabase Edge Functions.
-- [ ] Đăng ký webhook trong SePay dashboard (URL + Apikey).
-- [ ] Sau đó: HTTP curl test success-path (match content thật) + test trên emulator (COD regression, bank_transfer flow, cancel-from-QR giữ cart).
-- [ ] Xoá/tạo lại SePay API token đã dán trong chat (bảo mật).
+- [x] Set secret `SEPAY_WEBHOOK_KEY` trong Supabase (Management API POST /secrets, HTTP 201).
+- [x] `SEPAY_BANK=TPBank` / `SEPAY_ACC=03010216099` vào `FE/.env` (lấy từ SePay bankaccounts API).
+- [x] HTTP E2E success-path verified live.
+
+## Còn lại (chỉ user làm được)
+
+- [ ] **Đăng ký webhook trong SePay dashboard** (Cấu hình → Webhooks): URL `https://agbnpqgxsppdrpbqoipo.supabase.co/functions/v1/sepay-webhook`, auth Apikey = `SEPAY_WEBHOOK_KEY`. (SePay userapi read-only, không tạo webhook qua API được.)
+- [ ] Test trên emulator: COD regression, bank_transfer flow, cancel-from-QR giữ cart.
+- [ ] 🔒 Xoá/tạo lại SePay API token + Supabase PAT đã dán trong chat (bảo mật).
 
 ## Unresolved Questions
 
