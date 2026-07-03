@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase/supabase_config.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
+import '../utils/slug.dart';
 
 class ProductService {
   final SupabaseClient _client = Supabase.instance.client;
@@ -39,37 +40,16 @@ class ProductService {
   }
 
   Future<List<CategoryModel>> getCategories() async {
-    final data = await _client.from('categories').select('*');
+    // Customer-facing read: only categories the manager has left active.
+    final data = await _client
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
     return data.map((e) => CategoryModel.fromMap(e)).toList();
   }
 
   // --- MANAGER OPERATIONS ---
-
-  /// Build a URL-safe slug from a Vietnamese product name.
-  /// Strips diacritics, lowercases, and hyphenates. A short time-based suffix
-  /// keeps it unique against the `products_slug_key` constraint even when two
-  /// products share the same name.
-  String _generateSlug(String name) {
-    var slug = name.toLowerCase().trim();
-    const diacriticGroups = {
-      'a': 'àáảãạăằắẳẵặâầấẩẫậ',
-      'e': 'èéẻẽẹêềếểễệ',
-      'i': 'ìíỉĩị',
-      'o': 'òóỏõọôồốổỗộơờớởỡợ',
-      'u': 'ùúủũụưừứửữự',
-      'y': 'ỳýỷỹỵ',
-      'd': 'đ',
-    };
-    diacriticGroups.forEach((ascii, chars) {
-      slug = slug.replaceAll(RegExp('[$chars]'), ascii);
-    });
-    slug = slug
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
-        .replaceAll(RegExp(r'^-+|-+$'), '');
-    if (slug.isEmpty) slug = 'san-pham';
-    final stamp = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
-    return '$slug-${stamp.substring(stamp.length - 4)}';
-  }
 
   Future<ProductModel?> createProductWithVariants(ProductModel product) async {
     final productData = product.toMap();
@@ -83,7 +63,7 @@ class ProductService {
     productData.remove('created_at'); // Let DB handle it
     // `slug` is NOT NULL with a unique constraint; the UI never collects one,
     // so derive it from the product name before insert.
-    productData['slug'] = _generateSlug(product.name);
+    productData['slug'] = generateSlug(product.name);
 
     final insertedProductList = await _client
         .from('products')

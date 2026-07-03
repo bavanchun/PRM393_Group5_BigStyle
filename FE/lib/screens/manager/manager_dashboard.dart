@@ -7,6 +7,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
+import 'categories/manager_category_list_screen.dart';
 import 'manager_dashboard_widgets.dart';
 import 'manager_order_card.dart';
 import 'manager_order_detail_screen.dart';
@@ -62,7 +63,10 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 if (state.dashboardStats != null)
                   ManagerStatsGrid(stats: state.dashboardStats!),
                 const SizedBox(height: AppSpacing.lg),
-                ManagerQuickActions(onComingSoon: _showComingSoon),
+                ManagerQuickActions(
+                  onComingSoon: _showComingSoon,
+                  onManageCategories: _openCategoryManager,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 _buildRecentOrdersHeader(),
                 const SizedBox(height: AppSpacing.sm),
@@ -124,6 +128,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => ManagerOrderDetailScreen(order: order)),
+    );
+  }
+
+  void _openCategoryManager() {
+    // ManagerCategoryBloc is provided app-wide in main.dart, so the pushed
+    // screen can read it directly.
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ManagerCategoryListScreen()),
     );
   }
 

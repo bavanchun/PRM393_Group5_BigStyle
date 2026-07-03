@@ -110,8 +110,13 @@ class _StatCard extends StatelessWidget {
 
 class ManagerQuickActions extends StatelessWidget {
   final VoidCallback onComingSoon;
+  final VoidCallback onManageCategories;
 
-  const ManagerQuickActions({super.key, required this.onComingSoon});
+  const ManagerQuickActions({
+    super.key,
+    required this.onComingSoon,
+    required this.onManageCategories,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +138,7 @@ class ManagerQuickActions extends StatelessWidget {
               icon: Icons.category_outlined,
               label: 'Danh mục',
               color: AppColors.warning,
-              onTap: onComingSoon,
+              onTap: onManageCategories,
             ),
             const SizedBox(width: AppSpacing.sm),
             _ActionCard(
