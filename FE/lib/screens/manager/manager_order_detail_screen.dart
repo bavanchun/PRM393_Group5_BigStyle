@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../blocs/manager/manager_bloc.dart';
+import '../../blocs/manager/manager_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
@@ -9,9 +12,10 @@ import 'manager_order_card.dart';
 import 'order_status_update_sheet.dart';
 
 /// Manager-only order detail screen. Unlike the customer-facing
-/// OrderDetailScreen, this one is instantiated directly with an [OrderModel]
-/// (no named route / no re-fetch) and shows payment method + status plus a
-/// button to change the order's status.
+/// OrderDetailScreen, this one is instantiated with an [OrderModel] snapshot,
+/// but re-resolves the current order from [ManagerBloc.state.orders] on every
+/// build so a status update elsewhere is reflected here once the bloc
+/// reloads its orders list.
 class ManagerOrderDetailScreen extends StatefulWidget {
   final OrderModel order;
 
@@ -96,7 +100,18 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final order = widget.order;
+    return BlocBuilder<ManagerBloc, ManagerState>(
+      builder: (context, state) {
+        final order = state.orders.firstWhere(
+          (o) => o.id == widget.order.id,
+          orElse: () => widget.order,
+        );
+        return _buildBody(context, order);
+      },
+    );
+  }
+
+  Widget _buildBody(BuildContext context, OrderModel order) {
     final reference = order.id.length >= 8
         ? order.id.substring(0, 8).toUpperCase()
         : order.id.toUpperCase();

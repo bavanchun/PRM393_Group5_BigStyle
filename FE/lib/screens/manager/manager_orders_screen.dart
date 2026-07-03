@@ -34,17 +34,30 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         backgroundColor: AppColors.surface,
         elevation: 0,
       ),
-      body: BlocBuilder<ManagerBloc, ManagerState>(
-        builder: (context, state) {
-          return Column(
-            children: [
-              _buildFilterChips(state.selectedStatus),
-              if (state.isOrdersLoading) const LinearProgressIndicator(),
-              const Divider(height: 1),
-              Expanded(child: _buildOrdersContent(state)),
-            ],
-          );
+      body: BlocListener<ManagerBloc, ManagerState>(
+        listenWhen: (previous, current) => previous.error != current.error,
+        listener: (context, state) {
+          if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error!),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
         },
+        child: BlocBuilder<ManagerBloc, ManagerState>(
+          builder: (context, state) {
+            return Column(
+              children: [
+                _buildFilterChips(state.selectedStatus),
+                if (state.isOrdersLoading) const LinearProgressIndicator(),
+                const Divider(height: 1),
+                Expanded(child: _buildOrdersContent(state)),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

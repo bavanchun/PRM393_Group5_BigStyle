@@ -3,11 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../blocs/manager/manager_bloc.dart';
+import '../../blocs/manager/manager_event.dart';
 import '../../config/theme/app_colors.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
 import 'manager_orders_screen.dart';
 import 'products/manager_product_list_screen.dart';
+
+/// Index of the Orders tab within [_ManagerShellState._screens].
+const _ordersTabIndex = 2;
 
 class ManagerShell extends StatefulWidget {
   const ManagerShell({super.key});
@@ -30,13 +35,18 @@ class _ManagerShellState extends State<ManagerShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: ManagerBottomNav(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          // IndexedStack keeps ManagerOrdersScreen alive after its initial
+          // load, so re-fire the load whenever the manager switches back to
+          // the Orders tab to pick up any changes made elsewhere.
+          if (index == _ordersTabIndex) {
+            context.read<ManagerBloc>().add(const ManagerLoadOrders());
+          }
+        },
       ),
     );
   }
@@ -66,13 +76,19 @@ class _ManagerProfileScreen extends StatelessWidget {
                 child: Text(
                   (user?.fullName.isNotEmpty == true ? user!.fullName[0] : 'M')
                       .toUpperCase(),
-                  style: const TextStyle(fontSize: 32, color: AppColors.primary),
+                  style: const TextStyle(
+                    fontSize: 32,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 user?.fullName ?? 'Quản lý',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 user?.email ?? '',
@@ -83,8 +99,10 @@ class _ManagerProfileScreen extends StatelessWidget {
               if (user != null)
                 ListTile(
                   leading: const Icon(Icons.logout, color: AppColors.error),
-                  title: const Text('Đăng xuất',
-                      style: TextStyle(color: AppColors.error)),
+                  title: const Text(
+                    'Đăng xuất',
+                    style: TextStyle(color: AppColors.error),
+                  ),
                   onTap: () {
                     context.read<AuthBloc>().add(const SignOutEvent());
                   },
@@ -92,9 +110,12 @@ class _ManagerProfileScreen extends StatelessWidget {
               else
                 ListTile(
                   leading: const Icon(Icons.login, color: AppColors.primary),
-                  title: const Text('Đăng nhập',
-                      style: TextStyle(color: AppColors.primary)),
-                  onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                  title: const Text(
+                    'Đăng nhập',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                  onTap: () =>
+                      Navigator.pushReplacementNamed(context, '/login'),
                 ),
               const Divider(),
             ],
@@ -124,7 +145,11 @@ class _PlaceholderScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: AppColors.textHint.withValues(alpha: 0.5)),
+            Icon(
+              icon,
+              size: 64,
+              color: AppColors.textHint.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               'Tính năng đang phát triển',

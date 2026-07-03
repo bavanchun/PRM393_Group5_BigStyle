@@ -20,12 +20,18 @@ class ManagerDashboardStats extends Equatable {
     DateTime? now,
   }) {
     final localNow = now ?? DateTime.now();
+    const acceptedStatuses = {
+      'confirmed',
+      'processing',
+      'shipping',
+      'delivered',
+    };
     final todayRevenue = orders
         .where((order) {
           final createdAt = DateTime.tryParse(
             order['created_at'] as String? ?? '',
           )?.toLocal();
-          return order['status'] == 'delivered' &&
+          return acceptedStatuses.contains(order['status']) &&
               createdAt != null &&
               createdAt.year == localNow.year &&
               createdAt.month == localNow.month &&

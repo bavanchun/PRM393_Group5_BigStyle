@@ -6,8 +6,10 @@ import '../../blocs/manager/manager_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
+import '../../models/order_model.dart';
 import 'manager_dashboard_widgets.dart';
 import 'manager_order_card.dart';
+import 'manager_order_detail_screen.dart';
 import 'manager_orders_screen.dart';
 
 class ManagerDashboard extends StatefulWidget {
@@ -71,7 +73,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     (order) => ManagerOrderCard(
                       order: order,
                       compact: true,
-                      onDetail: () => _openOrderDetail(order.id),
+                      onDetail: () => _openOrderDetail(order),
                     ),
                   ),
               ],
@@ -118,8 +120,11 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     );
   }
 
-  void _openOrderDetail(String orderId) {
-    Navigator.pushNamed(context, '/order-detail', arguments: orderId);
+  void _openOrderDetail(OrderModel order) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ManagerOrderDetailScreen(order: order)),
+    );
   }
 
   void _showComingSoon() {

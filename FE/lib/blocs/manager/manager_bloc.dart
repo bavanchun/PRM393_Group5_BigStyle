@@ -76,10 +76,10 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
     ManagerUpdateOrderStatus event,
     Emitter<ManagerState> emit,
   ) async {
+    final requestId = ++_ordersRequestId;
     emit(state.copyWith(isUpdatingStatus: true, clearError: true));
     try {
       await _orderService.updateOrderStatus(event.orderId, event.status.name);
-      final requestId = ++_ordersRequestId;
       final orders = await _orderService.getAllOrders(
         status: state.selectedStatus,
       );
@@ -92,6 +92,7 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
         ),
       );
     } catch (_) {
+      if (requestId != _ordersRequestId) return;
       emit(
         state.copyWith(
           isUpdatingStatus: false,
