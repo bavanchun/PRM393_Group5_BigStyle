@@ -12,11 +12,15 @@ class ProductService {
     String? categoryId,
     String? searchQuery,
     bool? featured,
+    String? storeId,
   }) async {
     var query = _client.from('products').select('*, category:categories(*), variants:product_variants(*)');
 
     if (categoryId != null) {
       query = query.eq('category_id', categoryId);
+    }
+    if (storeId != null) {
+      query = query.eq('store_id', storeId);
     }
     if (featured == true) {
       query = query.eq('is_featured', true);
@@ -55,6 +59,14 @@ class ProductService {
     productData.remove('category');
     productData.remove('variants');
     productData.remove('created_at'); // Let DB handle it
+
+    // Set store_id to current user if not already set
+    if (productData['store_id'] == null) {
+      final userId = _client.auth.currentUser?.id;
+      if (userId != null) {
+        productData['store_id'] = userId;
+      }
+    }
 
     final insertedProductList = await _client
         .from('products')

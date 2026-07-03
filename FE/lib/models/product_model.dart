@@ -22,6 +22,7 @@ class ProductModel extends Equatable {
   final bool isActive;
   final String? material;
   final String? elasticity;
+  final String? storeId;
   final DateTime createdAt;
   // Variants loaded via product_variants(*) join
   final List<VariantModel> variants;
@@ -41,6 +42,7 @@ class ProductModel extends Equatable {
     this.isActive = true,
     this.material,
     this.elasticity,
+    this.storeId,
     required this.createdAt,
     this.variants = const [],
   });
@@ -78,6 +80,7 @@ class ProductModel extends Equatable {
         'is_active': isActive,
         'material': material,
         'elasticity': elasticity,
+        'store_id': storeId,
         'created_at': createdAt.toIso8601String(),
       };
 
@@ -114,6 +117,7 @@ class ProductModel extends Equatable {
       isActive: map['is_active'] ?? true,
       material: map['material'],
       elasticity: map['elasticity'],
+      storeId: map['store_id'],
       createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       variants: variantsList,
     );
@@ -135,6 +139,7 @@ class ProductModel extends Equatable {
         isActive,
         material,
         elasticity,
+        storeId,
         createdAt,
         variants,
       ];

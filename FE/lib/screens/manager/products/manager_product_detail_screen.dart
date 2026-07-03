@@ -223,6 +223,7 @@ class _ManagerProductDetailScreenState extends State<ManagerProductDetailScreen>
       isActive: _isSellable,
       material: _materialController.text.trim(),
       elasticity: _selectedElasticity,
+      storeId: widget.product.storeId,
       createdAt: widget.product.createdAt,
       variants: variants,
     );
