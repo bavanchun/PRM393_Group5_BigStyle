@@ -1,1 +1,4 @@
 .DS_Store
+
+# UX audit screenshots — local only, never commit
+docs/audit-assets/
