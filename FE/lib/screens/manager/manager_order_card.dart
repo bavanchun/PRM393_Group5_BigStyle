@@ -123,21 +123,29 @@ class ManagerOrderCard extends StatelessWidget {
                 children: [
                   if (onUpdateStatus != null &&
                       order.status.nextStatuses.isNotEmpty) ...[
-                    SizedBox(
-                      height: 32,
-                      child: FilledButton(
-                        onPressed: onUpdateStatus,
-                        child: const Text('Đổi trạng thái'),
+                    FilledButton(
+                      onPressed: onUpdateStatus,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
+                      child: const Text('Đổi trạng thái'),
                     ),
                     const SizedBox(width: AppSpacing.xs),
                   ],
-                  SizedBox(
-                    height: 32,
-                    child: OutlinedButton(
-                      onPressed: onDetail,
-                      child: const Text('Chi tiết'),
+                  OutlinedButton(
+                    onPressed: onDetail,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 36),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
+                    child: const Text('Chi tiết'),
                   ),
                 ],
               ),
