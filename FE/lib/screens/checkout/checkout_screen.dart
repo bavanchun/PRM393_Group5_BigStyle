@@ -26,6 +26,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
   // 'cod' | 'bank_transfer'
   String _paymentMethod = 'cod';
+  // Phí vận chuyển cố định (flat). Dùng chung cho hiển thị và khi đặt hàng để
+  // số tiền trên màn khớp với total của đơn tạo ra.
+  static const double _shippingFee = 30000;
 
   @override
   void dispose() {
@@ -125,7 +128,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         builder: (context, checkoutState) {
           return BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
-              final total = cartState.subtotal + checkoutState.shippingFee;
+              final total = cartState.subtotal + _shippingFee;
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -212,7 +215,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             _buildPriceRow('Tạm tính', cartState.subtotal),
                             const SizedBox(height: 8),
                             _buildPriceRow(
-                                'Phí vận chuyển', checkoutState.shippingFee),
+                                'Phí vận chuyển', _shippingFee),
                             const Divider(height: 24),
                             _buildPriceRow('Tổng cộng', total, isTotal: true),
                           ],
@@ -338,7 +341,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           userId: user.id,
           items: cartState.items,
           subtotal: cartState.subtotal,
-          shippingFee: 30000,
+          shippingFee: _shippingFee,
           address: _addressController.text,
           note: _noteController.text.isNotEmpty ? _noteController.text : null,
           paymentMethod: _paymentMethod,
