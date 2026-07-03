@@ -11,6 +11,7 @@ import '../../blocs/checkout/checkout_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
+import 'payment_qr_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -23,6 +24,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _addressController = TextEditingController();
   final _noteController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  // 'cod' | 'bank_transfer'
+  String _paymentMethod = 'cod';
 
   @override
   void dispose() {
@@ -38,7 +41,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       appBar: AppBar(title: const Text('Thanh toán')),
       body: BlocConsumer<CheckoutBloc, CheckoutState>(
         listener: (context, state) {
-          if (state.isSuccess) {
+          // Mutually exclusive: a given place-order result is either a COD
+          // success dialog or a SePay QR navigation — never both.
+          if (state.awaitingPayment) {
+            final authState = context.read<AuthBloc>().state;
+            Navigator.pushNamed(
+              context,
+              '/payment-qr',
+              arguments: PaymentQrArgs(
+                orderId: state.orderId!,
+                orderNumber: state.orderNumber,
+                total: state.total ?? 0,
+                userId: authState.user?.id ?? '',
+              ),
+            );
+          } else if (state.isSuccess) {
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -76,8 +93,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             );
           }
           if (state.error != null) {
+            // createOrder succeeded but createPayment failed for the bank
+            // transfer branch — orderId/orderNumber survive the error so
+            // "Thử lại" can retry only the payment insert, never the order.
+            // Gated on the specific message (not just orderId != null) so an
+            // order-creation failure never shows a payment-retry action with
+            // a stale orderId from a previous order.
+            final canRetryPayment = state.orderId != null &&
+                state.error == 'Tạo yêu cầu thanh toán thất bại. Vui lòng thử lại.';
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
+              SnackBar(
+                content: Text(state.error!),
+                action: canRetryPayment
+                    ? SnackBarAction(
+                        label: 'Thử lại',
+                        onPressed: () {
+                          final authState = context.read<AuthBloc>().state;
+                          context.read<CheckoutBloc>().add(CheckoutRetryPayment(
+                                orderId: state.orderId!,
+                                userId: authState.user?.id ?? '',
+                                orderNumber: state.orderNumber,
+                                total: state.total ?? 0,
+                              ));
+                        },
+                      )
+                    : null,
+              ),
             );
           }
         },
@@ -154,6 +195,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         maxLines: 2,
                       ),
                       const SizedBox(height: 24),
+                      Text('Phương thức thanh toán',
+                          style: AppTypography.headlineSmall),
+                      const SizedBox(height: 12),
+                      _buildPaymentMethodSelector(),
+                      const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
@@ -186,6 +232,69 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSelector() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildPaymentMethodOption(
+            value: 'cod',
+            icon: Icons.payments_outlined,
+            label: 'Thanh toán khi nhận hàng',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildPaymentMethodOption(
+            value: 'bank_transfer',
+            icon: Icons.qr_code_2_outlined,
+            label: 'Chuyển khoản (SePay)',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentMethodOption({
+    required String value,
+    required IconData icon,
+    required String label,
+  }) {
+    final selected = _paymentMethod == value;
+    return InkWell(
+      onTap: () => setState(() => _paymentMethod = value),
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm, horizontal: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.border,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon,
+                color: selected ? AppColors.primary : AppColors.textSecondary),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTypography.bodySmall.copyWith(
+                color: selected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -232,6 +341,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           shippingFee: 30000,
           address: _addressController.text,
           note: _noteController.text.isNotEmpty ? _noteController.text : null,
+          paymentMethod: _paymentMethod,
         ));
   }
 }

@@ -85,6 +85,10 @@ class OrderModel extends Equatable {
   final double? longitude;
   final String? note;
   final double? discountAmount;
+  // DB-generated (e.g. "DH000123") — used as SePay transfer content. Never sent in toMap().
+  final String? orderNumber;
+  // 'cod' | 'bank_transfer' — checkout payment method selection.
+  final String paymentMethod;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -102,6 +106,8 @@ class OrderModel extends Equatable {
     this.longitude,
     this.note,
     this.discountAmount,
+    this.orderNumber,
+    this.paymentMethod = 'cod',
     required this.createdAt,
     this.updatedAt,
   });
@@ -124,6 +130,7 @@ class OrderModel extends Equatable {
     'discount_amount': discountAmount ?? 0,
     'total': total,
     'notes': note,
+    'payment_method': paymentMethod,
   };
 
   factory OrderModel.fromMap(Map<String, dynamic> map) {
@@ -153,6 +160,8 @@ class OrderModel extends Equatable {
       longitude: (shippingAddress?['longitude'] as num?)?.toDouble(),
       note: map['notes'] as String?,
       discountAmount: (map['discount_amount'] as num?)?.toDouble(),
+      orderNumber: map['order_number'] as String?,
+      paymentMethod: map['payment_method'] as String? ?? 'cod',
       createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: map['updated_at'] != null
           ? DateTime.tryParse(map['updated_at'] as String)
@@ -174,6 +183,8 @@ class OrderModel extends Equatable {
     longitude: longitude,
     note: note,
     discountAmount: discountAmount,
+    orderNumber: orderNumber,
+    paymentMethod: paymentMethod,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );
@@ -193,6 +204,8 @@ class OrderModel extends Equatable {
     longitude,
     note,
     discountAmount,
+    orderNumber,
+    paymentMethod,
     createdAt,
     updatedAt,
   ];

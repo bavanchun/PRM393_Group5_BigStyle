@@ -17,6 +17,8 @@ class CheckoutPlaceOrder extends CheckoutEvent {
   final double? latitude;
   final double? longitude;
   final String? note;
+  // 'cod' | 'bank_transfer'
+  final String paymentMethod;
 
   const CheckoutPlaceOrder({
     required this.userId,
@@ -27,11 +29,42 @@ class CheckoutPlaceOrder extends CheckoutEvent {
     this.latitude,
     this.longitude,
     this.note,
+    this.paymentMethod = 'cod',
   });
 
   @override
-  List<Object?> get props =>
-      [userId, items, subtotal, shippingFee, address, latitude, longitude, note];
+  List<Object?> get props => [
+        userId,
+        items,
+        subtotal,
+        shippingFee,
+        address,
+        latitude,
+        longitude,
+        note,
+        paymentMethod,
+      ];
+}
+
+/// Retries creating the pending payments row for an order that was already
+/// created (createOrder succeeded, createPayment failed). orderId is a
+/// client-generated UUID, so this never re-inserts the order — only the
+/// payments row, which is safe to retry (unique partial index on pending).
+class CheckoutRetryPayment extends CheckoutEvent {
+  final String orderId;
+  final String userId;
+  final String? orderNumber;
+  final double total;
+
+  const CheckoutRetryPayment({
+    required this.orderId,
+    required this.userId,
+    required this.orderNumber,
+    required this.total,
+  });
+
+  @override
+  List<Object?> get props => [orderId, userId, orderNumber, total];
 }
 
 class CheckoutCalculateShipping extends CheckoutEvent {

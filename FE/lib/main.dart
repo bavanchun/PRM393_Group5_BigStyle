@@ -16,6 +16,7 @@ import 'blocs/chat/chat_bloc.dart';
 import 'blocs/manager/manager_bloc.dart';
 import 'blocs/review/review_bloc.dart';
 import 'blocs/wishlist/wishlist_bloc.dart';
+import 'blocs/payment/payment_bloc.dart';
 import 'services/auth_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/product_service.dart';
@@ -25,6 +26,7 @@ import 'services/notification_service.dart';
 import 'services/chat_service.dart';
 import 'services/review_service.dart';
 import 'services/wishlist_service.dart';
+import 'services/payment_service.dart';
 
 import 'blocs/manager_product/manager_product_bloc.dart';
 
@@ -47,10 +49,12 @@ class BigStyleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productService = ProductService();
+    final paymentService = PaymentService();
 
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: productService),
+        RepositoryProvider.value(value: paymentService),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -63,13 +67,17 @@ class BigStyleApp extends StatelessWidget {
           BlocProvider(create: (_) => CartBloc(CartService())),
           BlocProvider(create: (_) => OrderBloc(OrderService())),
           BlocProvider(
-            create: (ctx) => CheckoutBloc(OrderService(), CartService()),
+            create: (ctx) =>
+                CheckoutBloc(OrderService(), CartService(), paymentService),
           ),
           BlocProvider(create: (_) => NotificationBloc(NotificationService())),
           BlocProvider(create: (_) => ChatBloc(ChatService())),
           BlocProvider(create: (_) => ManagerBloc(OrderService())),
           BlocProvider(create: (_) => ReviewBloc(ReviewService())),
           BlocProvider(create: (_) => WishlistBloc(WishlistService())),
+          BlocProvider(
+            create: (_) => PaymentBloc(paymentService, CartService()),
+          ),
         ],
         child: MaterialApp(
           title: 'BigStyle',

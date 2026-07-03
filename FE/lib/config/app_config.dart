@@ -10,4 +10,10 @@ class AppConfig {
 
   static String get googleWebClientId =>
       dotenv.env['GOOGLE_WEB_CLIENT_ID'] ?? '';
+
+  /// SePay bank name/code (e.g. Vietcombank, MBBank) used to build the VietQR image URL.
+  static String get sepayBank => dotenv.env['SEPAY_BANK'] ?? '';
+
+  /// Bank account number linked to the SePay account.
+  static String get sepayAcc => dotenv.env['SEPAY_ACC'] ?? '';
 }
