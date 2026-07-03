@@ -1,6 +1,26 @@
 # Dashboard Setup Checklist — OTP + Google Sign-in
 
-Phần này **user tự làm** trên Supabase + Google Cloud (không phải code). Sau khi xong, OTP nhận mã 6 số + Google login chạy trên mọi máy dùng shared `debug.keystore`.
+Project Supabase: **bigstyle-prm393** (`https://agbnpqgxsppdrpbqoipo.supabase.co`, org bavanchun) — đã tạo + apply schema + seed (5 categories, 15 products, 87 variants).
+
+Phần này **user tự làm** trên Supabase + Google Cloud + Resend (không phải code). Sau khi xong, OTP nhận mã 6 số + Google login chạy trên mọi máy dùng shared `debug.keystore`.
+
+## 0. Resend SMTP (fix rate-limit + gửi email ổn định)
+
+Supabase built-in email chỉ ~2-4 email/giờ → phải dùng Custom SMTP.
+
+**Resend:**
+1. (Nếu muốn gửi tới email bất kỳ) Resend → Domains → verify 1 domain của bạn. Không có domain → dùng sender `onboarding@resend.dev` nhưng Resend sandbox chỉ gửi tới email đã đăng ký tài khoản Resend.
+2. API key đã có: `re_...` (dán ở bước dưới).
+
+**Supabase → Authentication → Emails → SMTP Settings → Enable Custom SMTP:**
+- Host: `smtp.resend.com`
+- Port: `465` (SSL) hoặc `587` (TLS)
+- Username: `resend`
+- Password: `<RESEND_API_KEY>` (re_...)
+- Sender email: email thuộc domain đã verify (hoặc `onboarding@resend.dev`)
+- Sender name: `BigStyle`
+
+**Supabase → Authentication → Rate Limits:** nâng "emails per hour" lên (vd 100).
 
 ## A. Supabase — OTP đổi từ link sang mã 6 số
 
