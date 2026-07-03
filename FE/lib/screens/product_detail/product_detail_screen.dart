@@ -127,20 +127,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   right: 16,
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.white,
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.share_outlined,
-                            size: 20,
-                            color: AppColors.textPrimary,
-                          ),
-                          onPressed: () {},
-                          padding: EdgeInsets.zero,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
                       BlocBuilder<WishlistBloc, WishlistState>(
                         builder: (context, wishlist) {
                           final isWishlisted = wishlist.contains(product.id);

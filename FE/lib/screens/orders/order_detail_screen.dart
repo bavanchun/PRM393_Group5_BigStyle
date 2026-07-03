@@ -98,7 +98,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                                'Mã: ${order.id.substring(0, 8).toUpperCase()}',
+                                'Mã: ${order.orderNumber ?? order.id.substring(0, 8).toUpperCase()}',
                                 style: AppTypography.bodySmall),
                             const SizedBox(height: 4),
                             Text(

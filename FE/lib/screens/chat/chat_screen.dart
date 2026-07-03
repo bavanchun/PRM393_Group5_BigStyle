@@ -121,21 +121,8 @@ class _ChatScreenState extends State<ChatScreen> {
               Text('BigStyle Bot',
                   style: AppTypography.headlineSmall.copyWith(fontSize: 15)),
               const SizedBox(height: 2),
-              Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.success,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  Text('Trợ lý thời trang AI',
-                      style: AppTypography.caption.copyWith(fontSize: 11)),
-                ],
-              ),
+              Text('Trợ lý thời trang AI',
+                  style: AppTypography.caption.copyWith(fontSize: 11)),
             ],
           ),
         ],
@@ -425,17 +412,6 @@ class _ChatScreenState extends State<ChatScreen> {
         top: false,
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: AppColors.divider,
-              child: IconButton(
-                icon: const Icon(Icons.image_outlined,
-                    size: 20, color: AppColors.textSecondary),
-                onPressed: _pickImage,
-                padding: EdgeInsets.zero,
-              ),
-            ),
-            const SizedBox(width: 8),
             Expanded(
               child: TextField(
                 controller: _messageController,
@@ -506,15 +482,5 @@ class _ChatScreenState extends State<ChatScreen> {
     final userId = context.read<AuthBloc>().state.user?.id ?? '';
     context.read<ChatBloc>().add(ChatSendMessage(userId, text));
     _scrollToBottom();
-  }
-
-  void _pickImage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng tải ảnh sẽ sớm được cập nhật!'),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 }

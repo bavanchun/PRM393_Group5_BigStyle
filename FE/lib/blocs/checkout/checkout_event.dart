@@ -66,12 +66,3 @@ class CheckoutRetryPayment extends CheckoutEvent {
   @override
   List<Object?> get props => [orderId, userId, orderNumber, total];
 }
-
-class CheckoutCalculateShipping extends CheckoutEvent {
-  final double? latitude;
-  final double? longitude;
-  const CheckoutCalculateShipping({this.latitude, this.longitude});
-
-  @override
-  List<Object?> get props => [latitude, longitude];
-}

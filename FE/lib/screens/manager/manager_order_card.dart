@@ -48,9 +48,11 @@ class ManagerOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = managerOrderStatusColor(order.status);
-    final reference = order.id.length >= 8
-        ? order.id.substring(0, 8).toUpperCase()
-        : order.id.toUpperCase();
+    final reference =
+        order.orderNumber ??
+        (order.id.length >= 8
+            ? order.id.substring(0, 8).toUpperCase()
+            : order.id.toUpperCase());
 
     return GestureDetector(
       onTap: compact ? onDetail : null,

@@ -112,9 +112,11 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
   }
 
   Widget _buildBody(BuildContext context, OrderModel order) {
-    final reference = order.id.length >= 8
-        ? order.id.substring(0, 8).toUpperCase()
-        : order.id.toUpperCase();
+    final reference =
+        order.orderNumber ??
+        (order.id.length >= 8
+            ? order.id.substring(0, 8).toUpperCase()
+            : order.id.toUpperCase());
 
     return Scaffold(
       backgroundColor: AppColors.background,

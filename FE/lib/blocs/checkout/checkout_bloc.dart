@@ -1,4 +1,3 @@
-import 'dart:math' show cos, sqrt, asin;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'checkout_event.dart';
@@ -22,7 +21,6 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   ) : super(const CheckoutState()) {
     on<CheckoutPlaceOrder>(_onPlaceOrder);
     on<CheckoutRetryPayment>(_onRetryPayment);
-    on<CheckoutCalculateShipping>(_onCalculateShipping);
   }
 
   Future<void> _onPlaceOrder(
@@ -98,6 +96,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         isLoading: false,
         isSuccess: true,
         orderId: created.id,
+        orderNumber: created.orderNumber,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -156,46 +155,4 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     }
   }
 
-  Future<void> _onCalculateShipping(
-      CheckoutCalculateShipping event, Emitter<CheckoutState> emit) async {
-    if (event.latitude == null || event.longitude == null) {
-      emit(state.copyWith(shippingFee: 0));
-      return;
-    }
-
-    const storeLat = 10.762622;
-    const storeLng = 106.660172;
-
-    final distance = _calculateDistance(
-      storeLat,
-      storeLng,
-      event.latitude!,
-      event.longitude!,
-    );
-
-    double fee;
-    if (distance <= 2) {
-      fee = 15000;
-    } else if (distance <= 5) {
-      fee = 25000;
-    } else if (distance <= 10) {
-      fee = 35000;
-    } else if (distance <= 20) {
-      fee = 50000;
-    } else {
-      fee = 70000;
-    }
-
-    emit(state.copyWith(shippingFee: fee));
-  }
-
-  static double _calculateDistance(
-      double lat1, double lon1, double lat2, double lon2) {
-    const p = 0.017453292519943295;
-    const c = 6371;
-    final a = 0.5 -
-        (lat2 - lat1) * p / 2 +
-        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
-    return c * (2 * asin(sqrt(a)));
-  }
 }

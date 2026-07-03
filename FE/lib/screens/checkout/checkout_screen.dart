@@ -29,7 +29,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String _paymentMethod = 'cod';
   // Phí vận chuyển cố định (flat). Dùng chung cho hiển thị và khi đặt hàng để
   // số tiền trên màn khớp với total của đơn tạo ra.
-  static const double _shippingFee = 1000;
+  static const double _shippingFee = 30000;
 
   @override
   void dispose() {
@@ -86,7 +86,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Mã đơn hàng: ${state.orderId?.substring(0, 8)}',
+                      'Mã đơn hàng: ${state.orderNumber ?? state.orderId?.substring(0, 8)}',
                       style: AppTypography.bodyMedium,
                     ),
                     const SizedBox(height: 24),

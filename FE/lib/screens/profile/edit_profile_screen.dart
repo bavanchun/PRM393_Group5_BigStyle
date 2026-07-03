@@ -72,35 +72,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Column(
                 children: [
                   Center(
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 48,
-                          backgroundColor: AppColors.secondary,
-                          backgroundImage: state.user?.avatarUrl != null
-                              ? NetworkImage(state.user!.avatarUrl!)
-                              : null,
-                          child: state.user?.avatarUrl == null
-                              ? Icon(Icons.person,
-                                  size: 48, color: AppColors.primary)
-                              : null,
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: const Icon(Icons.camera_alt,
-                                size: 16, color: Colors.white),
-                          ),
-                        ),
-                      ],
+                    child: CircleAvatar(
+                      radius: 48,
+                      backgroundColor: AppColors.secondary,
+                      backgroundImage: state.user?.avatarUrl != null
+                          ? NetworkImage(state.user!.avatarUrl!)
+                          : null,
+                      child: state.user?.avatarUrl == null
+                          ? Icon(Icons.person,
+                              size: 48, color: AppColors.primary)
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 32),

@@ -113,6 +113,7 @@ class ProfileScreen extends StatelessWidget {
                     context,
                     icon: Icons.favorite_outline,
                     title: 'Sản phẩm yêu thích',
+                    onTap: () => Navigator.pushNamed(context, '/favorites'),
                   ),
                   _buildMenuItem(
                     context,

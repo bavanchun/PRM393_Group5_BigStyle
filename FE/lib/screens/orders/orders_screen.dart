@@ -78,7 +78,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Đơn #${order.id.substring(0, 8)}',
+                            'Đơn #${order.orderNumber ?? order.id.substring(0, 8)}',
                             style: AppTypography.labelLarge,
                           ),
                           Container(
