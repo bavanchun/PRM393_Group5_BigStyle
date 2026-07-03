@@ -1,10 +1,11 @@
 ---
 phase: 2
-title: "Guest Flow Audit"
-status: pending
+title: Guest Flow Audit
+status: completed
 priority: P1
-dependencies: [1]
-effort: "0.25d"
+dependencies:
+  - 1
+effort: 0.25d
 ---
 
 # Phase 2: Guest Flow Audit

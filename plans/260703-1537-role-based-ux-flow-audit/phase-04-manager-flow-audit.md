@@ -1,10 +1,11 @@
 ---
 phase: 4
-title: "Manager Flow Audit"
-status: pending
+title: Manager Flow Audit
+status: completed
 priority: P1
-dependencies: [1]
-effort: "0.5d"
+dependencies:
+  - 1
+effort: 0.5d
 ---
 
 # Phase 4: Manager Flow Audit

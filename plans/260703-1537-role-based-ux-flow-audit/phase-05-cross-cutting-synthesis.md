@@ -1,10 +1,13 @@
 ---
 phase: 5
-title: "Cross-cutting & Synthesis"
-status: pending
+title: Cross-cutting & Synthesis
+status: completed
 priority: P1
-dependencies: [2, 3, 4]
-effort: "0.25d"
+dependencies:
+  - 2
+  - 3
+  - 4
+effort: 0.25d
 ---
 
 # Phase 5: Cross-cutting & Synthesis

@@ -1,13 +1,13 @@
 ---
-title: "Role-Based UX & Flow Audit (Guest / Customer / Manager)"
+title: Role-Based UX & Flow Audit (Guest / Customer / Manager)
 description: >-
   Systematic per-actor audit of every screen — flow logic + UI/UX — using
   emulator (visual) + code review. Output = single consolidated
-  docs/ux-flow-audit.md with prioritized findings + fix recommendations.
-  Audit only; no code changes.
-status: pending
+  docs/ux-flow-audit.md with prioritized findings + fix recommendations. Audit
+  only; no code changes.
+status: completed
 priority: P2
-branch: "dev"
+branch: dev
 tags:
   - audit
   - ux
@@ -15,8 +15,8 @@ tags:
   - documentation
 blockedBy: []
 blocks: []
-created: "2026-07-03T08:38:30.290Z"
-createdBy: "ck:plan"
+created: '2026-07-03T08:38:30.290Z'
+createdBy: 'ck:plan'
 source: skill
 ---
 
@@ -64,11 +64,11 @@ Mỗi finding 1 dòng bảng:
 
 | Phase | Name | Status | Depends |
 |-------|------|--------|---------|
-| 1 | [Setup & Methodology](./phase-01-setup-methodology.md) | Pending | — |
-| 2 | [Guest Flow Audit](./phase-02-guest-flow-audit.md) | Pending | 1 |
-| 3 | [Customer Flow Audit](./phase-03-customer-flow-audit.md) | Pending | 1 |
-| 4 | [Manager Flow Audit](./phase-04-manager-flow-audit.md) | Pending | 1 |
-| 5 | [Cross-cutting & Synthesis](./phase-05-cross-cutting-synthesis.md) | Pending | 2,3,4 |
+| 1 | [Setup & Methodology](./phase-01-setup-methodology.md) | Pending | Completed |
+| 2 | [Guest Flow Audit](./phase-02-guest-flow-audit.md) | Pending | Completed |
+| 3 | [Customer Flow Audit](./phase-03-customer-flow-audit.md) | Pending | Completed |
+| 4 | [Manager Flow Audit](./phase-04-manager-flow-audit.md) | Pending | Completed |
+| 5 | [Cross-cutting & Synthesis](./phase-05-cross-cutting-synthesis.md) | Pending | Completed |
 
 **Parallel:** Phase 2/3/4 độc lập (khác screen). Emulator chỉ 1 → phần *visual*
 serialize theo 1 hàng đợi; phần *code review* chạy song song được. Phase 5 tổng
