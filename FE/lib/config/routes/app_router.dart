@@ -14,6 +14,7 @@ import '../../screens/chat/chat_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/delivery/delivery_map_screen.dart';
 import '../../screens/manager/manager_shell.dart';
+import '../../screens/admin/admin_shell.dart';
 import '../../screens/favorites/favorites_screen.dart';
 
 class AppRouter {
@@ -49,6 +50,8 @@ class AppRouter {
         return MaterialPageRoute(settings: settings, builder: (_) => const DeliveryMapScreen());
       case '/manager':
         return MaterialPageRoute(settings: settings, builder: (_) => const ManagerShell());
+      case '/admin':
+        return MaterialPageRoute(settings: settings, builder: (_) => const AdminShell());
       case '/favorites':
         return MaterialPageRoute(settings: settings, builder: (_) => const FavoritesScreen());
       default:

@@ -11,7 +11,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GoogleAuthService _googleAuthService;
 
   AuthBloc(this._authService, this._googleAuthService)
-    : super(const AuthInitial()) {
+      : super(const AuthInitial()) {
     on<CheckSessionEvent>(_onCheckSession);
     on<SendOTPEvent>(_onSendOtp);
     on<VerifyOTPEvent>(_onVerifyOtp);
@@ -87,14 +87,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (kReleaseMode) return;
 
     emit(const AuthLoading());
+    UserRole role;
+    switch (event.role) {
+      case 'admin':
+        role = UserRole.admin;
+        break;
+      case 'manager':
+        role = UserRole.manager;
+        break;
+      default:
+        role = UserRole.customer;
+    }
+
     final user = UserModel(
-      id: event.role == 'manager' ? 'mock-manager-id' : 'mock-user-id',
-      email: event.role == 'manager'
-          ? 'manager@bigstyle.com'
-          : 'user@bigstyle.com',
-      fullName: event.role == 'manager' ? 'Quản lý BigStyle' : 'Nguyễn Văn A',
+      id: 'mock-${event.role}-id',
+      email: '${event.role}@bigstyle.com',
+      fullName: event.role == 'admin'
+          ? 'Admin BigStyle'
+          : event.role == 'manager'
+              ? 'Quản lý BigStyle'
+              : 'Nguyễn Văn A',
       phone: '0123456789',
-      role: event.role == 'manager' ? UserRole.manager : UserRole.customer,
+      role: role,
       createdAt: DateTime.now(),
     );
     emit(AuthSuccess(user));
