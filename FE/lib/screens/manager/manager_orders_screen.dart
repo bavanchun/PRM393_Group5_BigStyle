@@ -8,6 +8,8 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_status.dart';
 import 'manager_order_card.dart';
+import 'manager_order_detail_screen.dart';
+import 'order_status_update_sheet.dart';
 
 class ManagerOrdersScreen extends StatefulWidget {
   const ManagerOrdersScreen({super.key});
@@ -110,11 +112,13 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
           final order = state.orders[index];
           return ManagerOrderCard(
             order: order,
-            onDetail: () => Navigator.pushNamed(
+            onDetail: () => Navigator.push(
               context,
-              '/order-detail',
-              arguments: order.id,
+              MaterialPageRoute(
+                builder: (_) => ManagerOrderDetailScreen(order: order),
+              ),
             ),
+            onUpdateStatus: () => showOrderStatusUpdateSheet(context, order),
           );
         },
       ),

@@ -34,12 +34,14 @@ Color managerOrderStatusColor(OrderStatus status) {
 class ManagerOrderCard extends StatelessWidget {
   final OrderModel order;
   final VoidCallback onDetail;
+  final VoidCallback? onUpdateStatus;
   final bool compact;
 
   const ManagerOrderCard({
     super.key,
     required this.order,
     required this.onDetail,
+    this.onUpdateStatus,
     this.compact = false,
   });
 
@@ -114,15 +116,28 @@ class ManagerOrderCard extends StatelessWidget {
             ),
             if (!compact) ...[
               const SizedBox(height: AppSpacing.sm),
-              Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  height: 32,
-                  child: OutlinedButton(
-                    onPressed: onDetail,
-                    child: const Text('Chi tiết'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (onUpdateStatus != null &&
+                      order.status.nextStatuses.isNotEmpty) ...[
+                    SizedBox(
+                      height: 32,
+                      child: FilledButton(
+                        onPressed: onUpdateStatus,
+                        child: const Text('Đổi trạng thái'),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                  ],
+                  SizedBox(
+                    height: 32,
+                    child: OutlinedButton(
+                      onPressed: onDetail,
+                      child: const Text('Chi tiết'),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ],
