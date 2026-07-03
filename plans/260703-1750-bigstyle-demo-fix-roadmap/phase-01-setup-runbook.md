@@ -1,74 +1,50 @@
 # Phase 1 — Demo Environment Setup Runbook
 
-Operational companion to `phase-01-demo-environment-seed-data.md`. Steps YOU run
-(email OTP + Supabase SQL Editor can't be automated by the agent). SQL lives in
-`FE/seed_demo_accounts_and_orders.sql`.
+Status: **DONE via Supabase MCP** on 2026-07-03 (project `bigstyle-prm393`
+/ `agbnpqgxsppdrpbqoipo`). Accounts + demo data seeded directly. `FE/seed_demo_accounts_and_orders.sql`
+is kept as a reproducible reference for a fresh environment.
 
-## 0. Create accounts in the app (OTP)
+## What was done automatically
 
-Sign up **3 emails** via the app login screen — each needs a real inbox for the
-OTP code:
+- **Dedicated manager account** created: `hoangbavan4478+manager@gmail.com`
+  (`role=manager`, email identity, pre-confirmed). Gmail `+alias` → OTP lands in
+  your normal `hoangbavan4478@gmail.com` inbox.
+- **2nd customer** created: `hoangbavan4478+customer2@gmail.com` (so "Khách hàng"
+  = 2) with 2 seeded orders (1 delivered/cod, 1 confirmed/bank_transfer), each
+  with order_items + payment rows.
+- Your original account `hoangbavan4478@gmail.com` (customer) + its 3 existing
+  orders are untouched — they now serve as demo data.
 
-| Purpose | Example email | Notes |
-|---------|---------------|-------|
-| Manager | `manager+bigstyle@<you>` | promoted to manager in Step 1 |
-| Customer 1 | `customer1+bigstyle@<you>` | gets seeded orders in Step 2 |
-| Customer 2 | `customer2+bigstyle@<you>` | makes dashboard "Khách hàng" ≥ 2 |
+## Resulting dashboard state (after the Phase 4 revenue fix)
 
-Gmail trick: `youraddress+manager@gmail.com` all land in `youraddress@gmail.com`.
+| Metric | Value |
+|--------|-------|
+| Doanh thu hôm nay | 481.000đ (3 confirmed + 1 delivered; pending excluded) |
+| Đơn chờ xác nhận | 1 (CF-20260703-534921, 380k, bank_transfer) |
+| Tổng đơn | 5 |
+| Khách hàng | 2 |
 
-After signup each is `role='customer'` by default (DB trigger).
+## The ONE step left for you
 
-## 1. Promote the manager
+Log into the app once as the manager to verify the manager UI:
 
-In Supabase → SQL Editor, run **STEP 1** of the seed file with the manager email:
+1. App → login → enter `hoangbavan4478+manager@gmail.com` → "Gửi mã OTP".
+2. Open your Gmail (`hoangbavan4478@gmail.com`) — the OTP arrives there via the
+   `+manager` alias. Enter it.
+3. App should land on `/manager` with the dashboard numbers above.
 
-```sql
-update public.profiles set role='manager'
-where email = 'manager+bigstyle@<you>';
-```
-
-Relaunch the app logged in as that email → should land on `/manager`.
-
-## 2. Seed demo orders
-
-Edit `v_customer_email` in **STEP 2** of the seed file to Customer 1's email, run
-it. Seeds 3 orders dated today:
-- **confirmed** + bank_transfer (paid) — shows as revenue after the Phase 4 M6b fix
-- **delivered** + cod (paid) — shows as revenue even before the fix
-- **pending** + bank_transfer (unpaid) — for the "Thanh toán lại" demo + manager
-  pending-order workflow
-
-## 3. Verify
-
-```sql
-select email, role from public.profiles order by role;          -- 1 manager, 2 customers
-select order_number, status, payment_method, total, created_at  -- 3 today orders
-  from public.orders order by created_at desc limit 5;
-```
-
-On the manager dashboard you should see: Khách hàng ≥ 2, at least 1 pending order,
-and (after Phase 4) non-zero "Doanh thu hôm nay".
-
-## 4. (Optional) Clean test junk before a real demo
-
-**STEP 3** of the seed file. Review the SELECT output first; delete only orders
-you recognise as test data (by explicit UUID). Deleting an order cascades to its
-items + payments.
+Your customer-side demo still uses `hoangbavan4478@gmail.com` (no role flipping).
 
 ## Notes / gotchas
 
-- SQL Editor runs as service role → bypasses RLS, so seeded inserts aren't blocked
-  by the owner/manager policies (X1).
-- `payment_method='bank_transfer'` is valid (added by `20260703_sepay_payment_foundation.sql`);
-  the base `schema.sql` is out of date on that constraint.
-- Revenue-counting statuses agreed for Phase 4: **confirmed, processing, shipping,
-  delivered** (accepted orders). Pending/cancelled/refunded excluded.
-- Shipping fee seeded at `30000` to match the Phase 5 flat-fee value; change both
-  together if you pick a different number.
+- Auth users were inserted directly (auth.users + auth.identities, pre-confirmed,
+  passwordless/OTP). Login is OTP-only — no password needed.
+- `payment_method='bank_transfer'` is valid (SePay migration).
+- Revenue-counting statuses (Phase 4): confirmed, processing, shipping, delivered.
+- Seeded shipping fee = 30.000đ (matches the Phase 5 flat fee).
 
 ## Unresolved
 
-1. Confirm the 3 signup emails you'll use (so the SQL placeholders can be filled).
-2. Which leftover test orders (if any) to purge in Step 4 — needs your eyes on the
-   live data.
+1. Manager OTP login not yet performed (needs your Gmail + a device) — the only
+   remaining action to fully close Phase 1.
+2. Emulator runtime verification of all phases still pending.
