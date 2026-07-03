@@ -241,7 +241,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.62,
+              childAspectRatio: 0.58,
             ),
             itemCount: products.length,
             itemBuilder: (context, index) {
@@ -278,7 +278,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.62,
+        childAspectRatio: 0.58,
       ),
       itemCount: 6,
       itemBuilder: (_, _) => Shimmer.fromColors(
@@ -287,11 +287,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ),

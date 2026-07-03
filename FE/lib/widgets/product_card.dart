@@ -33,9 +33,10 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: AspectRatio(
+              aspectRatio: 1,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -100,64 +101,67 @@ class ProductCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             name,
             style: GoogleFonts.dmSans(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
+              height: 1.3,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           if (sizes.isNotEmpty)
-            Row(
-              children: sizes.take(3).map((s) => Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        s,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textHint,
-                          fontWeight: FontWeight.w500,
-                        ),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: sizes.take(3).map((s) => Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      s,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textHint,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   )).toList(),
             ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Text(
-                '${price.toStringAsFixed(0)}đ',
-                style: GoogleFonts.dmSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
-              ),
-              if (hasDiscount) ...[
-                const SizedBox(width: 6),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              children: [
                 Text(
-                  '${originalPrice!.toStringAsFixed(0)}đ',
+                  '${price.toStringAsFixed(0)}đ',
                   style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textHint,
-                    decoration: TextDecoration.lineThrough,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
                   ),
                 ),
+                if (hasDiscount) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    '${originalPrice!.toStringAsFixed(0)}đ',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textHint,
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ],
       ),

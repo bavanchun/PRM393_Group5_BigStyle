@@ -49,54 +49,119 @@ class _ManagerProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Cá nhân (Quản lý)'),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           final user = state.user;
           return Column(
             children: [
-              const SizedBox(height: 32),
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: AppColors.secondary,
-                child: Text(
-                  (user?.fullName.isNotEmpty == true ? user!.fullName[0] : 'M')
-                      .toUpperCase(),
-                  style: const TextStyle(fontSize: 32, color: AppColors.primary),
+              // Header
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 48, 20, 24),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      child: user?.avatarUrl != null
+                          ? ClipOval(
+                              child: Image.network(user!.avatarUrl!,
+                                  width: 56, height: 56, fit: BoxFit.cover))
+                          : Text(
+                              (user?.fullName.isNotEmpty == true
+                                  ? user!.fullName[0]
+                                  : 'M'),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700),
+                            ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user?.fullName ?? 'Quản lý',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            user?.email ?? '',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 13,
+                            ),
+                          ),
+                          if (user?.brandName != null &&
+                              user!.brandName!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.store,
+                                    size: 12,
+                                    color: Colors.white.withValues(alpha: 0.8)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  user.brandName!,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined,
+                          color: Colors.white, size: 20),
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/edit-profile'),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                user?.fullName ?? 'Quản lý',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+
+              const SizedBox(height: 8),
+
+              // Menu
+              _ProfileMenuItem(
+                icon: Icons.edit_outlined,
+                title: 'Chỉnh sửa hồ sơ',
+                onTap: () => Navigator.pushNamed(context, '/edit-profile'),
               ),
-              Text(
-                user?.email ?? '',
-                style: const TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 32),
-              const Divider(),
+              const Divider(indent: 16, endIndent: 16),
               if (user != null)
-                ListTile(
-                  leading: const Icon(Icons.logout, color: AppColors.error),
-                  title: const Text('Đăng xuất',
-                      style: TextStyle(color: AppColors.error)),
+                _ProfileMenuItem(
+                  icon: Icons.logout,
+                  title: 'Đăng xuất',
+                  color: AppColors.error,
                   onTap: () {
                     context.read<AuthBloc>().add(const SignOutEvent());
                   },
                 )
               else
-                ListTile(
-                  leading: const Icon(Icons.login, color: AppColors.primary),
-                  title: const Text('Đăng nhập',
-                      style: TextStyle(color: AppColors.primary)),
-                  onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                _ProfileMenuItem(
+                  icon: Icons.login,
+                  title: 'Đăng nhập',
+                  color: AppColors.primary,
+                  onTap: () =>
+                      Navigator.pushReplacementNamed(context, '/login'),
                 ),
-              const Divider(),
             ],
           );
         },
@@ -105,34 +170,29 @@ class _ManagerProfileScreen extends StatelessWidget {
   }
 }
 
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
+class _ProfileMenuItem extends StatelessWidget {
   final IconData icon;
+  final String title;
+  final Color? color;
+  final VoidCallback? onTap;
 
-  const _PlaceholderScreen({required this.title, required this.icon});
+  const _ProfileMenuItem({
+    required this.icon,
+    required this.title,
+    this.color,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 64, color: AppColors.textHint.withValues(alpha: 0.5)),
-            const SizedBox(height: 16),
-            Text(
-              'Tính năng đang phát triển',
-              style: TextStyle(color: AppColors.textHint),
-            ),
-          ],
-        ),
-      ),
+    return ListTile(
+      leading: Icon(icon, color: color ?? AppColors.textSecondary),
+      title: Text(title,
+          style: TextStyle(
+              fontSize: 14, color: color ?? AppColors.textPrimary)),
+      trailing:
+          Icon(Icons.chevron_right, color: AppColors.textHint, size: 20),
+      onTap: onTap,
     );
   }
 }

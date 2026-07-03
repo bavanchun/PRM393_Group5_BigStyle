@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -51,9 +49,17 @@ class _LoginScreenState extends State<LoginScreen> {
               if (state is AuthSuccess) {
                 final user = state.user;
                 if (user == null) return;
-                final route = user.role.name == 'manager'
-                    ? '/manager'
-                    : '/home';
+                String route;
+                switch (user.role.name) {
+                  case 'admin':
+                    route = '/admin';
+                    break;
+                  case 'manager':
+                    route = '/manager';
+                    break;
+                  default:
+                    route = '/home';
+                }
                 Navigator.pushReplacementNamed(context, route);
               }
               if (state is AuthError) {
@@ -93,12 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             _buildDivider(),
                             const SizedBox(height: 24),
                             _buildGoogleButton(state),
-                            if (!kReleaseMode) ...[
-                              const SizedBox(height: 20),
-                              _buildMockSection(state),
-                            ],
-                            const SizedBox(height: 20),
-                            _buildSignUpLink(),
                           ],
                         ),
                       ),
@@ -354,129 +354,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildMockSection(AuthState state) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'quick login',
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textHint,
-                  fontSize: 11,
-                  letterSpacing: 1,
-                ),
-              ),
-            ),
-            const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _mockButton(
-                label: 'Khách hàng',
-                icon: Icons.person_outline,
-                onTap: state is AuthLoading
-                    ? null
-                    : () => context.read<AuthBloc>().add(
-                        const MockLoginEvent('customer'),
-                      ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _mockButton(
-                label: 'Quản lý',
-                icon: Icons.admin_panel_settings_outlined,
-                onTap: state is AuthLoading
-                    ? null
-                    : () => context.read<AuthBloc>().add(
-                        const MockLoginEvent('manager'),
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _mockButton({
-    required String label,
-    required IconData icon,
-    required VoidCallback? onTap,
-  }) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE8E0E2), width: 1.5),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18, color: const Color(0xFFA03560)),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D2D2D),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSignUpLink() {
-    return Center(
-      child: Text.rich(
-        TextSpan(
-          text: 'Chưa có tài khoản? ',
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 13,
-          ),
-          children: [
-            TextSpan(
-              text: 'Đăng ký',
-              style: AppTypography.bodyMedium.copyWith(
-                color: const Color(0xFFC4517A),
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  if (_emailController.text.trim().isNotEmpty) {
-                    context.read<AuthBloc>().add(
-                      SendOTPEvent(_emailController.text.trim()),
-                    );
-                    setState(() => _showOtp = true);
-                  }
-                },
-            ),
-          ],
-        ),
-        textAlign: TextAlign.center,
       ),
     );
   }
