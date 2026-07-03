@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: OTP Cleanup + Dashboard Checklist
-status: in-progress
+status: completed
 effort: ''
 ---
 

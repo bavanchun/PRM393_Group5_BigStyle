@@ -1,7 +1,7 @@
 ---
 title: Fix Auth OTP + Google Sign-in + Config Reproducibility
 description: ''
-status: in-progress
+status: completed
 priority: P2
 branch: main
 tags: []
@@ -27,7 +27,7 @@ Nguồn: `plans/reports/auth-otp-google-signin-reproducibility-fix-260703-1226-a
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | [Config Reproducibility](./phase-01-config-reproducibility.md) | Completed |
-| 2 | [OTP Cleanup + Dashboard Checklist](./phase-02-otp-cleanup-dashboard-checklist.md) | In Progress |
+| 2 | [OTP Cleanup + Dashboard Checklist](./phase-02-otp-cleanup-dashboard-checklist.md) | Completed |
 
 ## Dependencies
 
