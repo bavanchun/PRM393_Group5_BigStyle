@@ -87,9 +87,9 @@ class AppBottomNav extends StatelessWidget {
                       label: 'Giỏ hàng',
                     ),
                     const BottomNavigationBarItem(
-                      icon: Icon(Icons.favorite_outline),
-                      activeIcon: Icon(Icons.favorite),
-                      label: 'Yêu thích',
+                      icon: Icon(Icons.receipt_long_outlined),
+                      activeIcon: Icon(Icons.receipt_long),
+                      label: 'Đơn hàng',
                     ),
                     const BottomNavigationBarItem(
                       icon: Icon(Icons.person_outline),
@@ -116,7 +116,7 @@ class AppBottomNav extends StatelessWidget {
       case 2:
         Navigator.pushNamed(context, '/cart');
       case 3:
-        Navigator.pushNamed(context, '/favorites');
+        Navigator.pushNamed(context, '/orders');
       case 4:
         Navigator.pushNamed(context, '/profile');
     }
