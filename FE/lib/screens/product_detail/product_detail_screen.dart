@@ -13,9 +13,6 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/review/review_bloc.dart';
 import '../../blocs/review/review_event.dart';
 import '../../blocs/review/review_state.dart';
-import '../../blocs/wishlist/wishlist_bloc.dart';
-import '../../blocs/wishlist/wishlist_state.dart';
-import '../../blocs/wishlist/wishlist_actions.dart';
 import '../../models/variant_model.dart';
 import '../../widgets/expandable_text.dart';
 import 'product_review_section.dart';
@@ -139,30 +136,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           onPressed: () {},
                           padding: EdgeInsets.zero,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      BlocBuilder<WishlistBloc, WishlistState>(
-                        builder: (context, wishlist) {
-                          final isWishlisted = wishlist.contains(product.id);
-                          return CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.white,
-                            child: IconButton(
-                              icon: Icon(
-                                isWishlisted
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                size: 20,
-                                color: isWishlisted
-                                    ? AppColors.primary
-                                    : AppColors.textPrimary,
-                              ),
-                              onPressed: () =>
-                                  toggleWishlist(context, product.id),
-                              padding: EdgeInsets.zero,
-                            ),
-                          );
-                        },
                       ),
                     ],
                   ),

@@ -7,11 +7,6 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/product/product_bloc.dart';
 import '../../blocs/product/product_event.dart';
 import '../../blocs/product/product_state.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/wishlist/wishlist_bloc.dart';
-import '../../blocs/wishlist/wishlist_event.dart';
-import '../../blocs/wishlist/wishlist_state.dart';
-import '../../blocs/wishlist/wishlist_actions.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/app_bottom_nav.dart';
@@ -30,8 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<ProductBloc>().add(const LoadProducts());
     context.read<ProductBloc>().add(ProductLoadFeatured());
     context.read<ProductBloc>().add(ProductLoadCategories());
-    final user = context.read<AuthBloc>().state.user;
-    context.read<WishlistBloc>().add(WishlistLoad(user?.id));
   }
 
   @override
@@ -103,25 +96,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final product = state.featuredProducts[index];
-                          return BlocBuilder<WishlistBloc, WishlistState>(
-                            builder: (context, wishlist) => ProductCard(
-                              imageUrl: product.images.isNotEmpty
-                                  ? product.images.first
-                                  : '',
-                              name: product.name,
-                              price: product.price,
-                              originalPrice: product.originalPrice,
-                              sizes: product.sizes,
-                              isWishlisted: wishlist.contains(product.id),
-                              soldCount: product.soldCount,
-                              brandName: product.brandName,
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                '/product-detail',
-                                arguments: product.id,
-                              ),
-                              onWishlistToggle: () =>
-                                  toggleWishlist(context, product.id),
+                          return ProductCard(
+                            imageUrl: product.images.isNotEmpty
+                                ? product.images.first
+                                : '',
+                            name: product.name,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            sizes: product.sizes,
+                            soldCount: product.soldCount,
+                            brandName: product.brandName,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '/product-detail',
+                              arguments: product.id,
                             ),
                           );
                         },
@@ -162,25 +150,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final product = state.products[index];
-                          return BlocBuilder<WishlistBloc, WishlistState>(
-                            builder: (context, wishlist) => ProductCard(
-                              imageUrl: product.images.isNotEmpty
-                                  ? product.images.first
-                                  : '',
-                              name: product.name,
-                              price: product.price,
-                              originalPrice: product.originalPrice,
-                              sizes: product.sizes,
-                              isWishlisted: wishlist.contains(product.id),
-                              soldCount: product.soldCount,
-                              brandName: product.brandName,
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                '/product-detail',
-                                arguments: product.id,
-                              ),
-                              onWishlistToggle: () =>
-                                  toggleWishlist(context, product.id),
+                          return ProductCard(
+                            imageUrl: product.images.isNotEmpty
+                                ? product.images.first
+                                : '',
+                            name: product.name,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            sizes: product.sizes,
+                            soldCount: product.soldCount,
+                            brandName: product.brandName,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '/product-detail',
+                              arguments: product.id,
                             ),
                           );
                         },

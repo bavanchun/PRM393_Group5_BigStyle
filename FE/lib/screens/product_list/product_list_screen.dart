@@ -9,9 +9,6 @@ import '../../blocs/product/product_event.dart';
 import '../../blocs/product/product_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_state.dart';
-import '../../blocs/wishlist/wishlist_bloc.dart';
-import '../../blocs/wishlist/wishlist_state.dart';
-import '../../blocs/wishlist/wishlist_actions.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/app_bottom_nav.dart';
 
@@ -246,23 +243,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
             itemCount: products.length,
             itemBuilder: (context, index) {
               final product = products[index];
-              return BlocBuilder<WishlistBloc, WishlistState>(
-                builder: (context, wishlist) => ProductCard(
-                  imageUrl:
-                      product.images.isNotEmpty ? product.images.first : '',
-                  name: product.name,
-                  price: product.price,
-                  originalPrice: product.originalPrice,
-                  sizes: product.sizes,
-                  isWishlisted: wishlist.contains(product.id),
-                  soldCount: product.soldCount,
-                  brandName: product.brandName,
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    '/product-detail',
-                    arguments: product.id,
-                  ),
-                  onWishlistToggle: () => toggleWishlist(context, product.id),
+              return ProductCard(
+                imageUrl:
+                    product.images.isNotEmpty ? product.images.first : '',
+                name: product.name,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                sizes: product.sizes,
+                soldCount: product.soldCount,
+                brandName: product.brandName,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  '/product-detail',
+                  arguments: product.id,
                 ),
               );
             },

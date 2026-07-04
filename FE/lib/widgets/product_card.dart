@@ -8,11 +8,9 @@ class ProductCard extends StatelessWidget {
   final double price;
   final double? originalPrice;
   final List<String> sizes;
-  final bool isWishlisted;
   final int soldCount;
   final String? brandName;
   final VoidCallback? onTap;
-  final VoidCallback? onWishlistToggle;
 
   const ProductCard({
     super.key,
@@ -21,11 +19,9 @@ class ProductCard extends StatelessWidget {
     required this.price,
     this.originalPrice,
     this.sizes = const [],
-    this.isWishlisted = false,
     this.soldCount = 0,
     this.brandName,
     this.onTap,
-    this.onWishlistToggle,
   });
 
   bool get hasDiscount => originalPrice != null && originalPrice! > price;
@@ -76,32 +72,6 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: onWishlistToggle,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        child: Icon(
-                          isWishlisted
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          key: ValueKey(isWishlisted),
-                          color: isWishlisted
-                              ? AppColors.primary
-                              : Colors.white,
-                          size: 22,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black26,
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -136,7 +106,7 @@ class ProductCard extends StatelessWidget {
               color: AppColors.textPrimary,
               height: 1.2,
             ),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
@@ -163,24 +133,20 @@ class ProductCard extends StatelessWidget {
             ),
           const SizedBox(height: 2),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '${price.toStringAsFixed(0)}đ',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
+              Text(
+                '${price.toStringAsFixed(0)}đ',
+                style: GoogleFonts.dmSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
                 ),
               ),
               if (hasDiscount) ...[
-                const SizedBox(width: 3),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
+                const SizedBox(width: 4),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 1),
                   child: Text(
                     '${originalPrice!.toStringAsFixed(0)}đ',
                     style: GoogleFonts.dmSans(
@@ -188,6 +154,7 @@ class ProductCard extends StatelessWidget {
                       fontWeight: FontWeight.w400,
                       color: AppColors.textHint,
                       decoration: TextDecoration.lineThrough,
+                      decorationColor: AppColors.textHint,
                     ),
                   ),
                 ),

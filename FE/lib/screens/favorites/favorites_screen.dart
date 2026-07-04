@@ -76,7 +76,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       price: product.price,
                       originalPrice: product.originalPrice,
                       sizes: product.sizes,
-                      isWishlisted: state.contains(product.id),
                       soldCount: product.soldCount,
                       brandName: product.brandName,
                       onTap: () => Navigator.pushNamed(
@@ -84,13 +83,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         '/product-detail',
                         arguments: product.id,
                       ),
-                      onWishlistToggle: () =>
-                          context.read<WishlistBloc>().add(
-                                WishlistToggle(
-                                  userId: user!.id,
-                                  productId: product.id,
-                                ),
-                              ),
                     );
                   },
                 );
