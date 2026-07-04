@@ -35,6 +35,7 @@ class ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
@@ -105,20 +106,20 @@ class ProductCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           if (brandName != null && brandName!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 2),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(3),
                 ),
                 child: Text(
                   brandName!,
                   style: GoogleFonts.dmSans(
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
                   ),
@@ -130,76 +131,81 @@ class ProductCard extends StatelessWidget {
           Text(
             name,
             style: GoogleFonts.dmSans(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
-              height: 1.3,
+              height: 1.2,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           if (sizes.isNotEmpty)
             Wrap(
-              spacing: 4,
-              runSpacing: 4,
+              spacing: 3,
+              runSpacing: 2,
               children: sizes.take(3).map((s) => Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
+                        horizontal: 4, vertical: 1),
                     decoration: BoxDecoration(
                       color: AppColors.background,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                     child: Text(
                       s,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 9,
                         color: AppColors.textHint,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   )).toList(),
             ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              children: [
-                Text(
-                  '${price.toStringAsFixed(0)}đ',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${price.toStringAsFixed(0)}đ',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
-                if (hasDiscount) ...[
-                  const SizedBox(width: 4),
-                  Text(
+              ),
+              if (hasDiscount) ...[
+                const SizedBox(width: 3),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
                     '${originalPrice!.toStringAsFixed(0)}đ',
                     style: GoogleFonts.dmSans(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.w400,
                       color: AppColors.textHint,
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
           if (soldCount > 0)
             Padding(
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: 1),
               child: Row(
                 children: [
                   Icon(Icons.shopping_bag_outlined,
-                      size: 11, color: AppColors.textHint),
-                  const SizedBox(width: 3),
+                      size: 10, color: AppColors.textHint),
+                  const SizedBox(width: 2),
                   Text(
                     'Đã bán $soldCount',
                     style: GoogleFonts.dmSans(
-                      fontSize: 10,
+                      fontSize: 9,
                       color: AppColors.textHint,
                       fontWeight: FontWeight.w500,
                     ),
