@@ -9,6 +9,8 @@ class ProductCard extends StatelessWidget {
   final double? originalPrice;
   final List<String> sizes;
   final bool isWishlisted;
+  final int soldCount;
+  final String? brandName;
   final VoidCallback? onTap;
   final VoidCallback? onWishlistToggle;
 
@@ -20,6 +22,8 @@ class ProductCard extends StatelessWidget {
     this.originalPrice,
     this.sizes = const [],
     this.isWishlisted = false,
+    this.soldCount = 0,
+    this.brandName,
     this.onTap,
     this.onWishlistToggle,
   });
@@ -102,6 +106,27 @@ class ProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
+          if (brandName != null && brandName!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  brandName!,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
           Text(
             name,
             style: GoogleFonts.dmSans(
@@ -163,6 +188,25 @@ class ProductCard extends StatelessWidget {
               ],
             ),
           ),
+          if (soldCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Row(
+                children: [
+                  Icon(Icons.shopping_bag_outlined,
+                      size: 11, color: AppColors.textHint),
+                  const SizedBox(width: 3),
+                  Text(
+                    'Đã bán $soldCount',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 10,
+                      color: AppColors.textHint,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

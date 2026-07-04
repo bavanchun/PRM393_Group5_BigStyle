@@ -113,6 +113,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               originalPrice: product.originalPrice,
                               sizes: product.sizes,
                               isWishlisted: wishlist.contains(product.id),
+                              soldCount: product.soldCount,
+                              brandName: product.brandName,
                               onTap: () => Navigator.pushNamed(
                                 context,
                                 '/product-detail',
@@ -170,6 +172,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               originalPrice: product.originalPrice,
                               sizes: product.sizes,
                               isWishlisted: wishlist.contains(product.id),
+                              soldCount: product.soldCount,
+                              brandName: product.brandName,
                               onTap: () => Navigator.pushNamed(
                                 context,
                                 '/product-detail',

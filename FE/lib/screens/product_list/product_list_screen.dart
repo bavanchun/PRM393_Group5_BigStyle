@@ -255,6 +255,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   originalPrice: product.originalPrice,
                   sizes: product.sizes,
                   isWishlisted: wishlist.contains(product.id),
+                  soldCount: product.soldCount,
+                  brandName: product.brandName,
                   onTap: () => Navigator.pushNamed(
                     context,
                     '/product-detail',
