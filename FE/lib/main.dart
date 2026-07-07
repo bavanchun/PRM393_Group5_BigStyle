@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart' as supa;
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_router.dart';
 import 'config/supabase/supabase_config.dart';
@@ -29,10 +30,12 @@ import 'services/chat_service.dart';
 import 'services/review_service.dart';
 import 'services/wishlist_service.dart';
 import 'services/payment_service.dart';
+import 'services/admin_service.dart';
 
 import 'blocs/manager_product/manager_product_bloc.dart';
 import 'blocs/manager_category/manager_category_bloc.dart';
 import 'blocs/manager_voucher/manager_voucher_bloc.dart';
+import 'blocs/admin/admin_bloc.dart';
 import 'services/category_service.dart';
 import 'services/voucher_service.dart';
 
@@ -41,7 +44,7 @@ void main() async {
 
   await dotenv.load(fileName: '.env');
 
-  await Supabase.initialize(
+  await supa.Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     publishableKey: SupabaseConfig.supabaseAnonKey,
   );
@@ -49,8 +52,53 @@ void main() async {
   runApp(const BigStyleApp());
 }
 
-class BigStyleApp extends StatelessWidget {
+class BigStyleApp extends StatefulWidget {
   const BigStyleApp({super.key});
+
+  @override
+  State<BigStyleApp> createState() => _BigStyleAppState();
+}
+
+class _BigStyleAppState extends State<BigStyleApp> {
+  StreamSubscription<supa.AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    final supabase = supa.Supabase.instance.client;
+
+    _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      final event = data.event;
+      final session = data.session;
+
+      if (!mounted) return;
+
+      if (event == supa.AuthChangeEvent.signedOut) {
+        final ctx = navigatorKey.currentContext;
+        if (ctx != null) {
+          // Only navigate — do NOT re-dispatch SignOutEvent (causes infinite loop)
+          Navigator.of(ctx).pushNamedAndRemoveUntil(
+            '/login',
+            (route) => false,
+          );
+        }
+      } else if (event == supa.AuthChangeEvent.tokenRefreshed) {
+        debugPrint('Session: Token refreshed');
+      } else if (session == null) {
+        debugPrint('Session: No active session');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +137,7 @@ class BigStyleApp extends StatelessWidget {
           BlocProvider(
             create: (_) => PaymentBloc(paymentService, CartService()),
           ),
+          BlocProvider(create: (_) => AdminBloc(AdminService())),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listenWhen: (previous, current) =>
@@ -104,9 +153,13 @@ class BigStyleApp extends StatelessWidget {
             theme: AppTheme.light,
             initialRoute: '/',
             onGenerateRoute: AppRouter.generateRoute,
+            navigatorKey: navigatorKey,
           ),
         ),
       ),
     );
   }
 }
+
+// Global navigator key for auth listener
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

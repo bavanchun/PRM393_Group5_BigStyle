@@ -10,12 +10,12 @@ import '../../blocs/product_detail/product_detail_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/review/review_bloc.dart';
-import '../../blocs/review/review_event.dart';
-import '../../blocs/review/review_state.dart';
 import '../../blocs/wishlist/wishlist_bloc.dart';
 import '../../blocs/wishlist/wishlist_state.dart';
 import '../../blocs/wishlist/wishlist_actions.dart';
+import '../../blocs/review/review_bloc.dart';
+import '../../blocs/review/review_event.dart';
+import '../../blocs/review/review_state.dart';
 import '../../models/variant_model.dart';
 import '../../widgets/expandable_text.dart';
 import 'product_review_section.dart';
@@ -149,6 +149,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           );
                         },
+                      ),
+                      const SizedBox(width: 8),
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.share_outlined,
+                            size: 20,
+                            color: AppColors.textPrimary,
+                          ),
+                          onPressed: () {},
+                          padding: EdgeInsets.zero,
+                        ),
                       ),
                     ],
                   ),

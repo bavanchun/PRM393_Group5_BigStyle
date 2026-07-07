@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/product_service.dart';
 import 'manager_product_event.dart';
 import 'manager_product_state.dart';
@@ -18,7 +19,9 @@ class ManagerProductBloc extends Bloc<ManagerProductEvent, ManagerProductState> 
       LoadManagerProductsEvent event, Emitter<ManagerProductState> emit) async {
     emit(ManagerProductLoading());
     try {
-      final products = await _productService.getProducts();
+      // Only load products belonging to the current manager
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      final products = await _productService.getProducts(storeId: userId);
       emit(ManagerProductLoaded(products));
     } catch (e) {
       emit(ManagerProductError(e.toString()));

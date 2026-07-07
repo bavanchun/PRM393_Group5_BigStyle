@@ -14,7 +14,9 @@ create table public.profiles (
   phone           text,
   avatar_url      text,
   role            text not null default 'customer'
-                    check (role in ('customer', 'manager')),
+                    check (role in ('customer', 'manager', 'admin')),
+  brand_name      text,
+  brand_logo_url  text,
   address         jsonb,
   -- address format: {"street":"123 Nguyễn Huệ","district":"Quận 1","city":"TP.HCM","lat":10.7769,"lng":106.7009}
   body_measurements jsonb,
@@ -97,6 +99,7 @@ create policy "Managers can manage categories"
 create table public.products (
   id              uuid default gen_random_uuid() primary key,
   category_id     uuid references public.categories(id) on delete set null,
+  store_id        uuid references public.profiles(id) on delete set null,
   name            text not null,
   description     text,
   slug            text not null unique,
@@ -122,9 +125,9 @@ create policy "Anyone can view active products"
   on public.products for select
   using (is_active = true);
 
-create policy "Managers can manage products"
+create policy "Managers manage own products"
   on public.products for all
-  using (public.is_manager());
+  using (public.is_manager() AND store_id = auth.uid());
 
 
 -- ============================================================

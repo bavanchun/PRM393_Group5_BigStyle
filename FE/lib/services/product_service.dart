@@ -13,11 +13,15 @@ class ProductService {
     String? categoryId,
     String? searchQuery,
     bool? featured,
+    String? storeId,
   }) async {
-    var query = _client.from('products').select('*, category:categories(*), variants:product_variants(*)');
+    var query = _client.from('products').select('*, category:categories(*), variants:product_variants(*), store:profiles(brand_name)');
 
     if (categoryId != null) {
       query = query.eq('category_id', categoryId);
+    }
+    if (storeId != null) {
+      query = query.eq('store_id', storeId);
     }
     if (featured == true) {
       query = query.eq('is_featured', true);
@@ -33,7 +37,7 @@ class ProductService {
   Future<ProductModel?> getProductById(String id) async {
     final data = await _client
         .from('products')
-        .select('*, category:categories(*), variants:product_variants(*)')
+        .select('*, category:categories(*), variants:product_variants(*), store:profiles(brand_name)')
         .eq('id', id)
         .maybeSingle();
     return data != null ? ProductModel.fromMap(data) : null;
@@ -64,6 +68,14 @@ class ProductService {
     // `slug` is NOT NULL with a unique constraint; the UI never collects one,
     // so derive it from the product name before insert.
     productData['slug'] = generateSlug(product.name);
+
+    // Set store_id to current user if not already set
+    if (productData['store_id'] == null) {
+      final userId = _client.auth.currentUser?.id;
+      if (userId != null) {
+        productData['store_id'] = userId;
+      }
+    }
 
     final insertedProductList = await _client
         .from('products')

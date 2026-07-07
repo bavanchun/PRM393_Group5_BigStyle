@@ -16,6 +16,7 @@ class _OtpInputState extends State<OtpInput> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final List<TextEditingController> _controllers =
       List.generate(6, (_) => TextEditingController());
+
   @override
   void dispose() {
     for (final node in _focusNodes) {
@@ -29,95 +30,107 @@ class _OtpInputState extends State<OtpInput> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(6, (index) {
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: index < 6 ? 4 : 0),
-              child: SizedBox(
-                width: 44,
-                height: 54,
-                child: TextField(
-                  controller: _controllers[index],
-                  focusNode: _focusNodes[index],
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  maxLength: 1,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    letterSpacing: 0,
-                  ),
-                  decoration: InputDecoration(
-                    counterText: '',
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: EdgeInsets.zero,
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.inputRadius),
-                      borderSide: BorderSide(
-                        color: _focusNodes[index].hasFocus
-                            ? AppColors.primary
-                            : AppColors.border,
-                        width: _focusNodes[index].hasFocus ? 2 : 1,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.inputRadius),
-                      borderSide: BorderSide(
-                        color: _controllers[index].text.isNotEmpty
-                            ? AppColors.primary
-                            : AppColors.border,
-                        width: _controllers[index].text.isNotEmpty ? 1.5 : 1,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.inputRadius),
-                      borderSide: const BorderSide(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    if (value.isNotEmpty && index < 5) {
-                      _focusNodes[index + 1].requestFocus();
-                    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        const gapCount = 5;
+        const gap = 10.0;
+        final availableForBoxes = totalWidth - (gapCount * gap);
+        final boxSize = (availableForBoxes / 6).clamp(32.0, 52.0);
 
-                    if (index == 5 && value.isNotEmpty) {
-                      _focusNodes[index].unfocus();
-                      final code = _controllers.map((c) => c.text).join();
-                      widget.onCompleted(code);
-                    }
-                  },
-                  onTapOutside: (_) {},
+        return Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(6, (index) {
+                return Padding(
+                  padding: EdgeInsets.only(right: index < 5 ? gap : 0),
+                  child: SizedBox(
+                    width: boxSize,
+                    height: boxSize * 1.2,
+                    child: TextField(
+                      controller: _controllers[index],
+                      focusNode: _focusNodes[index],
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      maxLength: 1,
+                      style: TextStyle(
+                        fontSize: boxSize * 0.45,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: 0,
+                      ),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: EdgeInsets.zero,
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.inputRadius),
+                          borderSide: BorderSide(
+                            color: _focusNodes[index].hasFocus
+                                ? AppColors.primary
+                                : AppColors.border,
+                            width: _focusNodes[index].hasFocus ? 2 : 1,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.inputRadius),
+                          borderSide: BorderSide(
+                            color: _controllers[index].text.isNotEmpty
+                                ? AppColors.primary
+                                : AppColors.border,
+                            width:
+                                _controllers[index].text.isNotEmpty ? 1.5 : 1,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.inputRadius),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        if (value.isNotEmpty && index < 5) {
+                          _focusNodes[index + 1].requestFocus();
+                        }
+
+                        if (index == 5 && value.isNotEmpty) {
+                          _focusNodes[index].unfocus();
+                          final code =
+                              _controllers.map((c) => c.text).join();
+                          widget.onCompleted(code);
+                        }
+                      },
+                      onTapOutside: (_) {},
+                    ),
+                  ),
+                );
+              }),
+            ),
+            if (widget.onResend != null) ...[
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: widget.onResend,
+                child: Text(
+                  'Gửi lại mã',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
-            );
-          }),
-        ),
-        if (widget.onResend != null) ...[
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: widget.onResend,
-            child: Text(
-              'Gửi lại mã',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ),
-        ],
-      ],
+            ],
+          ],
+        );
+      },
     );
   }
 }

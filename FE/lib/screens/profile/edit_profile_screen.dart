@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_spacing.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../models/user_model.dart';
 import '../../services/product_service.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_text_field.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -22,6 +20,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  final _brandNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   // Guards the BlocListener below so it only reacts to the AuthSuccess/
   // AuthError emitted by *this* save attempt, not unrelated auth emissions.
@@ -41,6 +40,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _nameController.text = user.fullName;
       _phoneController.text = user.phone ?? '';
       _addressController.text = user.address ?? '';
+      _brandNameController.text = user.brandName ?? '';
     }
   }
 
@@ -49,6 +49,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _brandNameController.dispose();
     super.dispose();
   }
 
@@ -78,7 +79,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Chỉnh sửa hồ sơ')),
+      appBar: AppBar(
+        title: const Text('Chỉnh sửa hồ sơ'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+      ),
+      // BlocListener reacts only to this save attempt's result (guarded by
+      // _saving) so async avatar upload + profile update surface success/error.
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (!_saving) return;
@@ -96,92 +103,206 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         },
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Center(
-                    child: GestureDetector(
-                      onTap: _uploadingAvatar ? null : _pickAvatar,
-                      child: Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 48,
-                            backgroundColor: AppColors.secondary,
-                            backgroundImage: _pickedAvatarBytes != null
-                                ? MemoryImage(_pickedAvatarBytes!)
-                                : (state.user?.avatarUrl != null
-                                    ? NetworkImage(state.user!.avatarUrl!)
-                                    : null) as ImageProvider?,
-                            child:
-                                _pickedAvatarBytes == null &&
-                                    state.user?.avatarUrl == null
-                                ? Icon(Icons.person,
-                                    size: 48, color: AppColors.primary)
-                                : null,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
+            final user = state.user;
+            if (user == null) return const SizedBox();
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    // Interactive avatar with gallery upload (dev feature).
+                    Center(
+                      child: GestureDetector(
+                        onTap: _uploadingAvatar ? null : _pickAvatar,
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 48,
+                              backgroundColor: AppColors.secondary,
+                              backgroundImage: _pickedAvatarBytes != null
+                                  ? MemoryImage(_pickedAvatarBytes!)
+                                  : (user.avatarUrl != null
+                                          ? NetworkImage(user.avatarUrl!)
+                                          : null)
+                                      as ImageProvider?,
+                              child: _pickedAvatarBytes == null &&
+                                      user.avatarUrl == null
+                                  ? const Icon(Icons.person,
+                                      size: 48, color: AppColors.primary)
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  size: 16,
                                   color: Colors.white,
-                                  width: 2,
                                 ),
                               ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                size: 16,
-                                color: Colors.white,
-                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  AppTextField(
-                    controller: _nameController,
-                    label: 'Họ tên',
-                    hint: 'Nhập họ tên',
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Vui lòng nhập họ tên' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: _phoneController,
-                    label: 'Số điện thoại',
-                    hint: 'Nhập số điện thoại',
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: _addressController,
-                    label: 'Địa chỉ',
-                    hint: 'Nhập địa chỉ',
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 32),
-                  AppButton(
-                    label: 'Lưu thay đổi',
-                    isLoading: _saving || _uploadingAvatar,
-                    onPressed: (_saving || _uploadingAvatar) ? null : _save,
-                  ),
-                ],
+                    const SizedBox(height: 24),
+
+                    // Role badge (from main).
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: _getRoleColor(user.role).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        user.roleLabel,
+                        style: TextStyle(
+                          color: _getRoleColor(user.role),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Common fields
+                    _buildTextField(
+                      controller: _nameController,
+                      label: 'Họ tên',
+                      icon: Icons.person_outline,
+                      validator: (v) => v == null || v.isEmpty
+                          ? 'Vui lòng nhập họ tên'
+                          : null,
+                    ),
+                    const SizedBox(height: 14),
+                    _buildTextField(
+                      controller: _phoneController,
+                      label: 'Số điện thoại',
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 14),
+                    _buildTextField(
+                      controller: _addressController,
+                      label: 'Địa chỉ',
+                      icon: Icons.location_on_outlined,
+                      maxLines: 2,
+                    ),
+
+                    // Manager-only: brand name
+                    if (user.isManager) ...[
+                      const SizedBox(height: 14),
+                      _buildTextField(
+                        controller: _brandNameController,
+                        label: 'Tên thương hiệu',
+                        icon: Icons.store_outlined,
+                      ),
+                    ],
+
+                    const SizedBox(height: 32),
+
+                    // Save button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed:
+                            (_saving || _uploadingAvatar) ? null : _save,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: (_saving || _uploadingAvatar)
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Lưu thay đổi',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
+            );
           },
         ),
       ),
     );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      style: const TextStyle(fontSize: 14),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        filled: true,
+        fillColor: AppColors.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      ),
+    );
+  }
+
+  Color _getRoleColor(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return AppColors.primary;
+      case UserRole.manager:
+        return AppColors.warning;
+      case UserRole.customer:
+        return AppColors.success;
+    }
   }
 
   Future<void> _save() async {
@@ -221,6 +342,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       phone: _phoneController.text.trim(),
       address: _addressController.text.trim(),
       avatarUrl: _avatarUrl ?? currentUser.avatarUrl,
+      brandName: currentUser.isManager
+          ? _brandNameController.text.trim()
+          : currentUser.brandName,
     );
 
     if (!mounted) return;

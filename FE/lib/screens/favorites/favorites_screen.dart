@@ -64,7 +64,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 0.62,
+                    childAspectRatio: 0.58,
                   ),
                   itemCount: state.products.length,
                   itemBuilder: (context, index) {
@@ -76,19 +76,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       price: product.price,
                       originalPrice: product.originalPrice,
                       sizes: product.sizes,
-                      isWishlisted: state.contains(product.id),
+                      soldCount: product.soldCount,
+                      brandName: product.brandName,
                       onTap: () => Navigator.pushNamed(
                         context,
                         '/product-detail',
                         arguments: product.id,
                       ),
-                      onWishlistToggle: () =>
-                          context.read<WishlistBloc>().add(
-                                WishlistToggle(
-                                  userId: user!.id,
-                                  productId: product.id,
-                                ),
-                              ),
                     );
                   },
                 );

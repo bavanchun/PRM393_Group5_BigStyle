@@ -1,4 +1,21 @@
+# OS
 .DS_Store
+Thumbs.db
 
 # UX audit screenshots — local only, never commit
 docs/audit-assets/
+
+# Generated plugin registrants (Flutter auto-generates these)
+FE/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Android local properties
+FE/android/local.properties
+
+# Supabase CLI temp
+supabase/.temp/
+FE/supabase/.temp/
+
+# Environment (already in FE/.gitignore but adding root-level safety)
+.env
+*.env.local
+*.env.production

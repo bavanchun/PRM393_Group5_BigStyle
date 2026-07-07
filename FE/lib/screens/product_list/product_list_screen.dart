@@ -9,9 +9,6 @@ import '../../blocs/product/product_event.dart';
 import '../../blocs/product/product_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_state.dart';
-import '../../blocs/wishlist/wishlist_bloc.dart';
-import '../../blocs/wishlist/wishlist_state.dart';
-import '../../blocs/wishlist/wishlist_actions.dart';
 import '../../models/category_model.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/app_bottom_nav.dart';
@@ -265,26 +262,24 @@ class _ProductListScreenState extends State<ProductListScreen> {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.62,
+              childAspectRatio: 0.58,
             ),
             itemCount: products.length,
             itemBuilder: (context, index) {
               final product = products[index];
-              return BlocBuilder<WishlistBloc, WishlistState>(
-                builder: (context, wishlist) => ProductCard(
-                  imageUrl:
-                      product.images.isNotEmpty ? product.images.first : '',
-                  name: product.name,
-                  price: product.price,
-                  originalPrice: product.originalPrice,
-                  sizes: product.sizes,
-                  isWishlisted: wishlist.contains(product.id),
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    '/product-detail',
-                    arguments: product.id,
-                  ),
-                  onWishlistToggle: () => toggleWishlist(context, product.id),
+              return ProductCard(
+                imageUrl:
+                    product.images.isNotEmpty ? product.images.first : '',
+                name: product.name,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                sizes: product.sizes,
+                soldCount: product.soldCount,
+                brandName: product.brandName,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  '/product-detail',
+                  arguments: product.id,
                 ),
               );
             },
@@ -302,7 +297,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.62,
+        childAspectRatio: 0.58,
       ),
       itemCount: 6,
       itemBuilder: (_, _) => Shimmer.fromColors(
@@ -311,11 +306,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ),
