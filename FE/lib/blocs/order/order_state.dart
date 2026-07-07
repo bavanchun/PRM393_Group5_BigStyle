@@ -18,12 +18,14 @@ class OrderState extends Equatable {
     bool? isLoading,
     List<OrderModel>? orders,
     OrderModel? selectedOrder,
+    bool clearSelectedOrder = false,
     String? error,
   }) =>
       OrderState(
         isLoading: isLoading ?? this.isLoading,
         orders: orders ?? this.orders,
-        selectedOrder: selectedOrder ?? this.selectedOrder,
+        selectedOrder:
+            clearSelectedOrder ? null : (selectedOrder ?? this.selectedOrder),
         error: error,
       );
 

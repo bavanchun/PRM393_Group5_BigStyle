@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_typography.dart';
 import '../../config/app_config.dart';
@@ -280,13 +281,22 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
     return '50-70 phút';
   }
 
-  void _openGoogleMaps() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Đang mở Google Maps...'),
-        behavior: SnackBarBehavior.floating,
-      ),
+  Future<void> _openGoogleMaps() async {
+    final uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=${_shopLocation.latitude},${_shopLocation.longitude}',
     );
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) throw Exception('launchUrl returned false');
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể mở Google Maps'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _goToMyLocation() async {

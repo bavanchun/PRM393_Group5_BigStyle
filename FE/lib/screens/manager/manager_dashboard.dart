@@ -6,9 +6,15 @@ import '../../blocs/manager/manager_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
+import '../../models/order_model.dart';
+import '../../blocs/manager_product/manager_product_bloc.dart';
+import 'categories/manager_category_list_screen.dart';
 import 'manager_dashboard_widgets.dart';
+import 'products/manager_create_product_screen.dart';
 import 'manager_order_card.dart';
+import 'manager_order_detail_screen.dart';
 import 'manager_orders_screen.dart';
+import 'vouchers/manager_voucher_list_screen.dart';
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
@@ -60,7 +66,11 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 if (state.dashboardStats != null)
                   ManagerStatsGrid(stats: state.dashboardStats!),
                 const SizedBox(height: AppSpacing.lg),
-                ManagerQuickActions(onComingSoon: _showComingSoon),
+                ManagerQuickActions(
+                  onManageCategories: _openCategoryManager,
+                  onAddProduct: _openCreateProduct,
+                  onManageVouchers: _openVoucherManager,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 _buildRecentOrdersHeader(),
                 const SizedBox(height: AppSpacing.sm),
@@ -71,7 +81,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     (order) => ManagerOrderCard(
                       order: order,
                       compact: true,
-                      onDetail: () => _openOrderDetail(order.id),
+                      onDetail: () => _openOrderDetail(order),
                     ),
                   ),
               ],
@@ -118,16 +128,43 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     );
   }
 
-  void _openOrderDetail(String orderId) {
-    Navigator.pushNamed(context, '/order-detail', arguments: orderId);
+  void _openOrderDetail(OrderModel order) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ManagerOrderDetailScreen(order: order)),
+    );
   }
 
-  void _showComingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng đang phát triển'),
-        behavior: SnackBarBehavior.floating,
+  void _openCreateProduct() {
+    // Same route the products tab FAB uses: re-provide the app-wide
+    // ManagerProductBloc so the create screen can read it.
+    final bloc = context.read<ManagerProductBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: bloc,
+          child: const ManagerCreateProductScreen(),
+        ),
       ),
+    );
+  }
+
+  void _openCategoryManager() {
+    // ManagerCategoryBloc is provided app-wide in main.dart, so the pushed
+    // screen can read it directly.
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ManagerCategoryListScreen()),
+    );
+  }
+
+  void _openVoucherManager() {
+    // ManagerVoucherBloc is provided app-wide in main.dart, so the pushed
+    // screen can read it directly.
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ManagerVoucherListScreen()),
     );
   }
 }

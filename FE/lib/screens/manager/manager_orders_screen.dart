@@ -8,6 +8,8 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_status.dart';
 import 'manager_order_card.dart';
+import 'manager_order_detail_screen.dart';
+import 'order_status_update_sheet.dart';
 
 class ManagerOrdersScreen extends StatefulWidget {
   const ManagerOrdersScreen({super.key});
@@ -32,17 +34,30 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         backgroundColor: AppColors.surface,
         elevation: 0,
       ),
-      body: BlocBuilder<ManagerBloc, ManagerState>(
-        builder: (context, state) {
-          return Column(
-            children: [
-              _buildFilterChips(state.selectedStatus),
-              if (state.isOrdersLoading) const LinearProgressIndicator(),
-              const Divider(height: 1),
-              Expanded(child: _buildOrdersContent(state)),
-            ],
-          );
+      body: BlocListener<ManagerBloc, ManagerState>(
+        listenWhen: (previous, current) => previous.error != current.error,
+        listener: (context, state) {
+          if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error!),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
         },
+        child: BlocBuilder<ManagerBloc, ManagerState>(
+          builder: (context, state) {
+            return Column(
+              children: [
+                _buildFilterChips(state.selectedStatus),
+                if (state.isOrdersLoading) const LinearProgressIndicator(),
+                const Divider(height: 1),
+                Expanded(child: _buildOrdersContent(state)),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -110,11 +125,13 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
           final order = state.orders[index];
           return ManagerOrderCard(
             order: order,
-            onDetail: () => Navigator.pushNamed(
+            onDetail: () => Navigator.push(
               context,
-              '/order-detail',
-              arguments: order.id,
+              MaterialPageRoute(
+                builder: (_) => ManagerOrderDetailScreen(order: order),
+              ),
             ),
+            onUpdateStatus: () => showOrderStatusUpdateSheet(context, order),
           );
         },
       ),

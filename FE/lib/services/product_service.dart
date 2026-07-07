@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase/supabase_config.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
+import '../utils/slug.dart';
 
 class ProductService {
   final SupabaseClient _client = Supabase.instance.client;
@@ -43,7 +44,12 @@ class ProductService {
   }
 
   Future<List<CategoryModel>> getCategories() async {
-    final data = await _client.from('categories').select('*');
+    // Customer-facing read: only categories the manager has left active.
+    final data = await _client
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
     return data.map((e) => CategoryModel.fromMap(e)).toList();
   }
 
@@ -59,6 +65,9 @@ class ProductService {
     productData.remove('category');
     productData.remove('variants');
     productData.remove('created_at'); // Let DB handle it
+    // `slug` is NOT NULL with a unique constraint; the UI never collects one,
+    // so derive it from the product name before insert.
+    productData['slug'] = generateSlug(product.name);
 
     // Set store_id to current user if not already set
     if (productData['store_id'] == null) {
@@ -123,13 +132,22 @@ class ProductService {
     await _client.from('products').delete().eq('id', id);
   }
 
-  Future<String?> uploadProductImage(String fileName, List<int> bytes, String mimeType) async {
+  /// Uploads bytes to a public Storage bucket and returns the public URL.
+  /// [bucket] defaults to `products` (manager-gated). Pass `avatars` for
+  /// customer profile photos — that bucket's RLS requires the object path to
+  /// start with the caller's uid (e.g. `<uid>/<file>.jpg`).
+  Future<String?> uploadProductImage(
+    String fileName,
+    List<int> bytes,
+    String mimeType, {
+    String bucket = 'products',
+  }) async {
     try {
       final supabaseUrl = SupabaseConfig.supabaseUrl;
       final anonKey = SupabaseConfig.supabaseAnonKey;
       // Use user's JWT so RLS allows the upload (anon key is blocked by policy)
       final accessToken = _client.auth.currentSession?.accessToken ?? anonKey;
-      final url = Uri.parse('$supabaseUrl/storage/v1/object/products/$fileName');
+      final url = Uri.parse('$supabaseUrl/storage/v1/object/$bucket/$fileName');
 
       final response = await _httpClient.post(
         url,
@@ -142,7 +160,7 @@ class ProductService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return '$supabaseUrl/storage/v1/object/public/products/$fileName';
+        return '$supabaseUrl/storage/v1/object/public/$bucket/$fileName';
       } else {
         print('Upload failed: ${response.statusCode} - ${response.body}');
         return null;

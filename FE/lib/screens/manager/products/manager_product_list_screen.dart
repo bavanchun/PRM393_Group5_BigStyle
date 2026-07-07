@@ -43,23 +43,19 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.surface,
         elevation: 2,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {},
-        ),
         title: Row(
           children: [
             const Flexible(
               child: Text(
-                'CurveFit Admin',
+                'Quản trị BigStyle',
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),
@@ -67,12 +63,12 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text(
+              child: Text(
                 'Quản trị',
-                style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -462,31 +458,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         color: Colors.white,
         border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Hiển thị $count trên $count sản phẩm',
-            style: const TextStyle(fontSize: 11, color: Colors.grey),
-          ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left, size: 20),
-                onPressed: () {},
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.chevron_right, size: 20),
-                onPressed: () {},
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ),
-        ],
+      child: Text(
+        'Hiển thị $count trên $count sản phẩm',
+        style: const TextStyle(fontSize: 11, color: Colors.grey),
       ),
     );
   }

@@ -20,6 +20,16 @@ class AuthInitial extends AuthState {
   const AuthInitial();
 }
 
+/// Session check finished and no authenticated user was found.
+///
+/// Distinct from [AuthInitial] so emitting it from the initial state always
+/// produces a real transition — Equatable compares runtimeType first, so a
+/// re-emitted [AuthInitial] would be deduped and the splash listener would
+/// never fire (the guest splash-hang bug).
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+
 class AuthLoading extends AuthState {
   const AuthLoading();
 }

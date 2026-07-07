@@ -10,6 +10,9 @@ import '../../blocs/product_detail/product_detail_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/wishlist/wishlist_bloc.dart';
+import '../../blocs/wishlist/wishlist_state.dart';
+import '../../blocs/wishlist/wishlist_actions.dart';
 import '../../blocs/review/review_bloc.dart';
 import '../../blocs/review/review_event.dart';
 import '../../blocs/review/review_state.dart';
@@ -124,6 +127,30 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   right: 16,
                   child: Row(
                     children: [
+                      BlocBuilder<WishlistBloc, WishlistState>(
+                        builder: (context, wishlist) {
+                          final isWishlisted = wishlist.contains(product.id);
+                          return CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.white,
+                            child: IconButton(
+                              icon: Icon(
+                                isWishlisted
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 20,
+                                color: isWishlisted
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
+                              ),
+                              onPressed: () =>
+                                  toggleWishlist(context, product.id),
+                              padding: EdgeInsets.zero,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
                       CircleAvatar(
                         radius: 20,
                         backgroundColor: Colors.white,
@@ -612,10 +639,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  void _addToCart() {
+  /// Adds the currently selected variant to the cart.
+  ///
+  /// Returns `true` only when an item was actually added (i.e. not an
+  /// auth-redirect, validation bail-out, or out-of-stock variant) — used by
+  /// [_buyNow] to decide whether it's safe to navigate to the cart.
+  Future<bool> _addToCart({bool showSnackbar = true}) async {
     final detailState = context.read<ProductDetailBloc>().state;
     final product = detailState.product;
-    if (product == null) return;
+    if (product == null) return false;
 
     // Auth guard — require a real (non-mock) authenticated user
     final user = context.read<AuthBloc>().state.user;
@@ -627,7 +659,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       );
       Navigator.pushNamed(context, '/login');
-      return;
+      return false;
     }
 
     final hasSizes = product.sizes.isNotEmpty;
@@ -638,7 +670,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
+      return false;
     }
 
     final hasColors = product.variants.any((v) => v.colorHex.isNotEmpty);
@@ -649,45 +681,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
+      return false;
     }
 
-    // Resolve variant: prefer size + color match, fallback to size-only, then first
+    // Resolve variant: must match BOTH the selected size AND selected color.
+    // No size-only or `.first` fallback — those silently add a different
+    // color/size than what the user picked.
     final selectedSize = detailState.selectedSize!;
     final selectedColor = detailState.selectedColor;
 
-    VariantModel? variant = product.variants.cast<VariantModel?>().firstWhere(
+    final variant = product.variants.cast<VariantModel?>().firstWhere(
       (v) => v!.size == selectedSize && v.colorHex == selectedColor,
       orElse: () => null,
     );
-    variant ??= product.variants.cast<VariantModel?>().firstWhere(
-      (v) => v!.size == selectedSize,
-      orElse: () => null,
-    );
-    variant ??= product.variants.isNotEmpty ? product.variants.first : null;
 
     if (variant == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Sản phẩm tạm hết hàng'),
+          content: Text('Sản phẩm đã hết size/màu này'),
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
+      return false;
     }
 
     context.read<CartBloc>().add(CartAddItem(user.id, variant.id, 1));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Đã thêm vào giỏ hàng'),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (showSnackbar) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã thêm vào giỏ hàng'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+    return true;
   }
 
-  void _buyNow() {
+  Future<void> _buyNow() async {
     final state = context.read<ProductDetailBloc>().state;
     final product = state.product;
     if (product == null) return;
@@ -714,7 +746,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
-    _addToCart();
+    final added = await _addToCart(showSnackbar: false);
+    if (!added) return;
+    if (!mounted) return;
     Navigator.pushNamed(context, '/cart');
   }
 

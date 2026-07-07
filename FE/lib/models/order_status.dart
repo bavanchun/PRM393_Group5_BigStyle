@@ -30,4 +30,35 @@ enum OrderStatus {
       this != OrderStatus.cancelled &&
       this != OrderStatus.delivered &&
       this != OrderStatus.refunded;
+
+  /// Linear happy-path progression shown in the customer-facing status
+  /// timeline. Terminal/exception statuses (cancelled, refunded) are
+  /// rendered separately as a badge, never inserted into this list.
+  static const List<OrderStatus> happyPath = [
+    OrderStatus.pending,
+    OrderStatus.confirmed,
+    OrderStatus.processing,
+    OrderStatus.shipping,
+    OrderStatus.delivered,
+  ];
+
+  /// Valid next statuses a manager can transition this order to.
+  /// Terminal statuses (cancelled, refunded) have no further transitions.
+  List<OrderStatus> get nextStatuses {
+    switch (this) {
+      case OrderStatus.pending:
+        return const [OrderStatus.confirmed, OrderStatus.cancelled];
+      case OrderStatus.confirmed:
+        return const [OrderStatus.processing, OrderStatus.cancelled];
+      case OrderStatus.processing:
+        return const [OrderStatus.shipping, OrderStatus.cancelled];
+      case OrderStatus.shipping:
+        return const [OrderStatus.delivered];
+      case OrderStatus.delivered:
+        return const [OrderStatus.refunded];
+      case OrderStatus.cancelled:
+      case OrderStatus.refunded:
+        return const [];
+    }
+  }
 }

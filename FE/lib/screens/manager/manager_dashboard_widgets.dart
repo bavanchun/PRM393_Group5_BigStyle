@@ -109,9 +109,16 @@ class _StatCard extends StatelessWidget {
 }
 
 class ManagerQuickActions extends StatelessWidget {
-  final VoidCallback onComingSoon;
+  final VoidCallback onManageCategories;
+  final VoidCallback onAddProduct;
+  final VoidCallback onManageVouchers;
 
-  const ManagerQuickActions({super.key, required this.onComingSoon});
+  const ManagerQuickActions({
+    super.key,
+    required this.onManageCategories,
+    required this.onAddProduct,
+    required this.onManageVouchers,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -126,21 +133,21 @@ class ManagerQuickActions extends StatelessWidget {
               icon: Icons.add_circle_outline,
               label: 'Thêm sản phẩm',
               color: AppColors.primary,
-              onTap: onComingSoon,
+              onTap: onAddProduct,
             ),
             const SizedBox(width: AppSpacing.sm),
             _ActionCard(
               icon: Icons.category_outlined,
               label: 'Danh mục',
               color: AppColors.warning,
-              onTap: onComingSoon,
+              onTap: onManageCategories,
             ),
             const SizedBox(width: AppSpacing.sm),
             _ActionCard(
               icon: Icons.local_offer_outlined,
               label: 'Khuyến mãi',
               color: AppColors.success,
-              onTap: onComingSoon,
+              onTap: onManageVouchers,
             ),
           ],
         ),

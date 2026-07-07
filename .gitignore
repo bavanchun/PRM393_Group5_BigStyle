@@ -2,10 +2,11 @@
 .DS_Store
 Thumbs.db
 
+# UX audit screenshots — local only, never commit
+docs/audit-assets/
+
 # Generated plugin registrants (Flutter auto-generates these)
 FE/macos/Flutter/GeneratedPluginRegistrant.swift
-FE/windows/flutter/generated_plugin_registrant.cc
-FE/windows/flutter/generated_plugins.cmake
 
 # Android local properties
 FE/android/local.properties

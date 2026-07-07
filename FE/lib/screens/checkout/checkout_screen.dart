@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
@@ -8,9 +9,12 @@ import '../../blocs/cart/cart_state.dart';
 import '../../blocs/checkout/checkout_bloc.dart';
 import '../../blocs/checkout/checkout_event.dart';
 import '../../blocs/checkout/checkout_state.dart';
+import '../../blocs/cart/cart_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../services/voucher_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
+import 'payment_qr_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -22,13 +26,65 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _addressController = TextEditingController();
   final _noteController = TextEditingController();
+  final _promoController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _voucherService = VoucherService();
+  // 'cod' | 'bank_transfer'
+  String _paymentMethod = 'cod';
+  // Phí vận chuyển cố định (flat). Dùng chung cho hiển thị và khi đặt hàng để
+  // số tiền trên màn khớp với total của đơn tạo ra.
+  static const double _shippingFee = 30000;
+
+  // Promo code preview state — validated client-side for UI feedback only;
+  // the create_order RPC re-derives the discount authoritatively.
+  String? _promoCode;
+  double _discountAmount = 0;
+  bool _applyingPromo = false;
+  String? _promoError;
 
   @override
   void dispose() {
     _addressController.dispose();
     _noteController.dispose();
+    _promoController.dispose();
     super.dispose();
+  }
+
+  Future<void> _applyPromoCode(double subtotal) async {
+    final code = _promoController.text.trim();
+    if (code.isEmpty) return;
+
+    setState(() {
+      _applyingPromo = true;
+      _promoError = null;
+    });
+
+    try {
+      final discount = await _voucherService.validate(code, subtotal);
+      if (!mounted) return;
+      setState(() {
+        _discountAmount = discount;
+        _promoCode = code;
+        _promoError = null;
+        _applyingPromo = false;
+      });
+    } on PostgrestException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _discountAmount = 0;
+        _promoCode = null;
+        _promoError = e.message;
+        _applyingPromo = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _discountAmount = 0;
+        _promoCode = null;
+        _promoError = 'Áp dụng mã giảm giá thất bại. Vui lòng thử lại.';
+        _applyingPromo = false;
+      });
+    }
   }
 
   @override
@@ -38,7 +94,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       appBar: AppBar(title: const Text('Thanh toán')),
       body: BlocConsumer<CheckoutBloc, CheckoutState>(
         listener: (context, state) {
-          if (state.isSuccess) {
+          // Mutually exclusive: a given place-order result is either a COD
+          // success dialog or a SePay QR navigation — never both.
+          if (state.awaitingPayment) {
+            final authState = context.read<AuthBloc>().state;
+            Navigator.pushNamed(
+              context,
+              '/payment-qr',
+              arguments: PaymentQrArgs(
+                orderId: state.orderId!,
+                orderNumber: state.orderNumber,
+                total: state.total ?? 0,
+                userId: authState.user?.id ?? '',
+              ),
+            );
+          } else if (state.isSuccess) {
+            // COD order placed — CartBloc is the single owner of cart
+            // clearing (see checkout_bloc._onPlaceOrder comment).
+            final authState = context.read<AuthBloc>().state;
+            final userId = authState.user?.id;
+            if (userId != null) {
+              context.read<CartBloc>().add(CartClear(userId));
+            }
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -58,7 +135,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Mã đơn hàng: ${state.orderId?.substring(0, 8)}',
+                      'Mã đơn hàng: ${state.orderNumber ?? state.orderId?.substring(0, 8)}',
                       style: AppTypography.bodyMedium,
                     ),
                     const SizedBox(height: 24),
@@ -76,15 +153,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             );
           }
           if (state.error != null) {
+            // createOrder succeeded but createPayment failed for the bank
+            // transfer branch — orderId/orderNumber survive the error so
+            // "Thử lại" can retry only the payment insert, never the order.
+            // Gated on the specific message (not just orderId != null) so an
+            // order-creation failure never shows a payment-retry action with
+            // a stale orderId from a previous order.
+            final canRetryPayment = state.orderId != null &&
+                state.error == 'Tạo yêu cầu thanh toán thất bại. Vui lòng thử lại.';
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
+              SnackBar(
+                content: Text(state.error!),
+                action: canRetryPayment
+                    ? SnackBarAction(
+                        label: 'Thử lại',
+                        onPressed: () {
+                          final authState = context.read<AuthBloc>().state;
+                          context.read<CheckoutBloc>().add(CheckoutRetryPayment(
+                                orderId: state.orderId!,
+                                userId: authState.user?.id ?? '',
+                                orderNumber: state.orderNumber,
+                                total: state.total ?? 0,
+                              ));
+                        },
+                      )
+                    : null,
+              ),
             );
           }
         },
         builder: (context, checkoutState) {
           return BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
-              final total = cartState.subtotal + checkoutState.shippingFee;
+              // Preview only — server (create_order RPC) is the source of
+              // truth for the persisted subtotal/discount/total.
+              final total =
+                  cartState.subtotal + _shippingFee - _discountAmount;
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -154,6 +258,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         maxLines: 2,
                       ),
                       const SizedBox(height: 24),
+                      Text('Phương thức thanh toán',
+                          style: AppTypography.headlineSmall),
+                      const SizedBox(height: 12),
+                      _buildPaymentMethodSelector(),
+                      const SizedBox(height: 24),
+                      Text('Mã giảm giá', style: AppTypography.headlineSmall),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              controller: _promoController,
+                              hint: 'Nhập mã giảm giá',
+                              prefixIcon:
+                                  const Icon(Icons.local_offer_outlined),
+                              errorText: _promoError,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          AppButton(
+                            label: 'Áp dụng',
+                            width: 110,
+                            isLoading: _applyingPromo,
+                            onPressed: () =>
+                                _applyPromoCode(cartState.subtotal),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
@@ -166,7 +300,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             _buildPriceRow('Tạm tính', cartState.subtotal),
                             const SizedBox(height: 8),
                             _buildPriceRow(
-                                'Phí vận chuyển', checkoutState.shippingFee),
+                                'Phí vận chuyển', _shippingFee),
+                            if (_discountAmount > 0) ...[
+                              const SizedBox(height: 8),
+                              _buildPriceRow('Giảm giá', -_discountAmount),
+                            ],
                             const Divider(height: 24),
                             _buildPriceRow('Tổng cộng', total, isTotal: true),
                           ],
@@ -186,6 +324,69 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSelector() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildPaymentMethodOption(
+            value: 'cod',
+            icon: Icons.payments_outlined,
+            label: 'Thanh toán khi nhận hàng',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildPaymentMethodOption(
+            value: 'bank_transfer',
+            icon: Icons.qr_code_2_outlined,
+            label: 'Chuyển khoản (SePay)',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentMethodOption({
+    required String value,
+    required IconData icon,
+    required String label,
+  }) {
+    final selected = _paymentMethod == value;
+    return InkWell(
+      onTap: () => setState(() => _paymentMethod = value),
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm, horizontal: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.border,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon,
+                color: selected ? AppColors.primary : AppColors.textSecondary),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTypography.bodySmall.copyWith(
+                color: selected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -229,9 +430,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           userId: user.id,
           items: cartState.items,
           subtotal: cartState.subtotal,
-          shippingFee: 30000,
+          shippingFee: _shippingFee,
           address: _addressController.text,
           note: _noteController.text.isNotEmpty ? _noteController.text : null,
+          paymentMethod: _paymentMethod,
+          promoCode: _promoCode,
         ));
   }
 }

@@ -21,10 +21,10 @@ class AuthService {
   }
 
   Future<void> sendOtp(String email) async {
-    await _client.auth.signInWithOtp(
-      email: email,
-      emailRedirectTo: 'io.supabase.flutter://auth/callback',
-    );
+    // Code-based OTP: Supabase emails a 6-digit token ({{ .Token }}) that the
+    // user types into OtpInput. No deep-link/magic-link redirect is used, so
+    // emailRedirectTo is intentionally omitted.
+    await _client.auth.signInWithOtp(email: email);
   }
 
   Future<UserModel?> verifyOtp(String email, String otp) async {

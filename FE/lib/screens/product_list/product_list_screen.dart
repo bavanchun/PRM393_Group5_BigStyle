@@ -9,6 +9,7 @@ import '../../blocs/product/product_event.dart';
 import '../../blocs/product/product_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_state.dart';
+import '../../models/category_model.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/app_bottom_nav.dart';
 
@@ -28,12 +29,35 @@ class _ProductListScreenState extends State<ProductListScreen> {
     'Size XL', 'Size 2XL', 'Size 3XL',
     'Mới về', 'Sale',
   ];
+  bool _appliedArg = false;
 
   @override
   void initState() {
     super.initState();
     context.read<ProductBloc>().add(const LoadProducts());
     context.read<ProductBloc>().add(const ProductLoadCategories());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_appliedArg) return;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      _appliedArg = true;
+      final categories = context.read<ProductBloc>().state.categories;
+      CategoryModel? matched;
+      for (final c in categories) {
+        if (c.id == args) {
+          matched = c;
+          break;
+        }
+      }
+      setState(() => _selectedFilter = matched?.name ?? 'Tất cả');
+      context
+          .read<ProductBloc>()
+          .add(FilterByCategory(args, matched?.name ?? args));
+    }
   }
 
   @override
@@ -353,20 +377,42 @@ class _ProductListScreenState extends State<ProductListScreen> {
     switch (label) {
       case 'Tất cả':
         context.read<ProductBloc>().add(const FilterByCategory(null, 'all'));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
       case 'Đầm':
       case 'Áo':
       case 'Quần':
+        final categories = context.read<ProductBloc>().state.categories;
+        CategoryModel? matched;
+        for (final c in categories) {
+          if (c.name == label) {
+            matched = c;
+            break;
+          }
+        }
         context
             .read<ProductBloc>()
-            .add(FilterByCategory(label.toLowerCase(), label));
+            .add(FilterByCategory(matched?.id ?? label, label));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
       case 'Size XL':
       case 'Size 2XL':
       case 'Size 3XL':
-        context.read<ProductBloc>().add(SearchProducts(label));
+        // Chips are single-select — a size facet clears category + sale so only
+        // one dimension is ever active.
+        context.read<ProductBloc>().add(const FilterByCategory(null, 'all'));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
+        context
+            .read<ProductBloc>()
+            .add(FilterBySize(label.replaceFirst('Size ', '')));
       case 'Mới về':
         context.read<ProductBloc>().add(const SortProducts('newest'));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(false));
       case 'Sale':
-        context.read<ProductBloc>().add(const SortProducts('price-asc'));
+        context.read<ProductBloc>().add(const FilterByCategory(null, 'all'));
+        context.read<ProductBloc>().add(const FilterBySize(null));
+        context.read<ProductBloc>().add(const ToggleSaleOnly(true));
     }
   }
 

@@ -15,9 +15,12 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+  // Fade-in animation (from main).
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
-  bool _hasNavigated = false;
+  // Guest splash-hang fix + error/retry handling (from dev).
+  bool _navigated = false;
+  String? _error;
 
   @override
   void initState() {
@@ -35,52 +38,52 @@ class _SplashScreenState extends State<SplashScreen>
     context.read<AuthBloc>().add(const CheckSessionEvent());
   }
 
+  void _retry() {
+    setState(() => _error = null);
+    context.read<AuthBloc>().add(const CheckSessionEvent());
+  }
+
+  void _handleState(AuthState state) {
+    if (!mounted) return;
+    if (state is AuthError) {
+      setState(() => _error = state.message);
+      return;
+    }
+    if (_navigated) return;
+    if (state is AuthSuccess) {
+      final user = state.user;
+      if (user == null) return;
+      _navigated = true;
+      // Route by role — admin support grafted from main.
+      final route = switch (user.role.name) {
+        'admin' => '/admin',
+        'manager' => '/manager',
+        _ => '/home',
+      };
+      Navigator.pushReplacementNamed(context, route);
+    } else if (state is AuthUnauthenticated) {
+      // Critical: guest cold-start emits AuthUnauthenticated — without this
+      // branch the splash hangs (dev fix for guest splash hang).
+      _navigated = true;
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  void _navigateTo(String route) {
-    if (_hasNavigated) return;
-    _hasNavigated = true;
-    Navigator.pushReplacementNamed(context, route);
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listenWhen: (prev, curr) => !_hasNavigated,
+      listenWhen: (prev, curr) => !_navigated,
       listener: (context, state) {
-        if (state is AuthSuccess) {
-          // Wait for animation + minimum splash time
-          Future.delayed(const Duration(milliseconds: 1500), () {
-            if (!mounted || _hasNavigated) return;
-            final user = state.user;
-            if (user == null) {
-              _navigateTo('/login');
-              return;
-            }
-            switch (user.role.name) {
-              case 'admin':
-                _navigateTo('/admin');
-              case 'manager':
-                _navigateTo('/manager');
-              default:
-                _navigateTo('/home');
-            }
-          });
-        } else if (state is AuthInitial) {
-          Future.delayed(const Duration(milliseconds: 1500), () {
-            if (!mounted || _hasNavigated) return;
-            _navigateTo('/login');
-          });
-        } else if (state is AuthError) {
-          Future.delayed(const Duration(milliseconds: 1500), () {
-            if (!mounted || _hasNavigated) return;
-            _navigateTo('/login');
-          });
-        }
+        // Keep a brief branded splash, then act on the resolved auth state.
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          _handleState(state);
+        });
       },
       child: Scaffold(
         backgroundColor: AppColors.primary,
@@ -127,14 +130,33 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 48),
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
+                if (_error == null)
+                  const CircularProgressIndicator(
                     color: Colors.white,
                     strokeWidth: 2,
+                  )
+                else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: _retry,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                    ),
+                    child: const Text('Thử lại'),
+                  ),
+                ],
               ],
             ),
           ),

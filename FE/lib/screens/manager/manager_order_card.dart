@@ -34,21 +34,25 @@ Color managerOrderStatusColor(OrderStatus status) {
 class ManagerOrderCard extends StatelessWidget {
   final OrderModel order;
   final VoidCallback onDetail;
+  final VoidCallback? onUpdateStatus;
   final bool compact;
 
   const ManagerOrderCard({
     super.key,
     required this.order,
     required this.onDetail,
+    this.onUpdateStatus,
     this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final statusColor = managerOrderStatusColor(order.status);
-    final reference = order.id.length >= 8
-        ? order.id.substring(0, 8).toUpperCase()
-        : order.id.toUpperCase();
+    final reference =
+        order.orderNumber ??
+        (order.id.length >= 8
+            ? order.id.substring(0, 8).toUpperCase()
+            : order.id.toUpperCase());
 
     return GestureDetector(
       onTap: compact ? onDetail : null,
@@ -114,15 +118,36 @@ class ManagerOrderCard extends StatelessWidget {
             ),
             if (!compact) ...[
               const SizedBox(height: AppSpacing.sm),
-              Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  height: 32,
-                  child: OutlinedButton(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (onUpdateStatus != null &&
+                      order.status.nextStatuses.isNotEmpty) ...[
+                    FilledButton(
+                      onPressed: onUpdateStatus,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Đổi trạng thái'),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                  ],
+                  OutlinedButton(
                     onPressed: onDetail,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 36),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     child: const Text('Chi tiết'),
                   ),
-                ),
+                ],
               ),
             ],
           ],

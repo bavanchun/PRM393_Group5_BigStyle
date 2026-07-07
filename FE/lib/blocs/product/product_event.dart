@@ -51,3 +51,19 @@ class ProductLoadDetail extends ProductEvent {
 class ProductLoadCategories extends ProductEvent {
   const ProductLoadCategories();
 }
+
+class FilterBySize extends ProductEvent {
+  final String? size;
+  const FilterBySize(this.size);
+
+  @override
+  List<Object?> get props => [size];
+}
+
+class ToggleSaleOnly extends ProductEvent {
+  final bool saleOnly;
+  const ToggleSaleOnly(this.saleOnly);
+
+  @override
+  List<Object?> get props => [saleOnly];
+}

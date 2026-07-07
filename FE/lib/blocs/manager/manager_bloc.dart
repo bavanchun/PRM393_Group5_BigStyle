@@ -11,6 +11,7 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
   ManagerBloc(this._orderService) : super(const ManagerState()) {
     on<ManagerLoadDashboard>(_onLoadDashboard);
     on<ManagerLoadOrders>(_onLoadOrders);
+    on<ManagerUpdateOrderStatus>(_onUpdateOrderStatus);
   }
 
   Future<void> _onLoadDashboard(
@@ -66,6 +67,36 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
         state.copyWith(
           isOrdersLoading: false,
           error: 'Tải danh sách đơn hàng thất bại',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateOrderStatus(
+    ManagerUpdateOrderStatus event,
+    Emitter<ManagerState> emit,
+  ) async {
+    final requestId = ++_ordersRequestId;
+    emit(state.copyWith(isUpdatingStatus: true, clearError: true));
+    try {
+      await _orderService.updateOrderStatus(event.orderId, event.status.name);
+      final orders = await _orderService.getAllOrders(
+        status: state.selectedStatus,
+      );
+      if (requestId != _ordersRequestId) return;
+      emit(
+        state.copyWith(
+          isUpdatingStatus: false,
+          isOrdersLoading: false,
+          orders: orders,
+        ),
+      );
+    } catch (_) {
+      if (requestId != _ordersRequestId) return;
+      emit(
+        state.copyWith(
+          isUpdatingStatus: false,
+          error: 'Cập nhật trạng thái đơn hàng thất bại',
         ),
       );
     }

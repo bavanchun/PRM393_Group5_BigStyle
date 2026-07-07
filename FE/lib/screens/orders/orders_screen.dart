@@ -8,7 +8,10 @@ import '../../blocs/order/order_event.dart';
 import '../../blocs/order/order_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../models/order_status.dart';
+import '../../models/order_model.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/app_button.dart';
+import '../checkout/payment_qr_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -75,7 +78,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Đơn #${order.id.substring(0, 8)}',
+                            'Đơn #${order.orderNumber ?? order.id.substring(0, 8)}',
                             style: AppTypography.labelLarge,
                           ),
                           Container(
@@ -123,6 +126,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ),
                         ],
                       ),
+                      if (order.paymentMethod == 'bank_transfer' &&
+                          order.status == OrderStatus.pending) ...[
+                        const SizedBox(height: 12),
+                        AppButton(
+                          label: 'Thanh toán lại',
+                          onPressed: () => _payAgain(context, order),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -130,6 +141,25 @@ class _OrdersScreenState extends State<OrdersScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  // Reconstructs PaymentQrArgs directly from the order — orderId, orderNumber,
+  // total and userId are all already present on OrderModel, so navigating
+  // straight to '/payment-qr' gives the exact same args checkout builds
+  // (no need for the order-detail intermediate screen).
+  void _payAgain(BuildContext context, OrderModel order) {
+    Navigator.pushNamed(
+      context,
+      '/payment-qr',
+      arguments: PaymentQrArgs(
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        total: order.total,
+        userId: order.userId,
+        // Re-paying an old order must not clear the user's current cart.
+        clearCartOnPaid: false,
       ),
     );
   }
