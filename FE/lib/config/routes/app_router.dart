@@ -5,6 +5,7 @@ import '../../screens/home/home_screen.dart';
 import '../../screens/product_list/product_list_screen.dart';
 import '../../screens/product_detail/product_detail_screen.dart';
 import '../../screens/cart/cart_screen.dart';
+import '../../screens/cart/cart_item_edit_screen.dart';
 import '../../screens/checkout/checkout_screen.dart';
 import '../../screens/checkout/payment_qr_screen.dart';
 import '../../screens/orders/orders_screen.dart';
@@ -33,6 +34,8 @@ class AppRouter {
         return MaterialPageRoute(settings: settings, builder: (_) => const ProductDetailScreen());
       case '/cart':
         return MaterialPageRoute(settings: settings, builder: (_) => const CartScreen());
+      case '/cart-item-edit':
+        return MaterialPageRoute(settings: settings, builder: (_) => const CartItemEditScreen());
       case '/checkout':
         return MaterialPageRoute(settings: settings, builder: (_) => const CheckoutScreen());
       case '/payment-qr':

@@ -170,8 +170,12 @@ class OrderService {
     );
   }
 
-  Future<void> updateOrderStatus(String orderId, String status) async {
-    await _client.from('orders').update({'status': status}).eq('id', orderId);
+  Future<void> updateOrderStatus(String orderId, String status, {String? reason}) async {
+    final updates = <String, dynamic>{'status': status};
+    if (reason != null) {
+      updates['cancellation_reason'] = reason;
+    }
+    await _client.from('orders').update(updates).eq('id', orderId);
   }
 
   /// Cancels the caller's own order via the `cancel_my_order` RPC.

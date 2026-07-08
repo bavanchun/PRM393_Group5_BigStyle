@@ -749,6 +749,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final added = await _addToCart(showSnackbar: false);
     if (!added) return;
     if (!mounted) return;
+
+    // Wait until cart state reflects the new item before navigating
+    final cartBloc = context.read<CartBloc>();
+    final beforeCount = cartBloc.state.items.length;
+    try {
+      await cartBloc.stream
+          .firstWhere(
+            (s) => s.items.length > beforeCount || s.error != null,
+          )
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {}
+
+    if (!mounted) return;
     Navigator.pushNamed(context, '/cart');
   }
 

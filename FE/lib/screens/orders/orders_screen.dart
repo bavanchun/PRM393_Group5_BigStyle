@@ -11,6 +11,7 @@ import '../../models/order_status.dart';
 import '../../models/order_model.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_bottom_nav.dart';
 import '../checkout/payment_qr_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -142,6 +143,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           );
         },
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
     );
   }
 
@@ -169,14 +171,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
       case OrderStatus.pending:
         return AppColors.warning;
       case OrderStatus.confirmed:
-      case OrderStatus.processing:
         return AppColors.primary;
       case OrderStatus.shipping:
         return Colors.blue;
       case OrderStatus.delivered:
         return AppColors.success;
       case OrderStatus.cancelled:
-      case OrderStatus.refunded:
         return AppColors.error;
     }
   }

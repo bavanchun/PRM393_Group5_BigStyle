@@ -66,5 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BigStyle cần truy cập vị trí để tự động điền địa chỉ giao hàng.</string>
 </dict>
 </plist>
