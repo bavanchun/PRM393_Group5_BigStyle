@@ -76,9 +76,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         method: 'cod',
         amount: total,
       );
-      // Cart is cleared by CartBloc (CartClear) from the success listener in
-      // checkout_screen — keeps CartBloc as the single owner of cart state so
-      // the in-memory items/badge don't go stale after a direct DB clear here.
+      // Cart: individual items removed by checkout_screen success listener
+      // so unselected items survive.
 
       emit(state.copyWith(
         isLoading: false,
@@ -89,7 +88,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     } catch (e) {
       emit(state.copyWith(
         isLoading: false,
-        error: 'Đặt hàng thất bại. Vui lòng thử lại.',
+        error: 'Đặt hàng thất bại: $e',
       ));
     }
   }

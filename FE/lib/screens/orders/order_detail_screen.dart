@@ -165,26 +165,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                       if (order.address != null) ...[
                         const SizedBox(height: 16),
-                        AppCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Địa chỉ giao hàng',
-                                  style: AppTypography.headlineSmall),
-                              const SizedBox(height: 8),
-                              Text(order.address!,
-                                  style: AppTypography.bodyMedium),
-                              if (order.note != null) ...[
+                          AppCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Địa chỉ giao hàng',
+                                    style: AppTypography.headlineSmall),
                                 const SizedBox(height: 8),
-                                Text('Ghi chú: ${order.note}',
-                                    style: AppTypography.bodySmall),
+                                Text(order.address!,
+                                    style: AppTypography.bodyMedium),
+                                if (order.note != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text('Ghi chú: ${order.note}',
+                                      style: AppTypography.bodySmall),
+                                ],
+                                if (order.cancellationReason != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text('Lý do huỷ: ${order.cancellationReason}',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
-                        ),
                       ],
-                      if (order.status == OrderStatus.pending ||
-                          order.status == OrderStatus.confirmed) ...[
+                      if (order.status == OrderStatus.pending) ...[
                         const SizedBox(height: 24),
                         AppButton(
                           label: 'Huỷ đơn hàng',
@@ -192,6 +199,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           onPressed: () => _confirmCancel(order),
                         ),
                       ],
+                      const SizedBox(height: 24),
+                      AppButton(
+                        label: 'Quay lại',
+                        isOutlined: true,
+                        onPressed: () => Navigator.pop(context),
+                      ),
                     ],
                   ),
                 );
@@ -203,7 +216,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   /// Renders the linear happy-path stepper, or a terminal badge when the
   /// order was cancelled/refunded (those statuses aren't part of the path).
   Widget _buildTimeline(OrderStatus status) {
-    if (status == OrderStatus.cancelled || status == OrderStatus.refunded) {
+    if (status == OrderStatus.cancelled) {
       return Row(
         children: [
           Container(

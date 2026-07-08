@@ -27,9 +27,14 @@ class ManagerLoadOrders extends ManagerEvent {
 class ManagerUpdateOrderStatus extends ManagerEvent {
   final String orderId;
   final OrderStatus status;
+  final String? reason;
 
-  const ManagerUpdateOrderStatus({required this.orderId, required this.status});
+  const ManagerUpdateOrderStatus({
+    required this.orderId,
+    required this.status,
+    this.reason,
+  });
 
   @override
-  List<Object?> get props => [orderId, status];
+  List<Object?> get props => [orderId, status, reason];
 }

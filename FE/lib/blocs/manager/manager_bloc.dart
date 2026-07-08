@@ -79,7 +79,11 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
     final requestId = ++_ordersRequestId;
     emit(state.copyWith(isUpdatingStatus: true, clearError: true));
     try {
-      await _orderService.updateOrderStatus(event.orderId, event.status.name);
+      await _orderService.updateOrderStatus(
+        event.orderId,
+        event.status.name,
+        reason: event.reason,
+      );
       final orders = await _orderService.getAllOrders(
         status: state.selectedStatus,
       );

@@ -22,7 +22,6 @@ class ManagerDashboardStats extends Equatable {
     final localNow = now ?? DateTime.now();
     const acceptedStatuses = {
       'confirmed',
-      'processing',
       'shipping',
       'delivered',
     };

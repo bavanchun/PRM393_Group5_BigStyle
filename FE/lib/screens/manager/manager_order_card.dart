@@ -19,14 +19,12 @@ Color managerOrderStatusColor(OrderStatus status) {
     case OrderStatus.pending:
       return AppColors.warning;
     case OrderStatus.confirmed:
-    case OrderStatus.processing:
       return AppColors.primary;
     case OrderStatus.shipping:
       return Colors.blue;
     case OrderStatus.delivered:
       return AppColors.success;
     case OrderStatus.cancelled:
-    case OrderStatus.refunded:
       return AppColors.error;
   }
 }

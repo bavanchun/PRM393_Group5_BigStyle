@@ -89,6 +89,7 @@ class OrderModel extends Equatable {
   final String? orderNumber;
   // 'cod' | 'bank_transfer' — checkout payment method selection.
   final String paymentMethod;
+  final String? cancellationReason;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -108,6 +109,7 @@ class OrderModel extends Equatable {
     this.discountAmount,
     this.orderNumber,
     this.paymentMethod = 'cod',
+    this.cancellationReason,
     required this.createdAt,
     this.updatedAt,
   });
@@ -131,6 +133,7 @@ class OrderModel extends Equatable {
     'total': total,
     'notes': note,
     'payment_method': paymentMethod,
+    'cancellation_reason': cancellationReason,
   };
 
   factory OrderModel.fromMap(Map<String, dynamic> map) {
@@ -162,6 +165,7 @@ class OrderModel extends Equatable {
       discountAmount: (map['discount_amount'] as num?)?.toDouble(),
       orderNumber: map['order_number'] as String?,
       paymentMethod: map['payment_method'] as String? ?? 'cod',
+      cancellationReason: map['cancellation_reason'] as String?,
       createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: map['updated_at'] != null
           ? DateTime.tryParse(map['updated_at'] as String)
@@ -185,6 +189,7 @@ class OrderModel extends Equatable {
     discountAmount: discountAmount,
     orderNumber: orderNumber,
     paymentMethod: paymentMethod,
+    cancellationReason: cancellationReason,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

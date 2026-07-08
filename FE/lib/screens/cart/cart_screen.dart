@@ -6,12 +6,20 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/cart/cart_state.dart';
+import '../../models/cart_item_model.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_bottom_nav.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  final Set<String> _selectedIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -32,36 +40,74 @@ class CartScreen extends StatelessWidget {
                   Icon(Icons.shopping_bag_outlined,
                       size: 80, color: AppColors.textHint),
                   const SizedBox(height: 16),
-                  Text(
-                    'Giỏ hàng trống',
-                    style: AppTypography.headlineMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  Text('Giỏ hàng trống',
+                      style: AppTypography.headlineMedium.copyWith(
+                          color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
-                  Text(
-                    'Hãy thêm sản phẩm vào giỏ hàng',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textHint,
-                    ),
-                  ),
+                  Text('Hãy thêm sản phẩm vào giỏ hàng',
+                      style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.textHint)),
                   const SizedBox(height: 24),
                   AppButton(
                     label: 'Mua sắm ngay',
                     width: 200,
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/products'),
+                    onPressed: () => Navigator.pushNamed(context, '/products'),
                   ),
                 ],
               ),
             );
           }
 
+          _selectedIds.removeWhere((id) => !state.items.any((i) => i.id == id));
+          final selectedItems =
+              state.items.where((i) => _selectedIds.contains(i.id)).toList();
+
           return Column(
             children: [
+              if (state.items.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: _selectedIds.length == state.items.length,
+                        onChanged: (v) {
+                          setState(() {
+                            if (v == true) {
+                              _selectedIds.addAll(state.items.map((i) => i.id));
+                            } else {
+                              _selectedIds.clear();
+                            }
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (_selectedIds.length == state.items.length) {
+                              _selectedIds.clear();
+                            } else {
+                              _selectedIds.addAll(state.items.map((i) => i.id));
+                            }
+                          });
+                        },
+                        child: Text('Chọn tất cả',
+                            style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary)),
+                      ),
+                      const Spacer(),
+                      if (_selectedIds.isNotEmpty)
+                        Text('Đã chọn ${_selectedIds.length} sản phẩm',
+                            style: AppTypography.caption.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   itemCount: state.items.length,
                   itemBuilder: (context, index) {
                     final item = state.items[index];
@@ -69,7 +115,7 @@ class CartScreen extends StatelessWidget {
                   },
                 ),
               ),
-              _buildBottomBar(context, state),
+              _buildBottomBar(context, selectedItems),
             ],
           );
         },
@@ -79,11 +125,26 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildCartItem(BuildContext context, dynamic item) {
+    final isSelected = _selectedIds.contains(item.id);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: AppCard(
+        onTap: () => Navigator.pushNamed(context, '/cart-item-edit',
+            arguments: item),
         child: Row(
           children: [
+            Checkbox(
+              value: isSelected,
+              onChanged: (v) {
+                setState(() {
+                  if (v == true) {
+                    _selectedIds.add(item.id);
+                  } else {
+                    _selectedIds.remove(item.id);
+                  }
+                });
+              },
+            ),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Container(
@@ -102,22 +163,17 @@ class CartScreen extends StatelessWidget {
                 children: [
                   Text(
                     item.product?.name ?? '',
-                    style: AppTypography.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Size: ${item.size}',
-                    style: AppTypography.caption,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${item.totalPrice.toStringAsFixed(0)}đ',
-                    style: AppTypography.priceSmall,
-                  ),
+                  Text('Size: ${item.size}',
+                      style: AppTypography.caption.copyWith(
+                          color: AppColors.textSecondary)),
+                  const SizedBox(height: 2),
+                  Text('${item.totalPrice.toStringAsFixed(0)}đ',
+                      style: AppTypography.priceSmall),
                 ],
               ),
             ),
@@ -128,29 +184,31 @@ class CartScreen extends StatelessWidget {
                     _miniButton(Icons.remove, () {
                       if (item.quantity > 1) {
                         context.read<CartBloc>().add(
-                              CartUpdateQuantity(item.id, item.quantity - 1),
-                            );
+                            CartUpdateQuantity(item.id, item.quantity - 1));
                       }
                     }),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        '${item.quantity}',
-                        style: AppTypography.headlineSmall,
-                      ),
+                      child: Text('${item.quantity}',
+                          style: AppTypography.headlineSmall),
                     ),
                     _miniButton(Icons.add, () {
                       context.read<CartBloc>().add(
-                            CartUpdateQuantity(item.id, item.quantity + 1),
-                          );
+                          CartUpdateQuantity(item.id, item.quantity + 1));
                     }),
                   ],
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(
-                  onTap: () => context
-                      .read<CartBloc>()
-                      .add(CartRemoveItem(item.id)),
+                  onTap: () {
+                    context.read<CartBloc>().add(CartRemoveItem(item.id));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Đã xóa sản phẩm khỏi giỏ hàng'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
                   child: const Icon(Icons.delete_outline,
                       color: AppColors.error, size: 20),
                 ),
@@ -177,7 +235,12 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, CartState state) {
+  Widget _buildBottomBar(BuildContext context, List<CartItemModel> selectedItems) {
+    final selectedSubtotal = selectedItems.fold<double>(
+      0.0, (sum, item) => sum + item.totalPrice);
+    final selectedQty =
+        selectedItems.fold<int>(0, (sum, item) => sum + item.quantity);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.md),
@@ -200,7 +263,7 @@ class CartScreen extends StatelessWidget {
               children: [
                 Text('Tạm tính:', style: AppTypography.bodyMedium),
                 Text(
-                  '${state.subtotal.toStringAsFixed(0)}đ',
+                  '${selectedSubtotal.toStringAsFixed(0)}đ',
                   style: AppTypography.headlineSmall.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
@@ -210,8 +273,14 @@ class CartScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             AppButton(
-              label: 'Thanh toán (${state.totalQuantity} sản phẩm)',
-              onPressed: () => Navigator.pushNamed(context, '/checkout'),
+              label: selectedItems.isEmpty
+                  ? 'Chọn sản phẩm để mua'
+                  : 'Mua hàng ($selectedQty sản phẩm)',
+              onPressed: selectedItems.isEmpty
+                  ? null
+                  : () => Navigator.pushNamed(context, '/checkout', arguments: {
+                        'selectedIds': _selectedIds.toList(),
+                      }),
             ),
           ],
         ),

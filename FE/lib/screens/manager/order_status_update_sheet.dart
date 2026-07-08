@@ -90,51 +90,76 @@ class _OrderStatusUpdateSheetContentState
   /// Handles a next-status tap: destructive transitions (cancel/refund) get
   /// a confirmation dialog first, everything else proceeds straight away.
   Future<void> _onStatusTap(OrderStatus status) async {
-    if (status == OrderStatus.cancelled || status == OrderStatus.refunded) {
-      final confirmed = await _confirmDestructiveTransition(status);
-      if (!confirmed) return;
+    if (status == OrderStatus.cancelled) {
+      final reason = await _showCancelReasonDialog();
+      if (reason == null) return;
+      if (!mounted) return;
+      _confirm(status, reason);
+      return;
     }
     if (!mounted) return;
     _confirm(status);
   }
 
-  Future<bool> _confirmDestructiveTransition(OrderStatus status) async {
-    final label = status == OrderStatus.cancelled ? 'huỷ' : 'hoàn';
-    final result = await showDialog<bool>(
+  Future<String?> _showCancelReasonDialog() async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Xác nhận huỷ/hoàn đơn?'),
-        content: Text(
-          'Bạn có chắc chắn muốn $label đơn hàng này? Hành động này không thể hoàn tác.',
+        title: const Text('Huỷ đơn hàng'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Vui lòng nhập lý do huỷ đơn hàng:'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Nhập lý do...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Không'),
+            onPressed: () => Navigator.of(dialogContext).pop(null),
+            child: const Text('Đóng'),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(
-              'Có, xác nhận',
-              style: TextStyle(
-                color: AppColors.error,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          FilledButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isEmpty) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('Vui lòng nhập lý do huỷ')),
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop(text);
+            },
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Xác nhận huỷ'),
           ),
         ],
       ),
     );
-    return result ?? false;
+    return result;
   }
 
-  void _confirm(OrderStatus status) {
+  void _confirm(OrderStatus status, [String? reason]) {
     setState(() {
       _submitting = true;
       _submitError = null;
     });
     context.read<ManagerBloc>().add(
-      ManagerUpdateOrderStatus(orderId: widget.order.id, status: status),
+      ManagerUpdateOrderStatus(
+        orderId: widget.order.id,
+        status: status,
+        reason: reason,
+      ),
     );
   }
 

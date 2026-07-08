@@ -305,6 +305,10 @@ create policy "Users see own payments"
   on public.payments for select
   using (auth.uid() = user_id);
 
+create policy "Users insert own payments"
+  on public.payments for insert
+  with check (auth.uid() = user_id);
+
 create policy "Managers manage all payments"
   on public.payments for all
   using (public.is_manager());
