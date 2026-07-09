@@ -146,3 +146,7 @@ begin
   return p_product_id;
 end;
 $$;
+
+revoke all on function public.update_product_with_variants(uuid, jsonb, jsonb) from public;
+revoke all on function public.update_product_with_variants(uuid, jsonb, jsonb) from anon;
+grant execute on function public.update_product_with_variants(uuid, jsonb, jsonb) to authenticated;

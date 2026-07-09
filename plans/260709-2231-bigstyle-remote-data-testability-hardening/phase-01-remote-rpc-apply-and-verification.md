@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Remote RPC Apply And Verification"
-status: pending
+status: completed
 priority: P1
 effort: "1.5h"
 dependencies: []
@@ -99,3 +99,16 @@ Manager edit screen
   Mitigation: prefer Supabase migration/apply path and record exact SQL.
 - Risk: public execute warning from SECURITY DEFINER. Mitigation: function body
   has auth/role checks; follow-up advisor findings can tighten grants if needed.
+
+## Completion Notes
+
+- Applied remote migration `update_product_with_variants_rpc` to
+  `agbnpqgxsppdrpbqoipo`.
+- Added and applied follow-up grant repair
+  `restrict_update_product_with_variants_rpc_execute`.
+- Verified remote function:
+  `SECURITY DEFINER`, `search_path=public`, `anon_can_execute=false`,
+  `authenticated_can_execute=true`.
+- Verified manager-owned product update path with a rollback transaction:
+  `public.update_product_with_variants(...)` returned product id
+  `a1000000-0000-0000-0000-000000000002` and left no persisted mutation.
