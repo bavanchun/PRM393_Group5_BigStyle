@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Product Image URL Repair"
-status: pending
+status: completed
 priority: P2
 effort: "1h"
 dependencies: [2]
@@ -95,3 +95,12 @@ preferred because the app already has product upload flow and public bucket.
   URLs; bulk migrate to Storage only if demo reliability requires.
 - Risk: Storage policy blocks public read. Mitigation: verify public URL in
   browser/HTTP before updating products.
+
+## Completion Notes
+
+- Audited 21 active product/category image URLs.
+- Initial HEAD results found 2 HTTP 404 URLs:
+  category `Đầm` and product `Thắt Lưng Vải Phối Màu`.
+- Replaced those URLs with already checked 200 URLs.
+- Second HEAD sweep returned HTTP 200 for every active seed image URL.
+- No binary assets or storage secrets were committed.
