@@ -76,7 +76,7 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
     ManagerUpdateOrderStatus event,
     Emitter<ManagerState> emit,
   ) async {
-    final requestId = ++_ordersRequestId;
+    final ordersRequestId = ++_ordersRequestId;
     emit(state.copyWith(isUpdatingStatus: true, clearError: true));
     try {
       await _orderService.updateOrderStatus(
@@ -87,22 +87,47 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
       final orders = await _orderService.getAllOrders(
         status: state.selectedStatus,
       );
-      if (requestId != _ordersRequestId) return;
+      if (ordersRequestId != _ordersRequestId) return;
+      final patchedRecentOrders = state.recentOrders
+          .map(
+            (order) => order.id == event.orderId
+                ? order.copyWith(status: event.status)
+                : order,
+          )
+          .toList();
       emit(
         state.copyWith(
           isUpdatingStatus: false,
           isOrdersLoading: false,
           orders: orders,
+          recentOrders: patchedRecentOrders,
         ),
       );
     } catch (_) {
-      if (requestId != _ordersRequestId) return;
+      if (ordersRequestId != _ordersRequestId) return;
       emit(
         state.copyWith(
           isUpdatingStatus: false,
           error: 'Cập nhật trạng thái đơn hàng thất bại',
         ),
       );
+      return;
+    }
+
+    // Stats refresh is a separate, soft-failing step: the order-status
+    // change above already succeeded and its patch is already emitted, so a
+    // refresh failure here must not surface as "update failed". Claiming a
+    // fresh _dashboardRequestId (and always resolving isDashboardLoading in
+    // this emit) prevents a slower in-flight ManagerLoadDashboard from
+    // either clobbering these fresher stats or leaving the spinner stuck.
+    final dashboardRequestId = ++_dashboardRequestId;
+    try {
+      final stats = await _orderService.getDashboardStats();
+      if (dashboardRequestId != _dashboardRequestId) return;
+      emit(state.copyWith(dashboardStats: stats, isDashboardLoading: false));
+    } catch (_) {
+      if (dashboardRequestId != _dashboardRequestId) return;
+      emit(state.copyWith(isDashboardLoading: false));
     }
   }
 }

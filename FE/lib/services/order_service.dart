@@ -20,11 +20,16 @@ class OrderService {
     return data.map((e) => OrderModel.fromMap(e)).toList();
   }
 
+  // Manager SELECT on `profiles` is intentionally not granted (see
+  // migrations/20260703150000_add_admin_role.sql), so an embedded
+  // `customer:profiles(...)` join here always resolves to null for
+  // managers. Customer name comes from `shipping_address.name`, denormalized
+  // at order-creation time (see create_order RPC) — no `profiles` read here.
   Future<List<OrderModel>> getAllOrders({String? status}) async {
     var query = _client
         .from('orders')
         .select(
-          '*, customer:profiles!orders_user_id_fkey(full_name), items:order_items(*, variant:product_variants(*, product:products(*)))',
+          '*, items:order_items(*, variant:product_variants(*, product:products(*)))',
         );
     if (status != null && status.isNotEmpty) {
       query = query.eq('status', status);
