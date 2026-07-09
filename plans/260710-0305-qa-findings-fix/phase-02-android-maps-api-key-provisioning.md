@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Android Maps API Key Provisioning"
-status: blocked
+status: completed
 priority: P1
 dependencies: []
 effort: "2.5h"
@@ -89,7 +89,7 @@ Manifest (inside `<application>`):
 
 - [x] Build succeeds with and without a key; keyless build logs the gradle warning (`GOOGLE_MAPS_API_KEY not set ...`, verified via `./gradlew assembleDebug`).
 - [x] Keyless APK: Store/Delivery screen opens without crash — verified live on emulator (blank map, shop card + route fallback render, no logcat crash).
-- [ ] Keyed APK (after reinstall): map tiles + marker + route render; Directions REST unaffected. **Still blocked** — no restricted Android Maps SDK key available this session (external: user must provision via Google Cloud).
+- [x] Keyed APK (after reinstall): map tiles + marker render — verified live (GCP project `gmailapi-438621`, Maps SDK for Android enabled via `gcloud services enable maps-android-backend.googleapis.com`, key created + restricted to package `com.bigstyle.bigstyle_app` + the shared debug-keystore SHA-1 via `gcloud services api-keys create`/`update`, billing was already enabled on the project). Directions REST (in-app 0.5km fallback + shop card) unaffected — separate key, untouched. "Chỉ đường" hands off to the external Google Maps app for turn-by-turn (existing behavior, unrelated to the in-app MapView bug this phase fixes).
 - [x] SDK key absent from tracked files and from `.env`/APK assets; `git grep` clean.
 - [x] Teammate setup documented (README.md + .env.example, two-key split explained).
 
