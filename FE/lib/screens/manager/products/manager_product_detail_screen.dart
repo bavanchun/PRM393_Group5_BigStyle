@@ -10,6 +10,8 @@ import '../../../models/category_model.dart';
 import '../../../models/product_model.dart';
 import '../../../models/variant_model.dart';
 import '../../../services/product_service.dart';
+import 'form/manager_product_variant_form_row.dart';
+import 'widgets/manager_product_variants_table.dart';
 
 class ManagerProductDetailScreen extends StatefulWidget {
   final ProductModel product;
@@ -43,7 +45,7 @@ class _ManagerProductDetailScreenState
     'Đen': '#313030',
   };
   final List<String> _imageUrls = [];
-  final List<Map<String, dynamic>> _variantsList = [];
+  final List<ManagerProductVariantFormRow> _variantsList = [];
 
   final ProductService _productService = ProductService();
   List<CategoryModel> _categories = [];
@@ -74,21 +76,7 @@ class _ManagerProductDetailScreenState
     }
 
     for (var variant in p.variants) {
-      _variantsList.add({
-        'id': variant.id,
-        'colorHex': variant.colorHex,
-        'size': TextEditingController(text: variant.size),
-        'color': TextEditingController(text: variant.color),
-        'stock': TextEditingController(text: variant.stockQty.toString()),
-        'height': TextEditingController(text: variant.heightRange ?? ''),
-        'weight': TextEditingController(text: variant.weightRange ?? ''),
-        'bust': TextEditingController(text: variant.bustRange ?? ''),
-        'waist': TextEditingController(text: variant.waistRange ?? ''),
-        'hips': TextEditingController(text: variant.hipsRange ?? ''),
-        'arm': TextEditingController(text: variant.armRange ?? ''),
-        'thigh': TextEditingController(text: variant.thighRange ?? ''),
-        'shoulder': TextEditingController(text: variant.shoulderRange ?? ''),
-      });
+      _variantsList.add(ManagerProductVariantFormRow.fromVariant(variant));
     }
 
     if (_variantsList.isEmpty) {
@@ -125,21 +113,9 @@ class _ManagerProductDetailScreenState
   }
 
   void _addVariantRow() {
-    _variantsList.add({
-      'id': '',
-      'colorHex': _selectedSwatchHex,
-      'size': TextEditingController(),
-      'color': TextEditingController(),
-      'stock': TextEditingController(),
-      'height': TextEditingController(),
-      'weight': TextEditingController(),
-      'bust': TextEditingController(),
-      'waist': TextEditingController(),
-      'hips': TextEditingController(),
-      'arm': TextEditingController(),
-      'thigh': TextEditingController(),
-      'shoulder': TextEditingController(),
-    });
+    _variantsList.add(
+      ManagerProductVariantFormRow.empty(colorHex: _selectedSwatchHex),
+    );
   }
 
   @override
@@ -148,18 +124,8 @@ class _ManagerProductDetailScreenState
     _priceController.dispose();
     _materialController.dispose();
     _descController.dispose();
-    for (final map in _variantsList) {
-      (map['size'] as TextEditingController).dispose();
-      (map['color'] as TextEditingController).dispose();
-      (map['stock'] as TextEditingController).dispose();
-      (map['height'] as TextEditingController).dispose();
-      (map['weight'] as TextEditingController).dispose();
-      (map['bust'] as TextEditingController).dispose();
-      (map['waist'] as TextEditingController).dispose();
-      (map['hips'] as TextEditingController).dispose();
-      (map['arm'] as TextEditingController).dispose();
-      (map['thigh'] as TextEditingController).dispose();
-      (map['shoulder'] as TextEditingController).dispose();
+    for (final row in _variantsList) {
+      row.dispose();
     }
     super.dispose();
   }
@@ -241,31 +207,12 @@ class _ManagerProductDetailScreenState
     setState(() => _isSaving = true);
 
     final List<VariantModel> variants = [];
-    for (final map in _variantsList) {
-      final size = (map['size'] as TextEditingController).text.trim();
-      final stockStr = (map['stock'] as TextEditingController).text.trim();
-      final colorStr = (map['color'] as TextEditingController).text.trim();
-      if (size.isEmpty) continue;
-      final colorHex = (map['colorHex'] as String?)?.isNotEmpty == true
-          ? map['colorHex'] as String
-          : _selectedSwatchHex;
-
+    for (final row in _variantsList) {
+      if (!row.hasSize) continue;
       variants.add(
-        VariantModel(
-          id: map['id'] ?? '',
+        row.toVariant(
           productId: widget.product.id,
-          size: size,
-          color: colorStr,
-          colorHex: colorHex,
-          stockQty: int.tryParse(stockStr) ?? 0,
-          heightRange: (map['height'] as TextEditingController).text.trim(),
-          weightRange: (map['weight'] as TextEditingController).text.trim(),
-          bustRange: (map['bust'] as TextEditingController).text.trim(),
-          waistRange: (map['waist'] as TextEditingController).text.trim(),
-          hipsRange: (map['hips'] as TextEditingController).text.trim(),
-          armRange: (map['arm'] as TextEditingController).text.trim(),
-          thighRange: (map['thigh'] as TextEditingController).text.trim(),
-          shoulderRange: (map['shoulder'] as TextEditingController).text.trim(),
+          fallbackColorHex: _selectedSwatchHex,
         ),
       );
     }
@@ -845,226 +792,20 @@ class _ManagerProductDetailScreenState
                         // Section D: Sizing Table
                         _buildBoxContainer(
                           title: 'Quản lý Kích cỡ & Tồn kho',
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: AppColors.border,
-                                      width: 0.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.05,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            _buildTableHeaderCell('SIZE', 80),
-                                            _buildTableHeaderCell(
-                                              'MÀU SẮC',
-                                              90,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'TỒN KHO',
-                                              70,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'CAO (CM)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'NẶNG (KG)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'VÒNG 1 (CM)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'VÒNG 2 (CM)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'VÒNG 3 (CM)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'BẮP TAY (CM)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'VÒNG ĐÙI (CM)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'RỘNG VAI (CM)',
-                                              100,
-                                            ),
-                                            _buildTableHeaderCell(
-                                              'XÓA',
-                                              40,
-                                              isLast: true,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      ...List.generate(_variantsList.length, (
-                                        index,
-                                      ) {
-                                        final map = _variantsList[index];
-                                        return Container(
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              top: BorderSide(
-                                                color: AppColors.border,
-                                                width: 0.5,
-                                              ),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              _buildCellWrapper(
-                                                _buildSizeDropdownCell(
-                                                  map['size'],
-                                                ),
-                                                80,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['color'],
-                                                ),
-                                                90,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['stock'],
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                ),
-                                                70,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['height'],
-                                                  hintText: '160-170',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['weight'],
-                                                  hintText: '60-70',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['bust'],
-                                                  hintText: '90-95',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['waist'],
-                                                  hintText: '75-80',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['hips'],
-                                                  hintText: '95-100',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['arm'],
-                                                  hintText: '30-32',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['thigh'],
-                                                  hintText: '50-55',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                _buildTableInputCell(
-                                                  map['shoulder'],
-                                                  hintText: '38-40',
-                                                ),
-                                                100,
-                                              ),
-                                              _buildCellWrapper(
-                                                Container(
-                                                  height: 38,
-                                                  alignment: Alignment.center,
-                                                  child: IconButton(
-                                                    icon: const Icon(
-                                                      Icons.delete_outline,
-                                                      color: Colors.red,
-                                                      size: 18,
-                                                    ),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        _variantsList.removeAt(
-                                                          index,
-                                                        );
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                                40,
-                                                isLast: true,
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Center(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _addVariantRow();
-                                    });
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: AppColors.primary),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    '+ THÊM KÍCH CỠ MỚI',
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: ManagerProductVariantsTable(
+                            rows: _variantsList,
+                            onAddRow: () {
+                              setState(_addVariantRow);
+                            },
+                            onRemoveRow: (index) {
+                              setState(() {
+                                final row = _variantsList.removeAt(index);
+                                row.dispose();
+                              });
+                            },
+                            onChanged: () {
+                              setState(() {});
+                            },
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -1213,140 +954,6 @@ class _ManagerProductDetailScreenState
         ),
       ),
       style: const TextStyle(fontSize: 13),
-    );
-  }
-
-  Widget _buildTableHeaderCell(
-    String text,
-    double width, {
-    bool isLast = false,
-  }) {
-    return Container(
-      width: width,
-      padding: const EdgeInsets.all(6.0),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        border: isLast
-            ? null
-            : Border(right: BorderSide(color: AppColors.border, width: 0.5)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  Widget _buildCellWrapper(Widget child, double width, {bool isLast = false}) {
-    return Container(
-      width: width,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        border: isLast
-            ? null
-            : Border(right: BorderSide(color: AppColors.border, width: 0.5)),
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildTableInputCell(
-    TextEditingController controller, {
-    TextInputType keyboardType = TextInputType.text,
-    String? hintText,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: SizedBox(
-        height: 30,
-        child: TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 11),
-          decoration: InputDecoration(
-            isDense: true,
-            hintText: hintText,
-            hintStyle: const TextStyle(fontSize: 10, color: Colors.grey),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 4,
-              vertical: 6,
-            ),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.border, width: 0.5),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  static const List<String> _standardSizes = [
-    'L',
-    'XL',
-    '2XL',
-    '3XL',
-    '4XL',
-    '5XL',
-  ];
-
-  Widget _buildSizeDropdownCell(TextEditingController controller) {
-    final String currentVal = controller.text.trim();
-    final List<String> items = List.from(_standardSizes);
-    if (currentVal.isNotEmpty && !items.contains(currentVal)) {
-      items.insert(0, currentVal);
-    } else if (currentVal.isEmpty && items.isNotEmpty) {
-      controller.text = items.first;
-    }
-
-    final String selectedVal = controller.text.isEmpty
-        ? items.first
-        : controller.text;
-
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: SizedBox(
-        height: 30,
-        child: DropdownButtonHideUnderline(
-          child: DropdownButtonFormField<String>(
-            initialValue: selectedVal,
-            isDense: true,
-            isExpanded: true,
-            icon: const Icon(Icons.arrow_drop_down, size: 16),
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding: const EdgeInsets.only(
-                left: 4,
-                right: 0,
-                top: 6,
-                bottom: 6,
-              ),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border, width: 0.5),
-              ),
-            ),
-            style: const TextStyle(fontSize: 11, color: Colors.black),
-            items: items.map((size) {
-              return DropdownMenuItem<String>(
-                value: size,
-                child: Text(size, style: const TextStyle(fontSize: 11)),
-              );
-            }).toList(),
-            onChanged: (val) {
-              if (val != null) {
-                setState(() {
-                  controller.text = val;
-                });
-              }
-            },
-          ),
-        ),
-      ),
     );
   }
 }

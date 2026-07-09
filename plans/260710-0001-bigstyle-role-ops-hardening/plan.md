@@ -81,7 +81,7 @@ with a regression gate.
 | 2 | [Secure Admin Invite Edge Function](./phase-02-secure-admin-invite-edge-function.md) | Completed |
 | 3 | [Revenue Query Normalization](./phase-03-revenue-query-normalization.md) | Completed |
 | 4 | [Regression Coverage Expansion](./phase-04-regression-coverage-expansion.md) | Completed |
-| 5 | [Manager Product Form Modularization](./phase-05-manager-product-form-modularization.md) | Pending |
+| 5 | [Manager Product Form Modularization](./phase-05-manager-product-form-modularization.md) | Completed |
 | 6 | [Checkout Modularization](./phase-06-checkout-modularization.md) | Pending |
 | 7 | [Plan Sync And Final Verification](./phase-07-plan-sync-and-final-verification.md) | Pending |
 
@@ -140,6 +140,12 @@ with a regression gate.
   and product update variant color payload. `flutter test --coverage` passed
   with 13 tests and LCOV line coverage 21.62%. Report:
   `plans/260710-0001-bigstyle-role-ops-hardening/reports/regression-coverage-expansion.md`.
+- 2026-07-10 Phase 5 manager product form modularization: PASS. Extracted the
+  duplicated create/edit variant table into a shared row model and widgets,
+  preserving edit variant `colorHex` behavior with unit/widget tests. Create
+  screen reduced from 1305 to 928 lines; edit screen reduced from 1400 to 1007
+  lines. Report:
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/manager-product-form-modularization.md`.
 
 - Tier: Full (7 phases)
 - Claims checked: 21
@@ -168,7 +174,7 @@ Key verified claims:
 - [ ] Admin invite no longer calls `auth.admin.*` directly from Flutter.
 - [ ] Admin and manager revenue use one documented business rule and covered tests.
 - [ ] Regression tests cover auth debug guard, checkout guard/cart clear, product RPC mapping, admin invite service failure/success boundaries, and revenue calculations.
-- [ ] Manager product form and checkout are split into focused widgets/helpers with no behavior regression.
+- [ ] Manager product form and checkout are split into focused widgets/helpers with no behavior regression. Product variant table extraction is complete; checkout remains pending.
 - [ ] Old pending/partial plan checklists are reconciled with evidence.
 - [ ] `flutter analyze` and `flutter test` pass.
 

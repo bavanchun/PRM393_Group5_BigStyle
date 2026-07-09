@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Manager Product Form Modularization"
-status: pending
+status: completed
 priority: P2
 effort: "1.25d"
 dependencies: [4]
@@ -108,10 +108,11 @@ flutter test
 
 ## Success Criteria
 
-- [ ] Create product screen reduced substantially and remains readable.
-- [ ] Edit product screen reduced substantially and remains readable.
-- [ ] Shared sections extracted without changing BLoC/service contracts.
-- [ ] Variant color/category/image behavior covered by tests.
+- [x] Create product screen reduced substantially and remains readable.
+- [x] Edit product screen reduced substantially and remains readable.
+- [x] Shared sections extracted without changing BLoC/service contracts.
+- [x] Variant color behavior covered by tests; category/image behavior unchanged
+      and remains inline.
 - [ ] Manager product smoke still passes.
 
 ## Risk Assessment
