@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'product_event.dart';
 import 'product_state.dart';
@@ -24,13 +25,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final products = await _productService.getProducts();
       emit(state.copyWith(isLoading: false, products: products));
     } catch (e, stackTrace) {
-      print('LoadProducts error: $e\n$stackTrace');
+      debugPrint('LoadProducts error: $e\n$stackTrace');
       emit(state.copyWith(isLoading: false, error: 'Tải sản phẩm thất bại'));
     }
   }
 
-  void _onFilterByCategory(
-      FilterByCategory event, Emitter<ProductState> emit) {
+  void _onFilterByCategory(FilterByCategory event, Emitter<ProductState> emit) {
     emit(state.copyWith(selectedCategory: event.categoryId));
   }
 
@@ -43,17 +43,21 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   Future<void> _onLoadFeatured(
-      ProductLoadFeatured event, Emitter<ProductState> emit) async {
+    ProductLoadFeatured event,
+    Emitter<ProductState> emit,
+  ) async {
     try {
       final products = await _productService.getProducts(featured: true);
       emit(state.copyWith(featuredProducts: products));
     } catch (e, stackTrace) {
-      print('ProductLoadFeatured error: $e\n$stackTrace');
+      debugPrint('ProductLoadFeatured error: $e\n$stackTrace');
     }
   }
 
   Future<void> _onLoadDetail(
-      ProductLoadDetail event, Emitter<ProductState> emit) async {
+    ProductLoadDetail event,
+    Emitter<ProductState> emit,
+  ) async {
     emit(state.copyWith(isLoading: true, error: null));
     try {
       final product = await _productService.getProductById(event.productId);
@@ -64,7 +68,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   Future<void> _onLoadCategories(
-      ProductLoadCategories event, Emitter<ProductState> emit) async {
+    ProductLoadCategories event,
+    Emitter<ProductState> emit,
+  ) async {
     try {
       final categories = await _productService.getCategories();
       emit(state.copyWith(categories: categories));
@@ -72,10 +78,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   void _onFilterBySize(FilterBySize event, Emitter<ProductState> emit) {
-    emit(state.copyWith(
-      selectedSize: event.size,
-      clearSize: event.size == null,
-    ));
+    emit(
+      state.copyWith(selectedSize: event.size, clearSize: event.size == null),
+    );
   }
 
   void _onToggleSaleOnly(ToggleSaleOnly event, Emitter<ProductState> emit) {

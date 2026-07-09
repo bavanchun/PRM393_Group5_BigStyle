@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase/supabase_config.dart';
@@ -15,7 +16,11 @@ class ProductService {
     bool? featured,
     String? storeId,
   }) async {
-    var query = _client.from('products').select('*, category:categories(*), variants:product_variants(*), store:profiles(brand_name)');
+    var query = _client
+        .from('products')
+        .select(
+          '*, category:categories(*), variants:product_variants(*), store:profiles(brand_name)',
+        );
 
     if (categoryId != null) {
       query = query.eq('category_id', categoryId);
@@ -37,7 +42,9 @@ class ProductService {
   Future<ProductModel?> getProductById(String id) async {
     final data = await _client
         .from('products')
-        .select('*, category:categories(*), variants:product_variants(*), store:profiles(brand_name)')
+        .select(
+          '*, category:categories(*), variants:product_variants(*), store:profiles(brand_name)',
+        )
         .eq('id', id)
         .maybeSingle();
     return data != null ? ProductModel.fromMap(data) : null;
@@ -113,8 +120,11 @@ class ProductService {
     await _client.from('products').update(productData).eq('id', product.id);
 
     // Xử lý update variants: Xóa cũ, thêm mới để đơn giản
-    await _client.from('product_variants').delete().eq('product_id', product.id);
-    
+    await _client
+        .from('product_variants')
+        .delete()
+        .eq('product_id', product.id);
+
     if (product.variants.isNotEmpty) {
       final variantsData = product.variants.map((v) {
         final vMap = v.toMap();
@@ -162,13 +172,12 @@ class ProductService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return '$supabaseUrl/storage/v1/object/public/$bucket/$fileName';
       } else {
-        print('Upload failed: ${response.statusCode} - ${response.body}');
+        debugPrint('Upload failed: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Upload error: $e');
+      debugPrint('Upload error: $e');
       return null;
     }
   }
 }
-

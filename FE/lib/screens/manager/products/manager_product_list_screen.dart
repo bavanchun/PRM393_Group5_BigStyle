@@ -13,7 +13,8 @@ class ManagerProductListScreen extends StatefulWidget {
   const ManagerProductListScreen({super.key});
 
   @override
-  State<ManagerProductListScreen> createState() => _ManagerProductListScreenState();
+  State<ManagerProductListScreen> createState() =>
+      _ManagerProductListScreenState();
 }
 
 class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
@@ -63,12 +64,16 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 'Quản trị',
-                style: TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -78,30 +83,43 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         listener: (context, state) {
           if (state is ManagerProductOperationSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.primary),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.primary,
+              ),
             );
           } else if (state is ManagerProductError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error), backgroundColor: AppColors.error),
+              SnackBar(
+                content: Text(state.error),
+                backgroundColor: AppColors.error,
+              ),
             );
           }
         },
         builder: (context, state) {
           List<ProductModel> products = [];
           bool isLoading = state is ManagerProductLoading;
-          
+
           if (state is ManagerProductLoaded) {
             products = state.products;
           } else if (state is ManagerProductOperationSuccess) {
-            isLoading = true; 
+            isLoading = true;
           }
 
           if (_searchQuery.isNotEmpty) {
-            products = products.where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+            products = products
+                .where(
+                  (p) =>
+                      p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+                )
+                .toList();
           }
           if (_selectedStatus != 'all') {
             bool isActiveFilter = _selectedStatus == 'active';
-            products = products.where((p) => p.isActive == isActiveFilter).toList();
+            products = products
+                .where((p) => p.isActive == isActiveFilter)
+                .toList();
           }
 
           return Column(
@@ -127,15 +145,21 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                           const SizedBox(height: 2),
                           Text(
                             'Quản lý kho hàng, giá bán và trạng thái hiển thị.',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -155,7 +179,11 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
 
               Expanded(
                 child: isLoading
-                    ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                     : _buildAdminProductList(products),
               ),
 
@@ -179,7 +207,10 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         },
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('THÊM SẢN PHẨM MỚI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text(
+          'THÊM SẢN PHẨM MỚI',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -191,7 +222,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: Column(
         children: [
@@ -205,7 +236,11 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             decoration: InputDecoration(
               hintText: 'Tìm kiếm sản phẩm...',
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
-              prefixIcon: Icon(Icons.search, size: 20, color: AppColors.primary),
+              prefixIcon: Icon(
+                Icons.search,
+                size: 20,
+                color: AppColors.primary,
+              ),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.clear, size: 16),
@@ -224,7 +259,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: AppColors.border.withOpacity(0.5)),
+                borderSide: BorderSide(
+                  color: AppColors.border.withValues(alpha: 0.5),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -239,18 +276,29 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _selectedStatus,
+                  initialValue: _selectedStatus,
                   decoration: InputDecoration(
                     labelText: 'Trạng thái',
-                    labelStyle: TextStyle(fontSize: 11, color: AppColors.primary),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    labelStyle: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.primary,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   style: const TextStyle(fontSize: 12, color: Colors.black),
                   items: const [
                     DropdownMenuItem<String>(
                       value: 'all',
-                      child: Text('Tất cả trạng thái', style: TextStyle(fontSize: 12)),
+                      child: Text(
+                        'Tất cả trạng thái',
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ),
                     DropdownMenuItem<String>(
                       value: 'active',
@@ -283,7 +331,11 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+            const Icon(
+              Icons.inventory_2_outlined,
+              size: 64,
+              color: Colors.grey,
+            ),
             const SizedBox(height: 12),
             Text(
               'Không tìm thấy sản phẩm nào.',
@@ -299,13 +351,21 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         context.read<ManagerProductBloc>().add(LoadManagerProductsEvent());
       },
       child: ListView.builder(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 80),
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 12,
+          bottom: 80,
+        ),
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index];
           final isHidden = !product.isActive;
-          
-          int totalStock = product.variants.fold(0, (sum, v) => sum + v.stockQty);
+
+          int totalStock = product.variants.fold(
+            0,
+            (sum, v) => sum + v.stockQty,
+          );
 
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
@@ -314,7 +374,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: isHidden ? Colors.grey.shade300 : AppColors.border.withOpacity(0.3),
+                color: isHidden
+                    ? Colors.grey.shade300
+                    : AppColors.border.withValues(alpha: 0.3),
               ),
             ),
             child: InkWell(
@@ -342,15 +404,26 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                         height: 64,
                         child: ColorFiltered(
                           colorFilter: isHidden
-                              ? const ColorFilter.mode(Colors.grey, BlendMode.saturation)
-                              : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                              ? const ColorFilter.mode(
+                                  Colors.grey,
+                                  BlendMode.saturation,
+                                )
+                              : const ColorFilter.mode(
+                                  Colors.transparent,
+                                  BlendMode.multiply,
+                                ),
                           child: Image.network(
-                            product.images.isNotEmpty ? product.images.first : 'https://via.placeholder.com/150',
+                            product.images.isNotEmpty
+                                ? product.images.first
+                                : 'https://via.placeholder.com/150',
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: Colors.grey[300],
-                                child: const Icon(Icons.image, color: Colors.white),
+                                child: const Icon(
+                                  Icons.image,
+                                  color: Colors.white,
+                                ),
                               );
                             },
                           ),
@@ -370,7 +443,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: isHidden ? Colors.grey[700] : Colors.black,
-                              decoration: isHidden ? TextDecoration.lineThrough : null,
+                              decoration: isHidden
+                                  ? TextDecoration.lineThrough
+                                  : null,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -386,17 +461,26 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isHidden ? Colors.grey[300] : Colors.green[100],
+                                  color: isHidden
+                                      ? Colors.grey[300]
+                                      : Colors.green[100],
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
-                                      isHidden ? Icons.visibility_off : Icons.check_circle,
+                                      isHidden
+                                          ? Icons.visibility_off
+                                          : Icons.check_circle,
                                       size: 10,
-                                      color: isHidden ? Colors.grey[700] : Colors.green[700],
+                                      color: isHidden
+                                          ? Colors.grey[700]
+                                          : Colors.green[700],
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
@@ -404,7 +488,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                       style: TextStyle(
                                         fontSize: 8,
                                         fontWeight: FontWeight.bold,
-                                        color: isHidden ? Colors.grey[700] : Colors.green[700],
+                                        color: isHidden
+                                            ? Colors.grey[700]
+                                            : Colors.green[700],
                                       ),
                                     ),
                                   ],
@@ -413,7 +499,11 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                               const SizedBox(width: 12),
                               Text(
                                 'Tồn kho: $totalStock',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                ),
                               ),
                             ],
                           ),
@@ -424,14 +514,21 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                               Expanded(
                                 child: Text(
                                   'Danh mục: ${product.category?.name ?? "Chưa phân loại"}',
-                                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[600],
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 'Ngày tạo: ${DateFormat('dd/MM/yyyy').format(product.createdAt)}',
-                                style: TextStyle(fontSize: 10, color: Colors.grey[500], fontStyle: FontStyle.italic),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey[500],
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                             ],
                           ),

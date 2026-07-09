@@ -85,20 +85,21 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(const Offset(24, 24), 16, whitePaint);
 
-    final textBuilder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        textAlign: TextAlign.center,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
-    )..pushStyle(ui.TextStyle(color: const Color(0xFFC4517A)))
-      ..addText('B');
-    final paragraph = textBuilder.build()..layout(const ui.ParagraphConstraints(width: 32));
+    final textBuilder =
+        ui.ParagraphBuilder(
+            ui.ParagraphStyle(
+              textAlign: TextAlign.center,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          )
+          ..pushStyle(ui.TextStyle(color: const Color(0xFFC4517A)))
+          ..addText('B');
+    final paragraph = textBuilder.build()
+      ..layout(const ui.ParagraphConstraints(width: 32));
     canvas.drawParagraph(paragraph, const Offset(8, 11));
 
-    final image = await recorder
-        .endRecording()
-        .toImage(size, size);
+    final image = await recorder.endRecording().toImage(size, size);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     return BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
   }
@@ -124,9 +125,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
     final innerPaint = Paint()..color = Colors.white;
     canvas.drawCircle(Offset(half, half), 4, innerPaint);
 
-    final image = await recorder
-        .endRecording()
-        .toImage(s, s);
+    final image = await recorder.endRecording().toImage(s, s);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     return BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
   }
@@ -145,7 +144,8 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
     final apiKey = AppConfig.googleMapsApiKey;
     if (apiKey.isNotEmpty) {
       try {
-        final url = 'https://maps.googleapis.com/maps/api/directions/json'
+        final url =
+            'https://maps.googleapis.com/maps/api/directions/json'
             '?origin=${_shopLocation.latitude},${_shopLocation.longitude}'
             '&destination=${_customerLocation!.latitude},${_customerLocation!.longitude}'
             '&key=$apiKey';
@@ -155,7 +155,9 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
           if (data['status'] == 'OK') {
             final leg = data['routes'][0]['legs'][0];
             _distanceKm = (leg['distance']['value'] / 1000.0);
-            _routePoints = _decodePolyline(data['routes'][0]['overview_polyline']['points']);
+            _routePoints = _decodePolyline(
+              data['routes'][0]['overview_polyline']['points'],
+            );
             _updatePolyline();
             return;
           }
@@ -212,7 +214,8 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
 
   double _calculateDistance(LatLng a, LatLng b) {
     const p = 0.017453292519943295;
-    final a1 = 0.5 -
+    final a1 =
+        0.5 -
         cos((b.latitude - a.latitude) * p) / 2 +
         cos(a.latitude * p) *
             cos(b.latitude * p) *
@@ -222,7 +225,11 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
   }
 
   void _setMarkers() {
-    if (_customerLocation == null || _shopIcon == null || _customerIconNormal == null) return;
+    if (_customerLocation == null ||
+        _shopIcon == null ||
+        _customerIconNormal == null) {
+      return;
+    }
     setState(() {
       _markers = {
         Marker(
@@ -230,7 +237,10 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
           position: _shopLocation,
           icon: _shopIcon!,
           anchor: const Offset(0.5, 0.5),
-          infoWindow: const InfoWindow(title: 'BigStyle Shop', snippet: '123 Nguyễn Huệ, Q.1, TP.HCM'),
+          infoWindow: const InfoWindow(
+            title: 'BigStyle Shop',
+            snippet: '123 Nguyễn Huệ, Q.1, TP.HCM',
+          ),
         ),
         Marker(
           markerId: const MarkerId('customer'),
@@ -286,7 +296,10 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
       'https://www.google.com/maps/dir/?api=1&destination=${_shopLocation.latitude},${_shopLocation.longitude}',
     );
     try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
       if (!launched) throw Exception('launchUrl returned false');
     } catch (_) {
       if (!mounted) return;
@@ -300,6 +313,8 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
   }
 
   Future<void> _goToMyLocation() async {
+    final messenger = ScaffoldMessenger.of(context);
+
     try {
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
@@ -313,7 +328,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
       await _calculateRoute();
       _setMarkers();
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Không thể lấy vị trí hiện tại'),
           behavior: SnackBarBehavior.floating,
@@ -361,8 +376,11 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
               radius: 20,
               backgroundColor: Colors.white,
               child: IconButton(
-                icon: const Icon(Icons.arrow_back,
-                    size: 20, color: Colors.black87),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  size: 20,
+                  color: Colors.black87,
+                ),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
               ),
@@ -420,8 +438,11 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.store,
-                          color: AppColors.primary, size: 20),
+                      child: const Icon(
+                        Icons.store,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -438,14 +459,18 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
                           const SizedBox(height: 2),
                           Text(
                             '123 Nguyễn Huệ, Q.1, TP.HCM',
-                            style: AppTypography.bodySmall.copyWith(fontSize: 12),
+                            style: AppTypography.bodySmall.copyWith(
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -521,8 +546,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
         children: [
           Icon(icon, color: AppColors.primary, size: 22),
           const SizedBox(height: 6),
-          Text(label,
-              style: AppTypography.caption.copyWith(fontSize: 11)),
+          Text(label, style: AppTypography.caption.copyWith(fontSize: 11)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -537,10 +561,6 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
   }
 
   Widget _buildInfoDivider() {
-    return Container(
-      width: 1,
-      height: 40,
-      color: AppColors.divider,
-    );
+    return Container(width: 1, height: 40, color: AppColors.divider);
   }
 }

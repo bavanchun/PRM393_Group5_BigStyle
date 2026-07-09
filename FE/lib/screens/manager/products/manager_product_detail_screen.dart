@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -326,9 +325,11 @@ class _ManagerProductDetailScreenState
         await Future.delayed(
           const Duration(milliseconds: 100),
         ); // Đợi bàn phím thu xuống
+        if (!context.mounted) return;
 
         final shouldPop = await _showDiscardChangesDialog();
-        if (shouldPop && mounted) {
+        if (!context.mounted) return;
+        if (shouldPop) {
           setState(() => _allowPop = true);
           Navigator.of(context).pop(result);
         }
@@ -344,14 +345,16 @@ class _ManagerProductDetailScreenState
               await Future.delayed(
                 const Duration(milliseconds: 100),
               ); // Chờ bàn phím ẩn
+              if (!context.mounted) return;
 
               if (!_isDirty()) {
-                if (mounted) Navigator.pop(context);
+                Navigator.pop(context);
                 return;
               }
 
               final shouldPop = await _showDiscardChangesDialog();
-              if (shouldPop && mounted) {
+              if (!context.mounted) return;
+              if (shouldPop) {
                 setState(() => _allowPop = true);
                 Navigator.pop(context);
               }
@@ -471,8 +474,9 @@ class _ManagerProductDetailScreenState
                                         children: [
                                           Icon(
                                             Icons.cloud_upload_outlined,
-                                            color: AppColors.primary
-                                                .withOpacity(0.7),
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.7,
+                                            ),
                                             size: 40,
                                           ),
                                           const SizedBox(height: 12),
@@ -645,7 +649,7 @@ class _ManagerProductDetailScreenState
                                                 Icons
                                                     .add_photo_alternate_outlined,
                                                 color: AppColors.primary
-                                                    .withOpacity(0.7),
+                                                    .withValues(alpha: 0.7),
                                                 size: 28,
                                               ),
                                             ),
@@ -742,7 +746,7 @@ class _ManagerProductDetailScreenState
                                       child: LinearProgressIndicator(),
                                     )
                                   : DropdownButtonFormField<String>(
-                                      value: _selectedCategoryId,
+                                      initialValue: _selectedCategoryId,
                                       decoration: const InputDecoration(
                                         labelText: 'Danh mục *',
                                         labelStyle: TextStyle(
@@ -771,7 +775,7 @@ class _ManagerProductDetailScreenState
                                     ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
-                                value: _selectedElasticity,
+                                initialValue: _selectedElasticity,
                                 decoration: const InputDecoration(
                                   labelText: 'Độ co giãn *',
                                   labelStyle: TextStyle(
@@ -842,8 +846,8 @@ class _ManagerProductDetailScreenState
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: AppColors.primary.withOpacity(
-                                            0.05,
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.05,
                                           ),
                                         ),
                                         child: Row(
@@ -1071,7 +1075,7 @@ class _ManagerProductDetailScreenState
                               ),
                               Switch(
                                 value: _isSellable,
-                                activeColor: AppColors.primary,
+                                activeThumbColor: AppColors.primary,
                                 onChanged: (val) {
                                   setState(() => _isSellable = val);
                                 },
@@ -1108,7 +1112,7 @@ class _ManagerProductDetailScreenState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1282,7 +1286,7 @@ class _ManagerProductDetailScreenState
         height: 30,
         child: DropdownButtonHideUnderline(
           child: DropdownButtonFormField<String>(
-            value: selectedVal,
+            initialValue: selectedVal,
             isDense: true,
             isExpanded: true,
             icon: const Icon(Icons.arrow_drop_down, size: 16),

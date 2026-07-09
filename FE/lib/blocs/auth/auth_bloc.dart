@@ -11,7 +11,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GoogleAuthService _googleAuthService;
 
   AuthBloc(this._authService, this._googleAuthService)
-      : super(const AuthInitial()) {
+    : super(const AuthInitial()) {
     on<CheckSessionEvent>(_onCheckSession);
     on<SendOTPEvent>(_onSendOtp);
     on<VerifyOTPEvent>(_onVerifyOtp);
@@ -38,7 +38,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthUnauthenticated());
       }
     } catch (_) {
-      emit(const AuthError('Không thể kiểm tra phiên đăng nhập. Vui lòng thử lại.'));
+      emit(
+        const AuthError(
+          'Không thể kiểm tra phiên đăng nhập. Vui lòng thử lại.',
+        ),
+      );
     }
   }
 
@@ -82,9 +86,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthError('Đăng nhập Google thất bại'));
       }
     } catch (e, stackTrace) {
-      print('=== GOOGLE LOGIN ERROR ===');
-      print(e);
-      print(stackTrace);
+      debugPrint('=== GOOGLE LOGIN ERROR ===');
+      debugPrint(e.toString());
+      debugPrint(stackTrace.toString());
       emit(const AuthError('Đăng nhập Google thất bại'));
     }
   }
@@ -114,8 +118,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       fullName: event.role == 'admin'
           ? 'Admin BigStyle'
           : event.role == 'manager'
-              ? 'Quản lý BigStyle'
-              : 'Nguyễn Văn A',
+          ? 'Quản lý BigStyle'
+          : 'Nguyễn Văn A',
       phone: '0123456789',
       role: role,
       createdAt: DateTime.now(),

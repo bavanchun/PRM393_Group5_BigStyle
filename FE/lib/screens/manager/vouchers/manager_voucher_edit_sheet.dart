@@ -59,11 +59,14 @@ class _VoucherEditSheetContentState extends State<_VoucherEditSheetContent> {
     final v = widget.existing;
     _codeController = TextEditingController(text: v?.code ?? '');
     _valueController = TextEditingController(
-        text: v != null ? _trimZeros(v.value) : '');
+      text: v != null ? _trimZeros(v.value) : '',
+    );
     _minOrderController = TextEditingController(
-        text: v != null ? _trimZeros(v.minOrderAmount) : '0');
+      text: v != null ? _trimZeros(v.minOrderAmount) : '0',
+    );
     _maxDiscountController = TextEditingController(
-        text: v?.maxDiscount != null ? _trimZeros(v!.maxDiscount!) : '');
+      text: v?.maxDiscount != null ? _trimZeros(v!.maxDiscount!) : '',
+    );
     _type = v?.type ?? 'percentage';
     _isActive = v?.isActive ?? true;
   }
@@ -97,8 +100,9 @@ class _VoucherEditSheetContentState extends State<_VoucherEditSheetContent> {
     }
     final minOrder = double.tryParse(_minOrderController.text.trim()) ?? 0;
     final maxDiscountText = _maxDiscountController.text.trim();
-    final maxDiscount =
-        maxDiscountText.isEmpty ? null : double.tryParse(maxDiscountText);
+    final maxDiscount = maxDiscountText.isEmpty
+        ? null
+        : double.tryParse(maxDiscountText);
 
     setState(() {
       _submitting = true;
@@ -179,16 +183,20 @@ class _VoucherEditSheetContentState extends State<_VoucherEditSheetContent> {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 DropdownButtonFormField<String>(
-                  value: _type,
+                  initialValue: _type,
                   decoration: const InputDecoration(
                     labelText: 'Loại giảm giá *',
                     border: OutlineInputBorder(),
                   ),
                   items: const [
                     DropdownMenuItem(
-                        value: 'percentage', child: Text('Phần trăm (%)')),
+                      value: 'percentage',
+                      child: Text('Phần trăm (%)'),
+                    ),
                     DropdownMenuItem(
-                        value: 'fixed', child: Text('Số tiền cố định (đ)')),
+                      value: 'fixed',
+                      child: Text('Số tiền cố định (đ)'),
+                    ),
                   ],
                   onChanged: _submitting
                       ? null
@@ -197,8 +205,9 @@ class _VoucherEditSheetContentState extends State<_VoucherEditSheetContent> {
                 const SizedBox(height: AppSpacing.sm),
                 TextField(
                   controller: _valueController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
                     labelText: _type == 'percentage'
                         ? 'Giá trị giảm (%) *'
@@ -209,8 +218,9 @@ class _VoucherEditSheetContentState extends State<_VoucherEditSheetContent> {
                 const SizedBox(height: AppSpacing.sm),
                 TextField(
                   controller: _minOrderController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Đơn hàng tối thiểu (đ)',
                     border: OutlineInputBorder(),
@@ -220,8 +230,9 @@ class _VoucherEditSheetContentState extends State<_VoucherEditSheetContent> {
                   const SizedBox(height: AppSpacing.sm),
                   TextField(
                     controller: _maxDiscountController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(
                       labelText: 'Giảm tối đa (đ, tuỳ chọn)',
                       border: OutlineInputBorder(),
@@ -277,7 +288,9 @@ class _VoucherEditSheetContentState extends State<_VoucherEditSheetContent> {
 class UpperCaseTextFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     return newValue.copyWith(
       text: newValue.text.toUpperCase(),
       selection: newValue.selection,

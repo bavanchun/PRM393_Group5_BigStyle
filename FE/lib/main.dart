@@ -42,7 +42,7 @@ import 'services/voucher_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env');
+  await dotenv.load(fileName: '.env', isOptional: true);
 
   await supa.Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
@@ -80,11 +80,9 @@ class _BigStyleAppState extends State<BigStyleApp> {
       if (event == supa.AuthChangeEvent.signedOut) {
         final ctx = navigatorKey.currentContext;
         if (ctx != null) {
+          if (!ctx.mounted) return;
           // Only navigate — do NOT re-dispatch SignOutEvent (causes infinite loop)
-          Navigator.of(ctx).pushNamedAndRemoveUntil(
-            '/login',
-            (route) => false,
-          );
+          Navigator.of(ctx).pushNamedAndRemoveUntil('/login', (route) => false);
         }
       } else if (event == supa.AuthChangeEvent.tokenRefreshed) {
         debugPrint('Session: Token refreshed');
