@@ -78,7 +78,7 @@ with a regression gate.
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | [Admin Smoke Baseline](./phase-01-admin-smoke-baseline.md) | Completed |
-| 2 | [Secure Admin Invite Edge Function](./phase-02-secure-admin-invite-edge-function.md) | Pending |
+| 2 | [Secure Admin Invite Edge Function](./phase-02-secure-admin-invite-edge-function.md) | Completed |
 | 3 | [Revenue Query Normalization](./phase-03-revenue-query-normalization.md) | Pending |
 | 4 | [Regression Coverage Expansion](./phase-04-regression-coverage-expansion.md) | Pending |
 | 5 | [Manager Product Form Modularization](./phase-05-manager-product-form-modularization.md) | Pending |
@@ -123,6 +123,13 @@ with a regression gate.
   remote data. Invite mutation skipped and current mobile
   `auth.admin.inviteUserByEmail` path documented as Phase 2 blocker. Report:
   `plans/260710-0001-bigstyle-role-ops-hardening/reports/admin-smoke-baseline.md`.
+- 2026-07-10 Phase 2 admin invite: PASS with provider caveat. Flutter now calls
+  `admin-invite-user` Edge Function, function verifies caller admin role before
+  service-role invite, unit/Bloc tests cover success and failure, and function
+  is deployed with JWT verification enabled. Runtime invite success is blocked
+  by the mail provider testing-recipient policy; validation/auth smoke passes
+  and failed invite leaves no auth/profile row. Report:
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/admin-invite-edge-function.md`.
 
 - Tier: Full (7 phases)
 - Claims checked: 21

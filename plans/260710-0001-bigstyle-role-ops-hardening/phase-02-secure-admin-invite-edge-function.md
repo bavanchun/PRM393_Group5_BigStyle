@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Secure Admin Invite Edge Function"
-status: pending
+status: completed
 priority: P1
 effort: "1d"
 dependencies: [1]
@@ -105,11 +105,11 @@ rg -n "auth\\.admin|SERVICE_ROLE|service_role" lib
 
 ## Success Criteria
 
-- [ ] Flutter no longer calls `auth.admin.inviteUserByEmail`.
-- [ ] Edge Function verifies caller is admin before service-role action.
-- [ ] Admin invite success and failure covered by tests.
-- [ ] Runtime admin invite smoke passes with disposable email or documented skip.
-- [ ] No service-role key appears in repo.
+- [x] Flutter no longer calls `auth.admin.inviteUserByEmail`.
+- [x] Edge Function verifies caller is admin before service-role action.
+- [x] Admin invite success and failure covered by tests.
+- [x] Runtime admin invite smoke passes with disposable email or documented skip.
+- [x] No service-role key appears in repo.
 
 ## Risk Assessment
 
