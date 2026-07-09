@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Seed Product Ownership"
-status: pending
+status: completed
 priority: P1
 effort: "1h"
 dependencies: [1]
@@ -109,3 +109,14 @@ seed data alignment, not broad manager access to all products.
   long-term login path for this account before final smoke.
 - Risk: bulk update changes future marketplace assumptions. Mitigation: only
   update `store_id is null` seed rows and document rollback SQL.
+
+## Completion Notes
+
+- Resolved locked manager owner:
+  `hoangbavan4478+manager@gmail.com` ->
+  `2f94db39-94ba-4097-8d5f-3517fe62ba76`.
+- Pre-count: 15 products with `store_id is null`.
+- Updated only `store_id is null` rows.
+- Post-count: 15 manager-owned products, 0 orphan products, 15 total products.
+- Android manager smoke using the dedicated `+manager` account showed
+  `Tổng: 15` and `Hiển thị 15 trên 15 sản phẩm`.
