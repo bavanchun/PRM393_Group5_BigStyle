@@ -36,6 +36,12 @@ class _ManagerProductDetailScreenState
   bool _isSaving = false;
 
   String _selectedSwatchColor = 'Đất nung';
+  String _selectedSwatchHex = '#914B34';
+  static const Map<String, String> _swatchHexByName = {
+    'Đất nung': '#914B34',
+    'Xanh ngọc': '#2A6767',
+    'Đen': '#313030',
+  };
   final List<String> _imageUrls = [];
   final List<Map<String, dynamic>> _variantsList = [];
 
@@ -59,9 +65,18 @@ class _ManagerProductDetailScreenState
     _imageUrls.addAll(p.images);
     _loadCategories();
 
+    for (final variant in p.variants) {
+      if (variant.colorHex.isNotEmpty) {
+        _selectedSwatchHex = variant.colorHex;
+        _selectedSwatchColor = _swatchNameForHex(variant.colorHex);
+        break;
+      }
+    }
+
     for (var variant in p.variants) {
       _variantsList.add({
         'id': variant.id,
+        'colorHex': variant.colorHex,
         'size': TextEditingController(text: variant.size),
         'color': TextEditingController(text: variant.color),
         'stock': TextEditingController(text: variant.stockQty.toString()),
@@ -112,6 +127,7 @@ class _ManagerProductDetailScreenState
   void _addVariantRow() {
     _variantsList.add({
       'id': '',
+      'colorHex': _selectedSwatchHex,
       'size': TextEditingController(),
       'color': TextEditingController(),
       'stock': TextEditingController(),
@@ -230,6 +246,9 @@ class _ManagerProductDetailScreenState
       final stockStr = (map['stock'] as TextEditingController).text.trim();
       final colorStr = (map['color'] as TextEditingController).text.trim();
       if (size.isEmpty) continue;
+      final colorHex = (map['colorHex'] as String?)?.isNotEmpty == true
+          ? map['colorHex'] as String
+          : _selectedSwatchHex;
 
       variants.add(
         VariantModel(
@@ -237,8 +256,7 @@ class _ManagerProductDetailScreenState
           productId: widget.product.id,
           size: size,
           color: colorStr,
-          colorHex:
-              '#914B34', // default hex; UI color picker can expand this later
+          colorHex: colorHex,
           stockQty: int.tryParse(stockStr) ?? 0,
           heightRange: (map['height'] as TextEditingController).text.trim(),
           weightRange: (map['weight'] as TextEditingController).text.trim(),
@@ -1134,6 +1152,7 @@ class _ManagerProductDetailScreenState
       onTap: () {
         setState(() {
           _selectedSwatchColor = name;
+          _selectedSwatchHex = _swatchHexByName[name] ?? _selectedSwatchHex;
         });
       },
       child: Column(
@@ -1161,6 +1180,15 @@ class _ManagerProductDetailScreenState
         ],
       ),
     );
+  }
+
+  String _swatchNameForHex(String hex) {
+    for (final entry in _swatchHexByName.entries) {
+      if (entry.value.toLowerCase() == hex.toLowerCase()) {
+        return entry.key;
+      }
+    }
+    return _selectedSwatchColor;
   }
 
   Widget _buildTextField({

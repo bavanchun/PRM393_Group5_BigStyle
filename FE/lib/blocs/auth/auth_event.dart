@@ -29,6 +29,15 @@ class GoogleSignInEvent extends AuthEvent {
   const GoogleSignInEvent();
 }
 
+class PasswordSignInEvent extends AuthEvent {
+  final String email;
+  final String password;
+  const PasswordSignInEvent({required this.email, required this.password});
+
+  @override
+  List<Object?> get props => [email];
+}
+
 class CheckSessionEvent extends AuthEvent {
   const CheckSessionEvent();
 }

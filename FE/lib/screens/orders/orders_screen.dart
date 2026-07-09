@@ -12,6 +12,7 @@ import '../../models/order_model.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/app_error_state.dart';
 import '../checkout/payment_qr_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -44,16 +45,32 @@ class _OrdersScreenState extends State<OrdersScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          if (state.error != null && state.orders.isEmpty) {
+            return Center(
+              child: AppErrorState(
+                message: state.error!,
+                onRetry: () {
+                  final userId = context.read<AuthBloc>().state.user?.id;
+                  if (userId != null) {
+                    context.read<OrderBloc>().add(OrderLoad(userId));
+                  }
+                },
+              ),
+            );
+          }
+
           if (state.orders.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long_outlined,
-                      size: 64, color: AppColors.textHint),
+                  Icon(
+                    Icons.receipt_long_outlined,
+                    size: 64,
+                    color: AppColors.textHint,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Chưa có đơn hàng nào',
-                      style: AppTypography.bodyMedium),
+                  Text('Chưa có đơn hàng nào', style: AppTypography.bodyMedium),
                 ],
               ),
             );
@@ -84,10 +101,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: _statusColor(order.status)
-                                  .withValues(alpha: 0.1),
+                              color: _statusColor(
+                                order.status,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -101,13 +121,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      ...order.items.take(2).map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              '${item.productName.isNotEmpty ? item.productName : 'Sản phẩm'} x${item.quantity}',
-                              style: AppTypography.bodySmall,
+                      ...order.items
+                          .take(2)
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                '${item.productName.isNotEmpty ? item.productName : 'Sản phẩm'} x${item.quantity}',
+                                style: AppTypography.bodySmall,
+                              ),
                             ),
-                          )),
+                          ),
                       if (order.items.length > 2)
                         Text(
                           '+${order.items.length - 2} sản phẩm khác',

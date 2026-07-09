@@ -12,6 +12,7 @@ import '../../blocs/cart/cart_state.dart';
 import '../../models/category_model.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/app_error_state.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -25,9 +26,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
   final _searchFocusNode = FocusNode();
   String _selectedFilter = 'Tất cả';
   final List<String> _filters = [
-    'Tất cả', 'Đầm', 'Áo', 'Quần',
-    'Size XL', 'Size 2XL', 'Size 3XL',
-    'Mới về', 'Sale',
+    'Tất cả',
+    'Đầm',
+    'Áo',
+    'Quần',
+    'Size XL',
+    'Size 2XL',
+    'Size 3XL',
+    'Mới về',
+    'Sale',
   ];
   bool _appliedArg = false;
 
@@ -54,9 +61,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
         }
       }
       setState(() => _selectedFilter = matched?.name ?? 'Tất cả');
-      context
-          .read<ProductBloc>()
-          .add(FilterByCategory(args, matched?.name ?? args));
+      context.read<ProductBloc>().add(
+        FilterByCategory(args, matched?.name ?? args),
+      );
     }
   }
 
@@ -87,10 +94,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: Text(
-        'Bộ sưu tập',
-        style: AppTypography.headlineLarge,
-      ),
+      title: Text('Bộ sưu tập', style: AppTypography.headlineLarge),
       centerTitle: true,
       actions: [
         IconButton(
@@ -104,8 +108,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
               clipBehavior: Clip.none,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.shopping_bag_outlined,
-                      color: AppColors.textPrimary),
+                  icon: const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: AppColors.textPrimary,
+                  ),
                   onPressed: () => Navigator.pushNamed(context, '/cart'),
                 ),
                 if (count > 0)
@@ -160,9 +166,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     icon: const Icon(Icons.close, size: 18),
                     onPressed: () {
                       _searchController.clear();
-                      context
-                          .read<ProductBloc>()
-                          .add(const SearchProducts(''));
+                      context.read<ProductBloc>().add(const SearchProducts(''));
                     },
                   )
                 : null,
@@ -204,17 +208,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   _onFilterSelected(label);
                 },
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary
-                        : Colors.transparent,
+                    color: isSelected ? AppColors.primary : Colors.transparent,
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.border,
+                      color: isSelected ? AppColors.primary : AppColors.border,
                       width: 1.2,
                     ),
                   ),
@@ -224,8 +226,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       color: isSelected
                           ? Colors.white
                           : AppColors.textSecondary,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                       fontSize: 12,
                     ),
                   ),
@@ -247,6 +250,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
         final products = state.filteredProducts;
 
+        if (state.error != null && products.isEmpty) {
+          return Center(
+            child: AppErrorState(
+              message: state.error!,
+              onRetry: () {
+                context.read<ProductBloc>().add(const LoadProducts());
+                context.read<ProductBloc>().add(const ProductLoadCategories());
+              },
+            ),
+          );
+        }
+
         if (products.isEmpty) {
           return _buildEmptyState();
         }
@@ -257,7 +272,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
           },
           child: GridView.builder(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md, 8, AppSpacing.md, AppSpacing.xxl),
+              AppSpacing.md,
+              8,
+              AppSpacing.md,
+              AppSpacing.xxl,
+            ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 12,
@@ -268,8 +287,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             itemBuilder: (context, index) {
               final product = products[index];
               return ProductCard(
-                imageUrl:
-                    product.images.isNotEmpty ? product.images.first : '',
+                imageUrl: product.images.isNotEmpty ? product.images.first : '',
                 name: product.name,
                 price: product.price,
                 originalPrice: product.originalPrice,
@@ -292,7 +310,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget _buildShimmerGrid() {
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, 8, AppSpacing.md, AppSpacing.xxl),
+        AppSpacing.md,
+        8,
+        AppSpacing.md,
+        AppSpacing.xxl,
+      ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
@@ -349,8 +371,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off_rounded,
-                size: 72, color: AppColors.textHint.withValues(alpha: 0.5)),
+            Icon(
+              Icons.search_off_rounded,
+              size: 72,
+              color: AppColors.textHint.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 20),
             Text(
               'Không tìm thấy sản phẩm phù hợp',
@@ -390,9 +415,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
             break;
           }
         }
-        context
-            .read<ProductBloc>()
-            .add(FilterByCategory(matched?.id ?? label, label));
+        context.read<ProductBloc>().add(
+          FilterByCategory(matched?.id ?? label, label),
+        );
         context.read<ProductBloc>().add(const FilterBySize(null));
         context.read<ProductBloc>().add(const ToggleSaleOnly(false));
       case 'Size XL':
@@ -402,9 +427,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
         // one dimension is ever active.
         context.read<ProductBloc>().add(const FilterByCategory(null, 'all'));
         context.read<ProductBloc>().add(const ToggleSaleOnly(false));
-        context
-            .read<ProductBloc>()
-            .add(FilterBySize(label.replaceFirst('Size ', '')));
+        context.read<ProductBloc>().add(
+          FilterBySize(label.replaceFirst('Size ', '')),
+        );
       case 'Mới về':
         context.read<ProductBloc>().add(const SortProducts('newest'));
         context.read<ProductBloc>().add(const FilterBySize(null));
@@ -439,37 +464,43 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text('Sắp xếp theo',
-                  style: AppTypography.headlineMedium),
+              Text('Sắp xếp theo', style: AppTypography.headlineMedium),
               const SizedBox(height: 20),
-              ...['Mới nhất', 'Giá: Thấp đến cao', 'Giá: Cao đến thấp', 'Tên A-Z']
-                  .map((option) => ListTile(
-                        title: Text(option,
-                            style: AppTypography.bodyMedium),
-                        trailing: const Icon(Icons.chevron_right,
-                            color: AppColors.textHint),
-                        onTap: () {
-                          Navigator.pop(context);
-                          switch (option) {
-                            case 'Mới nhất':
-                              context
-                                  .read<ProductBloc>()
-                                  .add(const SortProducts('newest'));
-                            case 'Giá: Thấp đến cao':
-                              context
-                                  .read<ProductBloc>()
-                                  .add(const SortProducts('price-asc'));
-                            case 'Giá: Cao đến thấp':
-                              context
-                                  .read<ProductBloc>()
-                                  .add(const SortProducts('price-desc'));
-                            case 'Tên A-Z':
-                              context
-                                  .read<ProductBloc>()
-                                  .add(const SortProducts('name'));
-                          }
-                        },
-                      )),
+              ...[
+                'Mới nhất',
+                'Giá: Thấp đến cao',
+                'Giá: Cao đến thấp',
+                'Tên A-Z',
+              ].map(
+                (option) => ListTile(
+                  title: Text(option, style: AppTypography.bodyMedium),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textHint,
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    switch (option) {
+                      case 'Mới nhất':
+                        context.read<ProductBloc>().add(
+                          const SortProducts('newest'),
+                        );
+                      case 'Giá: Thấp đến cao':
+                        context.read<ProductBloc>().add(
+                          const SortProducts('price-asc'),
+                        );
+                      case 'Giá: Cao đến thấp':
+                        context.read<ProductBloc>().add(
+                          const SortProducts('price-desc'),
+                        );
+                      case 'Tên A-Z':
+                        context.read<ProductBloc>().add(
+                          const SortProducts('name'),
+                        );
+                    }
+                  },
+                ),
+              ),
             ],
           ),
         ),

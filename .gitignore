@@ -5,6 +5,11 @@ Thumbs.db
 # UX audit screenshots — local only, never commit
 docs/audit-assets/
 
+# Android smoke-test screenshots and UI dumps — local evidence only
+plans/**/reports/android-*-screens/
+plans/**/reports/*smoke-screens/
+plans/**/reports/*full-flow-screens/
+
 # Generated plugin registrants (Flutter auto-generates these)
 FE/macos/Flutter/GeneratedPluginRegistrant.swift
 

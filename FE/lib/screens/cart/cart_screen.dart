@@ -6,10 +6,12 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/cart/cart_state.dart';
+import '../../blocs/auth/auth_bloc.dart';
 import '../../models/cart_item_model.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/app_error_state.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -32,21 +34,44 @@ class _CartScreenState extends State<CartScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          if (state.error != null && state.items.isEmpty) {
+            return Center(
+              child: AppErrorState(
+                message: state.error!,
+                onRetry: () {
+                  final userId = context.read<AuthBloc>().state.user?.id;
+                  if (userId != null) {
+                    context.read<CartBloc>().add(CartLoad(userId));
+                  }
+                },
+              ),
+            );
+          }
+
           if (state.items.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_bag_outlined,
-                      size: 80, color: AppColors.textHint),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 80,
+                    color: AppColors.textHint,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Giỏ hàng trống',
-                      style: AppTypography.headlineMedium.copyWith(
-                          color: AppColors.textSecondary)),
+                  Text(
+                    'Giỏ hàng trống',
+                    style: AppTypography.headlineMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text('Hãy thêm sản phẩm vào giỏ hàng',
-                      style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textHint)),
+                  Text(
+                    'Hãy thêm sản phẩm vào giỏ hàng',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textHint,
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   AppButton(
                     label: 'Mua sắm ngay',
@@ -59,14 +84,18 @@ class _CartScreenState extends State<CartScreen> {
           }
 
           _selectedIds.removeWhere((id) => !state.items.any((i) => i.id == id));
-          final selectedItems =
-              state.items.where((i) => _selectedIds.contains(i.id)).toList();
+          final selectedItems = state.items
+              .where((i) => _selectedIds.contains(i.id))
+              .toList();
 
           return Column(
             children: [
               if (state.items.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       Checkbox(
@@ -92,22 +121,30 @@ class _CartScreenState extends State<CartScreen> {
                             }
                           });
                         },
-                        child: Text('Chọn tất cả',
-                            style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.textSecondary)),
+                        child: Text(
+                          'Chọn tất cả',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ),
                       const Spacer(),
                       if (_selectedIds.isNotEmpty)
-                        Text('Đã chọn ${_selectedIds.length} sản phẩm',
-                            style: AppTypography.caption.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600)),
+                        Text(
+                          'Đã chọn ${_selectedIds.length} sản phẩm',
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                     ],
                   ),
                 ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
                   itemCount: state.items.length,
                   itemBuilder: (context, index) {
                     final item = state.items[index];
@@ -129,8 +166,8 @@ class _CartScreenState extends State<CartScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: AppCard(
-        onTap: () => Navigator.pushNamed(context, '/cart-item-edit',
-            arguments: item),
+        onTap: () =>
+            Navigator.pushNamed(context, '/cart-item-edit', arguments: item),
         child: Row(
           children: [
             Checkbox(
@@ -152,8 +189,14 @@ class _CartScreenState extends State<CartScreen> {
                 height: 80,
                 color: AppColors.secondary.withValues(alpha: 0.3),
                 child: item.product?.images.isNotEmpty == true
-                    ? Image.network(item.product!.images.first, fit: BoxFit.cover)
-                    : const Icon(Icons.image_outlined, color: AppColors.textHint),
+                    ? Image.network(
+                        item.product!.images.first,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(
+                        Icons.image_outlined,
+                        color: AppColors.textHint,
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -163,17 +206,24 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Text(
                     item.product?.name ?? '',
-                    style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Text('Size: ${item.size}',
-                      style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary)),
+                  Text(
+                    'Size: ${item.size}',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('${item.totalPrice.toStringAsFixed(0)}đ',
-                      style: AppTypography.priceSmall),
+                  Text(
+                    '${item.totalPrice.toStringAsFixed(0)}đ',
+                    style: AppTypography.priceSmall,
+                  ),
                 ],
               ),
             ),
@@ -184,17 +234,21 @@ class _CartScreenState extends State<CartScreen> {
                     _miniButton(Icons.remove, () {
                       if (item.quantity > 1) {
                         context.read<CartBloc>().add(
-                            CartUpdateQuantity(item.id, item.quantity - 1));
+                          CartUpdateQuantity(item.id, item.quantity - 1),
+                        );
                       }
                     }),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text('${item.quantity}',
-                          style: AppTypography.headlineSmall),
+                      child: Text(
+                        '${item.quantity}',
+                        style: AppTypography.headlineSmall,
+                      ),
                     ),
                     _miniButton(Icons.add, () {
                       context.read<CartBloc>().add(
-                          CartUpdateQuantity(item.id, item.quantity + 1));
+                        CartUpdateQuantity(item.id, item.quantity + 1),
+                      );
                     }),
                   ],
                 ),
@@ -209,8 +263,11 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     );
                   },
-                  child: const Icon(Icons.delete_outline,
-                      color: AppColors.error, size: 20),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
@@ -235,15 +292,26 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, List<CartItemModel> selectedItems) {
+  Widget _buildBottomBar(
+    BuildContext context,
+    List<CartItemModel> selectedItems,
+  ) {
     final selectedSubtotal = selectedItems.fold<double>(
-      0.0, (sum, item) => sum + item.totalPrice);
-    final selectedQty =
-        selectedItems.fold<int>(0, (sum, item) => sum + item.quantity);
+      0.0,
+      (sum, item) => sum + item.totalPrice,
+    );
+    final selectedQty = selectedItems.fold<int>(
+      0,
+      (sum, item) => sum + item.quantity,
+    );
 
     return Container(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.md),
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
@@ -278,9 +346,11 @@ class _CartScreenState extends State<CartScreen> {
                   : 'Mua hàng ($selectedQty sản phẩm)',
               onPressed: selectedItems.isEmpty
                   ? null
-                  : () => Navigator.pushNamed(context, '/checkout', arguments: {
-                        'selectedIds': _selectedIds.toList(),
-                      }),
+                  : () => Navigator.pushNamed(
+                      context,
+                      '/checkout',
+                      arguments: {'selectedIds': _selectedIds.toList()},
+                    ),
             ),
           ],
         ),

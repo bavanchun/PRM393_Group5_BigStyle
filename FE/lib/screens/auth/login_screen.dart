@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../blocs/auth/auth_bloc.dart';
@@ -17,6 +18,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const _testManagerEmail = String.fromEnvironment(
+    'BIGSTYLE_TEST_MANAGER_EMAIL',
+  );
+  static const _testManagerPassword = String.fromEnvironment(
+    'BIGSTYLE_TEST_MANAGER_PASSWORD',
+  );
+  static const _testCustomerEmail = String.fromEnvironment(
+    'BIGSTYLE_TEST_CUSTOMER_EMAIL',
+  );
+  static const _testCustomerPassword = String.fromEnvironment(
+    'BIGSTYLE_TEST_CUSTOMER_PASSWORD',
+  );
+
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _showOtp = false;
@@ -99,6 +113,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             _buildDivider(),
                             const SizedBox(height: 24),
                             _buildGoogleButton(state),
+                            if (_hasDebugTestLogin) ...[
+                              const SizedBox(height: 16),
+                              _buildDebugTestLoginButtons(state),
+                            ],
                           ],
                         ),
                       ),
@@ -333,13 +351,7 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.network(
-              'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg',
-              width: 20,
-              height: 20,
-              errorBuilder: (_, _, _) =>
-                  const Icon(Icons.g_mobiledata, size: 24),
-            ),
+            const Icon(Icons.g_mobiledata, size: 28, color: Color(0xFF2D2D2D)),
             const SizedBox(width: 10),
             Flexible(
               child: Text(
@@ -358,8 +370,60 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  bool get _hasDebugTestLogin {
+    return kDebugMode &&
+        ((_testManagerEmail.isNotEmpty && _testManagerPassword.isNotEmpty) ||
+            (_testCustomerEmail.isNotEmpty &&
+                _testCustomerPassword.isNotEmpty));
+  }
+
+  Widget _buildDebugTestLoginButtons(AuthState state) {
+    final isLoading = state is AuthLoading;
+    return Row(
+      children: [
+        if (_testManagerEmail.isNotEmpty && _testManagerPassword.isNotEmpty)
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: isLoading
+                  ? null
+                  : () => _signInTestUser(
+                      _testManagerEmail,
+                      _testManagerPassword,
+                    ),
+              icon: const Icon(Icons.storefront_outlined, size: 18),
+              label: const Text('Manager test'),
+            ),
+          ),
+        if (_testManagerEmail.isNotEmpty &&
+            _testManagerPassword.isNotEmpty &&
+            _testCustomerEmail.isNotEmpty &&
+            _testCustomerPassword.isNotEmpty)
+          const SizedBox(width: 12),
+        if (_testCustomerEmail.isNotEmpty && _testCustomerPassword.isNotEmpty)
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: isLoading
+                  ? null
+                  : () => _signInTestUser(
+                      _testCustomerEmail,
+                      _testCustomerPassword,
+                    ),
+              icon: const Icon(Icons.person_outline, size: 18),
+              label: const Text('Customer test'),
+            ),
+          ),
+      ],
+    );
+  }
+
   void _sendOtp() {
     if (!_formKey.currentState!.validate()) return;
     context.read<AuthBloc>().add(SendOTPEvent(_emailController.text.trim()));
+  }
+
+  void _signInTestUser(String email, String password) {
+    context.read<AuthBloc>().add(
+      PasswordSignInEvent(email: email, password: password),
+    );
   }
 }

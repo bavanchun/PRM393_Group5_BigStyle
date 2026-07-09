@@ -10,6 +10,7 @@ import '../../blocs/product/product_state.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/app_error_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,7 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.md, AppSpacing.md, AppSpacing.md, 0),
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -66,7 +71,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.md, AppSpacing.lg, AppSpacing.md, AppSpacing.sm),
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                      AppSpacing.sm,
+                    ),
                     child: SectionHeader(
                       title: 'Sản phẩm nổi bật',
                       actionLabel: 'Xem tất cả',
@@ -76,6 +85,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 if (state.isLoading)
                   _buildShimmerGrid()
+                else if (state.error != null && state.featuredProducts.isEmpty)
+                  _buildErrorSliver(state.error!)
                 else if (state.featuredProducts.isEmpty)
                   const SliverToBoxAdapter(
                     child: Padding(
@@ -85,42 +96,46 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
                     sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.58,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final product = state.featuredProducts[index];
-                          return ProductCard(
-                            imageUrl: product.images.isNotEmpty
-                                ? product.images.first
-                                : '',
-                            name: product.name,
-                            price: product.price,
-                            originalPrice: product.originalPrice,
-                            sizes: product.sizes,
-                            soldCount: product.soldCount,
-                            brandName: product.brandName,
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              '/product-detail',
-                              arguments: product.id,
-                            ),
-                          );
-                        },
-                        childCount: state.featuredProducts.length.clamp(0, 4),
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.58,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final product = state.featuredProducts[index];
+                        return ProductCard(
+                          imageUrl: product.images.isNotEmpty
+                              ? product.images.first
+                              : '',
+                          name: product.name,
+                          price: product.price,
+                          originalPrice: product.originalPrice,
+                          sizes: product.sizes,
+                          soldCount: product.soldCount,
+                          brandName: product.brandName,
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            '/product-detail',
+                            arguments: product.id,
+                          ),
+                        );
+                      }, childCount: state.featuredProducts.length.clamp(0, 4)),
                     ),
                   ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.md, AppSpacing.xl, AppSpacing.md, AppSpacing.sm),
+                      AppSpacing.md,
+                      AppSpacing.xl,
+                      AppSpacing.md,
+                      AppSpacing.sm,
+                    ),
                     child: SectionHeader(
                       title: 'Sản phẩm mới',
                       actionLabel: 'Xem tất cả',
@@ -130,6 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 if (state.isLoading)
                   _buildShimmerGrid()
+                else if (state.error != null && state.products.isEmpty)
+                  _buildErrorSliver(state.error!)
                 else if (state.products.isEmpty)
                   const SliverToBoxAdapter(
                     child: Padding(
@@ -139,36 +156,36 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
                     sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.58,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final product = state.products[index];
-                          return ProductCard(
-                            imageUrl: product.images.isNotEmpty
-                                ? product.images.first
-                                : '',
-                            name: product.name,
-                            price: product.price,
-                            originalPrice: product.originalPrice,
-                            sizes: product.sizes,
-                            soldCount: product.soldCount,
-                            brandName: product.brandName,
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              '/product-detail',
-                              arguments: product.id,
-                            ),
-                          );
-                        },
-                        childCount: state.products.length,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.58,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final product = state.products[index];
+                        return ProductCard(
+                          imageUrl: product.images.isNotEmpty
+                              ? product.images.first
+                              : '',
+                          name: product.name,
+                          price: product.price,
+                          originalPrice: product.originalPrice,
+                          sizes: product.sizes,
+                          soldCount: product.soldCount,
+                          brandName: product.brandName,
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            '/product-detail',
+                            arguments: product.id,
+                          ),
+                        );
+                      }, childCount: state.products.length),
                     ),
                   ),
                 const SliverToBoxAdapter(
@@ -183,6 +200,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  SliverToBoxAdapter _buildErrorSliver(String message) {
+    return SliverToBoxAdapter(
+      child: AppErrorState(
+        message: message,
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        iconSize: 48,
+        onRetry: () {
+          context.read<ProductBloc>().add(const LoadProducts());
+          context.read<ProductBloc>().add(ProductLoadFeatured());
+          context.read<ProductBloc>().add(ProductLoadCategories());
+        },
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -190,14 +222,27 @@ class _HomeScreenState extends State<HomeScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Xin chào!', style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
-            Text('BigStyle', style: AppTypography.displaySmall.copyWith(color: AppColors.primary)),
+            Text(
+              'Xin chào!',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            Text(
+              'BigStyle',
+              style: AppTypography.displaySmall.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
           ],
         ),
         Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: AppColors.textPrimary),
+              icon: const Icon(
+                Icons.notifications_outlined,
+                color: AppColors.textPrimary,
+              ),
               onPressed: () => Navigator.pushNamed(context, '/notifications'),
             ),
             CircleAvatar(
@@ -228,7 +273,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             Text(
               'Tìm kiếm sản phẩm...',
-              style: AppTypography.bodyMedium.copyWith(color: AppColors.textHint),
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textHint,
+              ),
             ),
           ],
         ),
@@ -320,7 +367,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppColors.secondary.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.checkroom, color: AppColors.primary),
+                    child: const Icon(
+                      Icons.checkroom,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -351,21 +401,18 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisSpacing: 12,
           childAspectRatio: 0.58,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            return Shimmer.fromColors(
-              baseColor: Colors.grey[200]!,
-              highlightColor: Colors.grey[100]!,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey[200]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
               ),
-            );
-          },
-          childCount: 4,
-        ),
+            ),
+          );
+        }, childCount: 4),
       ),
     );
   }

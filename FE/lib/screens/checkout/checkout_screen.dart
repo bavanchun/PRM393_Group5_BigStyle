@@ -125,8 +125,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.location_on_outlined,
-                    color: AppColors.primary, size: 28),
+                child: const Icon(
+                  Icons.location_on_outlined,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -195,7 +198,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!serviceEnabled) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dịch vụ vị trí đang tắt. Vui lòng bật trong cài đặt.')),
+          const SnackBar(
+            content: Text(
+              'Dịch vụ vị trí đang tắt. Vui lòng bật trong cài đặt.',
+            ),
+          ),
         );
         setState(() => _isLoadingLocation = false);
         return;
@@ -218,7 +225,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (permission == LocationPermission.deniedForever) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng bật quyền vị trí trong cài đặt')),
+          const SnackBar(
+            content: Text('Vui lòng bật quyền vị trí trong cài đặt'),
+          ),
         );
         setState(() => _isLoadingLocation = false);
         return;
@@ -237,7 +246,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _longitude = position.longitude;
 
       // Reverse geocode
-      final address = await _reverseGeocode(position.latitude, position.longitude);
+      final address = await _reverseGeocode(
+        position.latitude,
+        position.longitude,
+      );
       if (!mounted) return;
 
       if (address != null && address.isNotEmpty) {
@@ -254,9 +266,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi lấy vị trí: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi lấy vị trí: $e')));
     } finally {
       if (mounted) setState(() => _isLoadingLocation = false);
     }
@@ -267,9 +279,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final url = Uri.parse(
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&accept-language=vi&countrycodes=vn',
       );
-      final response = await http.get(url, headers: {
-        'User-Agent': 'BigStyle/1.0 (bigstyle-app)',
-      }).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(url, headers: {'User-Agent': 'BigStyle/1.0 (bigstyle-app)'})
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -324,8 +336,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle,
-                        color: AppColors.success, size: 64),
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppColors.success,
+                      size: 64,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'Đặt hàng thành công!',
@@ -342,8 +357,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       onPressed: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushReplacementNamed(
-                            '/order-detail',
-                            arguments: state.orderId);
+                          '/order-detail',
+                          arguments: state.orderId,
+                        );
                       },
                     ),
                   ],
@@ -358,8 +374,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             // Gated on the specific message (not just orderId != null) so an
             // order-creation failure never shows a payment-retry action with
             // a stale orderId from a previous order.
-            final canRetryPayment = state.orderId != null &&
-                state.error == 'Tạo yêu cầu thanh toán thất bại. Vui lòng thử lại.';
+            final canRetryPayment =
+                state.orderId != null &&
+                state.error ==
+                    'Tạo yêu cầu thanh toán thất bại. Vui lòng thử lại.';
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.error!),
@@ -368,12 +386,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         label: 'Thử lại',
                         onPressed: () {
                           final authState = context.read<AuthBloc>().state;
-                          context.read<CheckoutBloc>().add(CheckoutRetryPayment(
-                                orderId: state.orderId!,
-                                userId: authState.user?.id ?? '',
-                                orderNumber: state.orderNumber,
-                                total: state.total ?? 0,
-                              ));
+                          context.read<CheckoutBloc>().add(
+                            CheckoutRetryPayment(
+                              orderId: state.orderId!,
+                              userId: authState.user?.id ?? '',
+                              orderNumber: state.orderNumber,
+                              total: state.total ?? 0,
+                            ),
+                          );
                         },
                       )
                     : null,
@@ -386,7 +406,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             builder: (context, cartState) {
               final items = _selectedIds == null || _selectedIds!.isEmpty
                   ? cartState.items
-                  : cartState.items.where((i) => _selectedIds!.contains(i.id)).toList();
+                  : cartState.items
+                        .where((i) => _selectedIds!.contains(i.id))
+                        .toList();
               final subtotal = items.fold(0.0, (sum, i) => sum + i.totalPrice);
               // Preview only — server (create_order RPC) is the source of
               // truth for the persisted subtotal/discount/total.
@@ -399,35 +421,46 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Địa chỉ giao hàng',
-                          style: AppTypography.headlineSmall),
+                      Text(
+                        'Địa chỉ giao hàng',
+                        style: AppTypography.headlineSmall,
+                      ),
                       const SizedBox(height: 12),
                       AppTextField(
                         controller: _addressController,
                         hint: 'Nhập địa chỉ của bạn',
                         prefixIcon: const Icon(Icons.location_on_outlined),
                         maxLines: 2,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Vui lòng nhập địa chỉ' : null,
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Vui lòng nhập địa chỉ'
+                            : null,
                       ),
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: _isLoadingLocation ? null : _showLocationDialog,
+                          onPressed: _isLoadingLocation
+                              ? null
+                              : _showLocationDialog,
                           icon: _isLoadingLocation
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Icon(Icons.my_location, size: 18),
-                          label: Text(_isLoadingLocation
-                              ? 'Đang lấy vị trí...'
-                              : 'Dùng vị trí hiện tại'),
+                          label: Text(
+                            _isLoadingLocation
+                                ? 'Đang lấy vị trí...'
+                                : 'Dùng vị trí hiện tại',
+                          ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.primary,
-                            side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                            side: BorderSide(
+                              color: AppColors.primary.withValues(alpha: 0.4),
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -440,7 +473,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           padding: const EdgeInsets.only(top: 6),
                           child: Row(
                             children: [
-                              Icon(Icons.check_circle, size: 14, color: Colors.green[600]),
+                              Icon(
+                                Icons.check_circle,
+                                size: 14,
+                                color: Colors.green[600],
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Vĩ độ: ${_latitude!.toStringAsFixed(4)}, Kinh độ: ${_longitude!.toStringAsFixed(4)}',
@@ -455,44 +492,56 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       const SizedBox(height: 24),
                       Text('Sản phẩm', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
-                      ...items.map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    width: 48,
-                                    height: 48,
-                                    color: AppColors.secondary.withValues(alpha: 0.3),
-                                    child: item.product?.images.isNotEmpty == true
-                                        ? Image.network(item.product!.images.first,
-                                            fit: BoxFit.cover)
-                                        : const Icon(Icons.image_outlined,
-                                            size: 24),
+                      ...items.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  width: 48,
+                                  height: 48,
+                                  color: AppColors.secondary.withValues(
+                                    alpha: 0.3,
                                   ),
+                                  child: item.product?.images.isNotEmpty == true
+                                      ? Image.network(
+                                          item.product!.images.first,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const Icon(
+                                          Icons.image_outlined,
+                                          size: 24,
+                                        ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(item.product?.name ?? '',
-                                          style: AppTypography.bodySmall
-                                              .copyWith(fontWeight: FontWeight.w600)),
-                                      Text('Size ${item.size} x${item.quantity}',
-                                          style: AppTypography.caption),
-                                    ],
-                                  ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.product?.name ?? '',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Size ${item.size} x${item.quantity}',
+                                      style: AppTypography.caption,
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  '${item.totalPrice.toStringAsFixed(0)}đ',
-                                  style: AppTypography.priceSmall,
-                                ),
-                              ],
-                            ),
-                          )),
+                              ),
+                              Text(
+                                '${item.totalPrice.toStringAsFixed(0)}đ',
+                                style: AppTypography.priceSmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       Text('Ghi chú', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
@@ -502,8 +551,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         maxLines: 2,
                       ),
                       const SizedBox(height: 24),
-                      Text('Phương thức thanh toán',
-                          style: AppTypography.headlineSmall),
+                      Text(
+                        'Phương thức thanh toán',
+                        style: AppTypography.headlineSmall,
+                      ),
                       const SizedBox(height: 12),
                       _buildPaymentMethodSelector(),
                       const SizedBox(height: 24),
@@ -516,8 +567,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             child: AppTextField(
                               controller: _promoController,
                               hint: 'Nhập mã giảm giá',
-                              prefixIcon:
-                                  const Icon(Icons.local_offer_outlined),
+                              prefixIcon: const Icon(
+                                Icons.local_offer_outlined,
+                              ),
                               errorText: _promoError,
                             ),
                           ),
@@ -526,8 +578,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             label: 'Áp dụng',
                             width: 110,
                             isLoading: _applyingPromo,
-                                onPressed: () =>
-                                    _applyPromoCode(subtotal),
+                            onPressed: () => _applyPromoCode(subtotal),
                           ),
                         ],
                       ),
@@ -536,15 +587,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.cardRadius),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.cardRadius,
+                          ),
                         ),
                         child: Column(
                           children: [
                             _buildPriceRow('Tạm tính', subtotal),
                             const SizedBox(height: 8),
-                            _buildPriceRow(
-                                'Phí vận chuyển', _shippingFee),
+                            _buildPriceRow('Phí vận chuyển', _shippingFee),
                             if (_discountAmount > 0) ...[
                               const SizedBox(height: 8),
                               _buildPriceRow('Giảm giá', -_discountAmount),
@@ -605,7 +656,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       child: Container(
         padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.sm, horizontal: AppSpacing.sm),
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
           color: selected
               ? AppColors.primary.withValues(alpha: 0.08)
@@ -618,8 +671,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon,
-                color: selected ? AppColors.primary : AppColors.textSecondary),
+            Icon(
+              icon,
+              color: selected ? AppColors.primary : AppColors.textSecondary,
+            ),
             const SizedBox(height: 8),
             Text(
               label,
@@ -641,13 +696,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       children: [
         Text(
           label,
-          style: isTotal ? AppTypography.headlineSmall : AppTypography.bodyMedium,
+          style: isTotal
+              ? AppTypography.headlineSmall
+              : AppTypography.bodyMedium,
         ),
         Text(
           '${amount.toStringAsFixed(0)}đ',
           style: isTotal
               ? AppTypography.headlineSmall.copyWith(
-                  color: AppColors.primary, fontWeight: FontWeight.w700)
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                )
               : AppTypography.bodyMedium,
         ),
       ],
@@ -672,19 +731,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final items = _selectedIds == null || _selectedIds!.isEmpty
         ? cartState.items
         : cartState.items.where((i) => _selectedIds!.contains(i.id)).toList();
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng chọn sản phẩm để đặt hàng')),
+      );
+      return;
+    }
+
     final subtotal = items.fold(0.0, (sum, i) => sum + i.totalPrice);
 
-    context.read<CheckoutBloc>().add(CheckoutPlaceOrder(
-          userId: user.id,
-          items: items,
-          subtotal: subtotal,
-          shippingFee: _shippingFee,
-          address: _addressController.text,
-          latitude: _latitude,
-          longitude: _longitude,
-          note: _noteController.text.isNotEmpty ? _noteController.text : null,
-          paymentMethod: _paymentMethod,
-          promoCode: _promoCode,
-        ));
+    context.read<CheckoutBloc>().add(
+      CheckoutPlaceOrder(
+        userId: user.id,
+        items: items,
+        subtotal: subtotal,
+        shippingFee: _shippingFee,
+        address: _addressController.text,
+        latitude: _latitude,
+        longitude: _longitude,
+        note: _noteController.text.isNotEmpty ? _noteController.text : null,
+        paymentMethod: _paymentMethod,
+        promoCode: _promoCode,
+      ),
+    );
   }
 }
