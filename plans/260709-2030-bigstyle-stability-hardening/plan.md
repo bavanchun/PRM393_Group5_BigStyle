@@ -5,8 +5,8 @@ status: partial
 priority: P1
 branch: "dev"
 tags: [bugfix, refactor, flutter, supabase, data-integrity, tech-debt]
-blockedBy: []
 blocks: [260709-2231-bigstyle-remote-data-testability-hardening]
+blockedBy: []
 created: "2026-07-09T13:31:08.231Z"
 createdBy: "ck:plan"
 source: skill
@@ -72,11 +72,11 @@ demo-fix and feature-gap work. User chose **all items**, in this priority:
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | [Variant Color Edit Fix](./phase-01-variant-color-edit-fix.md) | Done |
-| 2 | [Transactional Product Update](./phase-02-transactional-product-update.md) | Done, pending DB apply |
+| 2 | [Transactional Product Update](./phase-02-transactional-product-update.md) | Done, DB applied |
 | 3 | [Checkout And Error-State Guards](./phase-03-checkout-and-error-state-guards.md) | Done |
 | 4 | [Manager Order Runtime Verification](./phase-04-manager-order-runtime-verification.md) | Blocked by no device/session |
 | 5 | [Test Harness And Smoke Matrix](./phase-05-test-harness-and-smoke-matrix.md) | Done automated, runtime pending |
-| 6 | [UI Modularization](./phase-06-ui-modularization.md) | Partial |
+| 6 | [UI Modularization](./phase-06-ui-modularization.md) | Done automated, runtime smoke pending |
 
 ## Dependencies
 
@@ -113,7 +113,7 @@ Phase 1 -> Phase 2 -> Phase 3 -> Phase 4 -> Phase 5 -> Phase 6
       manager account.
 - [x] Flutter test harness exists with targeted unit/widget tests for fixed
       behaviors.
-- [ ] Oversized product form screens are modularized with no behavior change and
+- [x] Oversized product form screens are modularized with no behavior change and
       analyzer/tests still pass.
 
 ## Validation Commands
@@ -185,6 +185,19 @@ Verified facts:
 - Prioritize data integrity before UX polish.
 - Prefer minimal code churn until tests exist.
 - Defer broad design-system cleanup unless it directly supports modularization.
+
+### 2026-07-10 Reconciliation
+
+- Product update RPC was applied/verified in
+  `plans/260709-2231-bigstyle-remote-data-testability-hardening/reports/260709-remote-data-android-smoke-report.md`.
+- Product variant UI extraction completed in
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/manager-product-form-modularization.md`.
+- Checkout section extraction completed in
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/checkout-modularization.md`.
+- Final automated gates passed in
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/pm-role-ops-hardening-completion.md`.
+- Manager order status mutation remains unchecked because the latest final phase
+  did not rerun that runtime path after UI refactors.
 
 ### Whole-Plan Consistency Sweep
 

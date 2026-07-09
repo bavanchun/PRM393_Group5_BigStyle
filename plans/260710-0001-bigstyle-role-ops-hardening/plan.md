@@ -4,7 +4,7 @@ description: >-
   Make admin operations production-safe, normalize revenue numbers, expand
   regression coverage, modularize the largest Flutter screens, and reconcile
   stale plan state.
-status: in-progress
+status: completed
 priority: P1
 effort: 6d
 branch: dev
@@ -83,7 +83,7 @@ with a regression gate.
 | 4 | [Regression Coverage Expansion](./phase-04-regression-coverage-expansion.md) | Completed |
 | 5 | [Manager Product Form Modularization](./phase-05-manager-product-form-modularization.md) | Completed |
 | 6 | [Checkout Modularization](./phase-06-checkout-modularization.md) | Completed |
-| 7 | [Plan Sync And Final Verification](./phase-07-plan-sync-and-final-verification.md) | Pending |
+| 7 | [Plan Sync And Final Verification](./phase-07-plan-sync-and-final-verification.md) | Completed |
 
 ## TDD Rules
 
@@ -152,6 +152,11 @@ with a regression gate.
   `_placeOrder()` in the parent. Checkout screen reduced from 758 to 532 lines.
   Report:
   `plans/260710-0001-bigstyle-role-ops-hardening/reports/checkout-modularization.md`.
+- 2026-07-10 Phase 7 plan sync/final verification: PASS. Final gates passed:
+  `flutter analyze`, `flutter test`, and `flutter test --coverage` with 20
+  tests and 39.16% line coverage. Old plans were reconciled without marking
+  unverified runtime status-update work complete. Report:
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/pm-role-ops-hardening-completion.md`.
 
 - Tier: Full (7 phases)
 - Claims checked: 21
@@ -176,13 +181,13 @@ Key verified claims:
 
 ## Success Criteria
 
-- [ ] Admin real-account smoke report exists and covers dashboard/users/categories/invite path.
-- [ ] Admin invite no longer calls `auth.admin.*` directly from Flutter.
-- [ ] Admin and manager revenue use one documented business rule and covered tests.
-- [ ] Regression tests cover auth debug guard, checkout guard/cart clear, product RPC mapping, admin invite service failure/success boundaries, and revenue calculations.
+- [x] Admin real-account smoke report exists and covers dashboard/users/categories/invite path.
+- [x] Admin invite no longer calls `auth.admin.*` directly from Flutter.
+- [x] Admin and manager revenue use one documented business rule and covered tests.
+- [x] Regression tests cover auth debug guard, checkout guard/cart clear, product RPC mapping, admin invite service failure/success boundaries, and revenue calculations.
 - [x] Manager product form and checkout are split into focused widgets/helpers with no behavior regression.
-- [ ] Old pending/partial plan checklists are reconciled with evidence.
-- [ ] `flutter analyze` and `flutter test` pass.
+- [x] Old pending/partial plan checklists are reconciled with evidence.
+- [x] `flutter analyze` and `flutter test` pass.
 
 ## Cook Handoff
 
