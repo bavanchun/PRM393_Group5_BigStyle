@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/revenue_recognition.dart';
 import '../models/user_model.dart';
 
 typedef AdminFunctionInvoker =
@@ -22,13 +23,9 @@ class AdminService {
       _supabase.from('orders').select('id').then((r) => r.length),
       _supabase
           .from('orders')
-          .select('total')
-          .then(
-            (rows) => rows.fold<double>(
-              0,
-              (sum, r) => sum + (r['total'] as num).toDouble(),
-            ),
-          ),
+          .select('total,status')
+          .inFilter('status', RevenueRecognition.acceptedStatuses.toList())
+          .then((rows) => RevenueRecognition.recognizedRevenue(rows)),
       _supabase
           .from('profiles')
           .select('id')

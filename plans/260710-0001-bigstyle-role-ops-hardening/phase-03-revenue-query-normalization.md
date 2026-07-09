@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Revenue Query Normalization"
-status: pending
+status: completed
 priority: P1
 effort: "0.75d"
 dependencies: [1]
@@ -95,10 +95,10 @@ flutter test
 
 ## Success Criteria
 
-- [ ] Admin total revenue no longer counts pending/cancelled/refunded.
-- [ ] Manager today revenue uses the same accepted-status rule.
-- [ ] Revenue helper/status rule covered by tests.
-- [ ] Dashboard map contract unchanged for UI consumers.
+- [x] Admin total revenue no longer counts pending/cancelled/refunded.
+- [x] Manager today revenue uses the same accepted-status rule.
+- [x] Revenue helper/status rule covered by tests.
+- [x] Dashboard map contract unchanged for UI consumers.
 
 ## Risk Assessment
 

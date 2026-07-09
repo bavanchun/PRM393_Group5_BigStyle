@@ -79,7 +79,7 @@ with a regression gate.
 |-------|------|--------|
 | 1 | [Admin Smoke Baseline](./phase-01-admin-smoke-baseline.md) | Completed |
 | 2 | [Secure Admin Invite Edge Function](./phase-02-secure-admin-invite-edge-function.md) | Completed |
-| 3 | [Revenue Query Normalization](./phase-03-revenue-query-normalization.md) | Pending |
+| 3 | [Revenue Query Normalization](./phase-03-revenue-query-normalization.md) | Completed |
 | 4 | [Regression Coverage Expansion](./phase-04-regression-coverage-expansion.md) | Pending |
 | 5 | [Manager Product Form Modularization](./phase-05-manager-product-form-modularization.md) | Pending |
 | 6 | [Checkout Modularization](./phase-06-checkout-modularization.md) | Pending |
@@ -130,6 +130,11 @@ with a regression gate.
   by the mail provider testing-recipient policy; validation/auth smoke passes
   and failed invite leaves no auth/profile row. Report:
   `plans/260710-0001-bigstyle-role-ops-hardening/reports/admin-invite-edge-function.md`.
+- 2026-07-10 Phase 3 revenue normalization: PASS. Admin all-time revenue and
+  manager today revenue now share the recognized-status rule
+  `confirmed|shipping|delivered`; pending/cancelled/refunded are excluded.
+  Report:
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/revenue-query-normalization.md`.
 
 - Tier: Full (7 phases)
 - Claims checked: 21
