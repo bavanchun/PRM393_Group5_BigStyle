@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Full Android Smoke Verification"
-status: pending
+status: completed
 priority: P1
 effort: "2h"
 dependencies: [1, 2, 3, 4]
@@ -117,3 +117,21 @@ Preflight checks
   approval before irreversible edit/status changes; prefer reversible test row.
 - Risk: emulator session state hides auth bugs. Mitigation: test at least one
   cold launch after session setup and document session source.
+
+## Completion Notes
+
+- Ran `flutter analyze`: pass.
+- Ran `flutter test`: pass, 3/3 tests.
+- Booted Android emulator `pixel8` as `emulator-5554`.
+- Manager smoke:
+  dedicated `+manager` debug login worked; dashboard showed 15 products;
+  product tab showed `Tổng: 15`; edit form loaded images, colors, category,
+  name, and price.
+- Customer smoke:
+  dedicated `+customer2` debug login worked; home/product detail rendered;
+  add to cart created one cart item; selected checkout showed total 40,000 VND;
+  COD order creation succeeded with order `CF-20260709-54E569`; cart cleared;
+  order detail rendered.
+- Runtime log after Google icon fix had no SVG decode exception, no missing RPC,
+  no image 404, and no fatal Flutter exception. Remaining warnings were emulator
+  frame/IME jank and Android back-dispatcher warnings.

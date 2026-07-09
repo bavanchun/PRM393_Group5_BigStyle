@@ -1,7 +1,7 @@
 ---
 title: "BigStyle Remote Data And Testability Hardening"
 description: "Apply the pending Supabase RPC, repair remote seed ownership/images, create a clean customer test path, and rerun Android smoke for manager and customer flows."
-status: pending
+status: completed
 priority: P1
 effort: "7h"
 branch: "dev"
@@ -72,11 +72,11 @@ input. Current verified remote state:
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | [Remote RPC Apply And Verification](./phase-01-remote-rpc-apply-and-verification.md) | Pending |
-| 2 | [Seed Product Ownership](./phase-02-seed-product-ownership.md) | Pending |
-| 3 | [Customer Test Account Session](./phase-03-customer-test-account-session.md) | Pending |
-| 4 | [Product Image URL Repair](./phase-04-product-image-url-repair.md) | Pending |
-| 5 | [Full Android Smoke Verification](./phase-05-full-android-smoke-verification.md) | Pending |
+| 1 | [Remote RPC Apply And Verification](./phase-01-remote-rpc-apply-and-verification.md) | Completed |
+| 2 | [Seed Product Ownership](./phase-02-seed-product-ownership.md) | Completed |
+| 3 | [Customer Test Account Session](./phase-03-customer-test-account-session.md) | Completed |
+| 4 | [Product Image URL Repair](./phase-04-product-image-url-repair.md) | Completed |
+| 5 | [Full Android Smoke Verification](./phase-05-full-android-smoke-verification.md) | Completed |
 
 ## Dependencies
 
@@ -99,12 +99,12 @@ Phase 1 -> Phase 2 -> Phase 3 -> Phase 4 -> Phase 5
 
 ## Acceptance Criteria
 
-- [ ] Remote Supabase has `public.update_product_with_variants`.
-- [ ] Manager can see 15 seed products in product tab.
-- [ ] Manager edit product no longer fails because of missing RPC or product ownership.
-- [ ] Dedicated customer account/session can run cart -> checkout -> orders smoke.
-- [ ] No product image URL in active seed catalog returns HTTP 404.
-- [ ] Android smoke report covers login, manager product edit, manager orders, customer cart/checkout/orders.
+- [x] Remote Supabase has `public.update_product_with_variants`.
+- [x] Manager can see 15 seed products in product tab.
+- [x] Manager edit product no longer fails because of missing RPC or product ownership.
+- [x] Dedicated customer account/session can run cart -> checkout -> orders smoke.
+- [x] No product image URL in active seed catalog returns HTTP 404.
+- [x] Android smoke report covers login, manager product edit, manager orders, customer cart/checkout/orders.
 
 ## Validation Commands
 
@@ -141,6 +141,15 @@ do not read or print `.env` secrets.
 - User locked seed owner and test-account strategy after initial plan:
   `hoangbavan4478+manager@gmail.com` owns seed catalog; create missing
   long-term test accounts/data when needed.
+- Completed remote execution on 2026-07-09:
+  RPC applied and grant-repaired; 15 seed products assigned to `+manager`;
+  repeatable debug-only real Supabase login added; two image URLs returning 404
+  repaired; Android manager/customer smoke passed.
+- Reports:
+  `reports/260709-remote-data-android-smoke-report.md` and
+  `../reports/260709-2309-bigstyle-remote-data-testability-validation.md`.
+- Final gates after reviewer fix:
+  `git diff --check`, `flutter analyze`, and `flutter test` all passed.
 
 ### Whole-Plan Consistency Sweep
 - Files reread: `plan.md`, five phase files after scaffold.
