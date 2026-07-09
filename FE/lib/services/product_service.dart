@@ -113,27 +113,26 @@ class ProductService {
 
   Future<ProductModel?> updateProduct(ProductModel product) async {
     final productData = product.toMap();
+    productData.remove('id');
     productData.remove('category');
     productData.remove('variants');
     productData.remove('created_at');
 
-    await _client.from('products').update(productData).eq('id', product.id);
+    final variantsData = product.variants.map((v) {
+      final vMap = v.toMap();
+      vMap.remove('id');
+      vMap['product_id'] = product.id;
+      return vMap;
+    }).toList();
 
-    // Xử lý update variants: Xóa cũ, thêm mới để đơn giản
-    await _client
-        .from('product_variants')
-        .delete()
-        .eq('product_id', product.id);
-
-    if (product.variants.isNotEmpty) {
-      final variantsData = product.variants.map((v) {
-        final vMap = v.toMap();
-        vMap.remove('id'); // Xóa id để insert mới hoàn toàn (generate uuid)
-        vMap['product_id'] = product.id;
-        return vMap;
-      }).toList();
-      await _client.from('product_variants').insert(variantsData);
-    }
+    await _client.rpc(
+      'update_product_with_variants',
+      params: {
+        'p_product_id': product.id,
+        'p_product': productData,
+        'p_variants': variantsData,
+      },
+    );
 
     return getProductById(product.id);
   }

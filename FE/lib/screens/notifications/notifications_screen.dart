@@ -7,26 +7,47 @@ import '../../blocs/notification/notification_bloc.dart';
 import '../../blocs/notification/notification_event.dart';
 import '../../blocs/notification/notification_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../widgets/app_error_state.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadNotifications());
+  }
+
+  void _loadNotifications() {
     final userId = context.read<AuthBloc>().state.user?.id;
     if (userId != null) {
       context.read<NotificationBloc>().add(NotificationLoad(userId));
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Thông báo'),
-      ),
+      appBar: AppBar(title: const Text('Thông báo')),
       body: BlocBuilder<NotificationBloc, NotificationState>(
         builder: (context, state) {
           if (state.isLoading) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.error != null && state.notifications.isEmpty) {
+            return Center(
+              child: AppErrorState(
+                message: state.error!,
+                onRetry: _loadNotifications,
+              ),
+            );
           }
 
           if (state.notifications.isEmpty) {
@@ -34,11 +55,16 @@ class NotificationsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_none,
-                      size: 64, color: AppColors.textHint),
+                  Icon(
+                    Icons.notifications_none,
+                    size: 64,
+                    color: AppColors.textHint,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Chưa có thông báo nào',
-                      style: AppTypography.bodyMedium),
+                  Text(
+                    'Chưa có thông báo nào',
+                    style: AppTypography.bodyMedium,
+                  ),
                 ],
               ),
             );
@@ -70,8 +96,9 @@ class NotificationsScreen extends StatelessWidget {
                 title: Text(
                   notification.title,
                   style: AppTypography.bodyMedium.copyWith(
-                    fontWeight:
-                        notification.isRead ? FontWeight.w400 : FontWeight.w600,
+                    fontWeight: notification.isRead
+                        ? FontWeight.w400
+                        : FontWeight.w600,
                   ),
                 ),
                 subtitle: Text(
@@ -86,9 +113,9 @@ class NotificationsScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   if (!notification.isRead) {
-                    context
-                        .read<NotificationBloc>()
-                        .add(NotificationMarkRead(notification.id));
+                    context.read<NotificationBloc>().add(
+                      NotificationMarkRead(notification.id),
+                    );
                   }
                 },
               );
