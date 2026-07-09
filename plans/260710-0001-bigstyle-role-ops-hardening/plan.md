@@ -82,7 +82,7 @@ with a regression gate.
 | 3 | [Revenue Query Normalization](./phase-03-revenue-query-normalization.md) | Completed |
 | 4 | [Regression Coverage Expansion](./phase-04-regression-coverage-expansion.md) | Completed |
 | 5 | [Manager Product Form Modularization](./phase-05-manager-product-form-modularization.md) | Completed |
-| 6 | [Checkout Modularization](./phase-06-checkout-modularization.md) | Pending |
+| 6 | [Checkout Modularization](./phase-06-checkout-modularization.md) | Completed |
 | 7 | [Plan Sync And Final Verification](./phase-07-plan-sync-and-final-verification.md) | Pending |
 
 ## TDD Rules
@@ -146,6 +146,12 @@ with a regression gate.
   screen reduced from 1305 to 928 lines; edit screen reduced from 1400 to 1007
   lines. Report:
   `plans/260710-0001-bigstyle-role-ops-hardening/reports/manager-product-form-modularization.md`.
+- 2026-07-10 Phase 6 checkout modularization: PASS. Extracted address, item
+  list, payment selector, voucher field, and price summary widgets while
+  keeping selected-item collection, route args, BLoC listener side effects, and
+  `_placeOrder()` in the parent. Checkout screen reduced from 758 to 532 lines.
+  Report:
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/checkout-modularization.md`.
 
 - Tier: Full (7 phases)
 - Claims checked: 21
@@ -174,7 +180,7 @@ Key verified claims:
 - [ ] Admin invite no longer calls `auth.admin.*` directly from Flutter.
 - [ ] Admin and manager revenue use one documented business rule and covered tests.
 - [ ] Regression tests cover auth debug guard, checkout guard/cart clear, product RPC mapping, admin invite service failure/success boundaries, and revenue calculations.
-- [ ] Manager product form and checkout are split into focused widgets/helpers with no behavior regression. Product variant table extraction is complete; checkout remains pending.
+- [x] Manager product form and checkout are split into focused widgets/helpers with no behavior regression.
 - [ ] Old pending/partial plan checklists are reconciled with evidence.
 - [ ] `flutter analyze` and `flutter test` pass.
 

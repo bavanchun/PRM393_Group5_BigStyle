@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Checkout Modularization"
-status: pending
+status: completed
 priority: P2
 effort: "1d"
 dependencies: [4]
@@ -97,11 +97,11 @@ flutter test
 
 ## Success Criteria
 
-- [ ] Checkout screen reduced and readable.
-- [ ] Extracted widgets have focused tests.
-- [ ] Existing COD and SePay flows still work.
-- [ ] Empty selected items guard remains.
-- [ ] No route arg contract changed.
+- [x] Checkout screen reduced and readable.
+- [x] Extracted widgets have focused tests.
+- [x] Existing COD and SePay flow contracts remain in parent screen.
+- [x] Empty selected items guard remains.
+- [x] No route arg contract changed.
 
 ## Risk Assessment
 
