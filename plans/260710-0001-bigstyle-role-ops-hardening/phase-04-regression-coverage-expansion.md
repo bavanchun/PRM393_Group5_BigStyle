@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Regression Coverage Expansion"
-status: pending
+status: completed
 priority: P1
 effort: "1d"
 dependencies: [2, 3]
@@ -104,10 +104,10 @@ flutter test --coverage
 
 ## Success Criteria
 
-- [ ] At least 5 new targeted tests added.
-- [ ] No test uses remote Supabase.
-- [ ] Tests cover admin invite, revenue, checkout guard, and product variant color.
-- [ ] `flutter test --coverage` passes and report notes coverage delta.
+- [x] At least 5 new targeted tests added.
+- [x] No test uses remote Supabase.
+- [x] Tests cover admin invite, revenue, checkout guard, and product variant color.
+- [x] `flutter test --coverage` passes and report notes coverage delta.
 
 ## Risk Assessment
 

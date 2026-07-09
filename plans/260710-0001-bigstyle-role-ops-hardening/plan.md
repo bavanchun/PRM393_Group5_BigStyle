@@ -80,7 +80,7 @@ with a regression gate.
 | 1 | [Admin Smoke Baseline](./phase-01-admin-smoke-baseline.md) | Completed |
 | 2 | [Secure Admin Invite Edge Function](./phase-02-secure-admin-invite-edge-function.md) | Completed |
 | 3 | [Revenue Query Normalization](./phase-03-revenue-query-normalization.md) | Completed |
-| 4 | [Regression Coverage Expansion](./phase-04-regression-coverage-expansion.md) | Pending |
+| 4 | [Regression Coverage Expansion](./phase-04-regression-coverage-expansion.md) | Completed |
 | 5 | [Manager Product Form Modularization](./phase-05-manager-product-form-modularization.md) | Pending |
 | 6 | [Checkout Modularization](./phase-06-checkout-modularization.md) | Pending |
 | 7 | [Plan Sync And Final Verification](./phase-07-plan-sync-and-final-verification.md) | Pending |
@@ -135,6 +135,11 @@ with a regression gate.
   `confirmed|shipping|delivered`; pending/cancelled/refunded are excluded.
   Report:
   `plans/260710-0001-bigstyle-role-ops-hardening/reports/revenue-query-normalization.md`.
+- 2026-07-10 Phase 4 regression coverage: PASS. Added/administered targeted
+  tests for admin invite, recognized revenue, checkout empty guard/COD success,
+  and product update variant color payload. `flutter test --coverage` passed
+  with 13 tests and LCOV line coverage 21.62%. Report:
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/regression-coverage-expansion.md`.
 
 - Tier: Full (7 phases)
 - Claims checked: 21

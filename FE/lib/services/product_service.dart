@@ -112,6 +112,17 @@ class ProductService {
   }
 
   Future<ProductModel?> updateProduct(ProductModel product) async {
+    await _client.rpc(
+      'update_product_with_variants',
+      params: buildUpdateProductWithVariantsParams(product),
+    );
+
+    return getProductById(product.id);
+  }
+
+  static Map<String, dynamic> buildUpdateProductWithVariantsParams(
+    ProductModel product,
+  ) {
     final productData = product.toMap();
     productData.remove('id');
     productData.remove('category');
@@ -125,16 +136,11 @@ class ProductService {
       return vMap;
     }).toList();
 
-    await _client.rpc(
-      'update_product_with_variants',
-      params: {
-        'p_product_id': product.id,
-        'p_product': productData,
-        'p_variants': variantsData,
-      },
-    );
-
-    return getProductById(product.id);
+    return {
+      'p_product_id': product.id,
+      'p_product': productData,
+      'p_variants': variantsData,
+    };
   }
 
   Future<void> deleteProduct(String id) async {
