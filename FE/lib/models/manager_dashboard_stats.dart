@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'revenue_recognition.dart';
 
 class ManagerDashboardStats extends Equatable {
   final double todayRevenue;
@@ -20,26 +21,10 @@ class ManagerDashboardStats extends Equatable {
     DateTime? now,
   }) {
     final localNow = now ?? DateTime.now();
-    const acceptedStatuses = {
-      'confirmed',
-      'shipping',
-      'delivered',
-    };
-    final todayRevenue = orders
-        .where((order) {
-          final createdAt = DateTime.tryParse(
-            order['created_at'] as String? ?? '',
-          )?.toLocal();
-          return acceptedStatuses.contains(order['status']) &&
-              createdAt != null &&
-              createdAt.year == localNow.year &&
-              createdAt.month == localNow.month &&
-              createdAt.day == localNow.day;
-        })
-        .fold<double>(
-          0,
-          (total, order) => total + ((order['total'] as num?)?.toDouble() ?? 0),
-        );
+    final todayRevenue = RevenueRecognition.recognizedRevenueForLocalDate(
+      orders,
+      localNow,
+    );
 
     return ManagerDashboardStats(
       todayRevenue: todayRevenue,

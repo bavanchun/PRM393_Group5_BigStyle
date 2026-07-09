@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -28,6 +30,30 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Native Android Maps SDK key — package+SHA-1 restricted, distinct
+        // from the dotenv GOOGLE_MAPS_API_KEY used for the Directions REST
+        // call (that key is bundled into the APK as a Flutter asset and
+        // must stay API-restricted + quota-capped, not package-restricted;
+        // see FE/.env.example). Read from android/local.properties (git-
+        // ignored, machine-local) or the environment, never committed.
+        val mapsApiKey: String = run {
+            val props = Properties()
+            val localProps = rootProject.file("local.properties")
+            if (localProps.exists()) {
+                localProps.inputStream().use { props.load(it) }
+            }
+            props.getProperty("GOOGLE_MAPS_API_KEY")
+                ?: System.getenv("GOOGLE_MAPS_API_KEY")
+                ?: ""
+        }
+        if (mapsApiKey.isEmpty()) {
+            logger.warn(
+                "GOOGLE_MAPS_API_KEY not set in android/local.properties or " +
+                    "env — native map will not render on this build."
+            )
+        }
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = mapsApiKey
     }
 
     // ĐOẠN CẤU HÌNH KEYSTORE CHUNG CHO CẢ TEAM NẰM Ở ĐÂY

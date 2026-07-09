@@ -31,8 +31,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         backgroundColor: AppColors.primary,
         onPressed: () => _showAddUserDialog(context),
         icon: const Icon(Icons.person_add, color: Colors.white),
-        label: const Text('Thêm người dùng',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        label: const Text(
+          'Thêm người dùng',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
       ),
       body: Column(
         children: [
@@ -86,7 +88,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 0,
+            horizontal: 16,
+          ),
         ),
         onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
       ),
@@ -142,20 +147,28 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     return BlocConsumer<AdminBloc, AdminState>(
       listener: (context, state) {
         if (state.successMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.successMessage!),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.successMessage!),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
         }
         if (state.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.error!),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
         }
       },
       builder: (context, state) {
@@ -167,9 +180,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
         if (_searchQuery.isNotEmpty) {
           users = users
-              .where((u) =>
-                  u.email.toLowerCase().contains(_searchQuery) ||
-                  u.fullName.toLowerCase().contains(_searchQuery))
+              .where(
+                (u) =>
+                    u.email.toLowerCase().contains(_searchQuery) ||
+                    u.fullName.toLowerCase().contains(_searchQuery),
+              )
               .toList();
         }
 
@@ -182,11 +197,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.people_outline,
-                    size: 56, color: AppColors.textHint.withValues(alpha: 0.4)),
+                Icon(
+                  Icons.people_outline,
+                  size: 56,
+                  color: AppColors.textHint.withValues(alpha: 0.4),
+                ),
                 const SizedBox(height: 12),
-                Text('Không tìm thấy người dùng',
-                    style: TextStyle(color: AppColors.textHint)),
+                Text(
+                  'Không tìm thấy người dùng',
+                  style: TextStyle(color: AppColors.textHint),
+                ),
               ],
             ),
           );
@@ -238,24 +258,33 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.fullName,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14)),
+                Text(
+                  user.fullName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(user.email,
-                    style: TextStyle(fontSize: 12, color: AppColors.textHint),
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  user.email,
+                  style: TextStyle(fontSize: 12, color: AppColors.textHint),
+                  overflow: TextOverflow.ellipsis,
+                ),
                 if (user.brandName != null && user.brandName!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Icon(Icons.store, size: 12, color: AppColors.primary),
                       const SizedBox(width: 4),
-                      Text(user.brandName!,
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w500)),
+                      Text(
+                        user.brandName!,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -281,16 +310,37 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               ),
               const SizedBox(height: 6),
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, color: AppColors.textHint, size: 18),
+                icon: Icon(
+                  Icons.more_vert,
+                  color: AppColors.textHint,
+                  size: 18,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 onSelected: (value) => _handleMenuAction(value, user),
                 itemBuilder: (context) => [
-                  _buildMenuItem('role_customer', 'Khách hàng', Icons.person_outline),
-                  _buildMenuItem('role_manager', 'Quản lý', Icons.store_outlined),
-                  _buildMenuItem('role_admin', 'Admin', Icons.admin_panel_settings_outlined),
+                  _buildMenuItem(
+                    'role_customer',
+                    'Khách hàng',
+                    Icons.person_outline,
+                  ),
+                  _buildMenuItem(
+                    'role_manager',
+                    'Quản lý',
+                    Icons.store_outlined,
+                  ),
+                  _buildMenuItem(
+                    'role_admin',
+                    'Admin',
+                    Icons.admin_panel_settings_outlined,
+                  ),
                   const PopupMenuDivider(),
-                  _buildMenuItem('brand', 'Sửa thương hiệu', Icons.edit_outlined),
+                  _buildMenuItem(
+                    'brand',
+                    'Sửa thương hiệu',
+                    Icons.edit_outlined,
+                  ),
                 ],
               ),
             ],
@@ -300,7 +350,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  PopupMenuItem<String> _buildMenuItem(String value, String label, IconData icon) {
+  PopupMenuItem<String> _buildMenuItem(
+    String value,
+    String label,
+    IconData icon,
+  ) {
     return PopupMenuItem(
       value: value,
       child: Row(
@@ -338,9 +392,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   void _handleMenuAction(String action, UserModel user) {
     switch (action) {
       case 'role_customer':
-        context.read<AdminBloc>().add(AdminUpdateUserRole(user.id, UserRole.customer));
+        context.read<AdminBloc>().add(
+          AdminUpdateUserRole(user.id, UserRole.customer),
+        );
       case 'role_manager':
-        context.read<AdminBloc>().add(AdminUpdateUserRole(user.id, UserRole.manager));
+        context.read<AdminBloc>().add(
+          AdminUpdateUserRole(user.id, UserRole.manager),
+        );
       case 'role_admin':
         _showConfirmRoleChange(user, UserRole.admin);
       case 'brand':
@@ -363,7 +421,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<AdminBloc>().add(AdminUpdateUserRole(user.id, newRole));
+              context.read<AdminBloc>().add(
+                AdminUpdateUserRole(user.id, newRole),
+              );
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Xác nhận'),
@@ -395,9 +455,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context
-                  .read<AdminBloc>()
-                  .add(AdminUpdateBrandName(user.id, controller.text.trim()));
+              context.read<AdminBloc>().add(
+                AdminUpdateBrandName(user.id, controller.text.trim()),
+              );
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Lưu'),
@@ -410,20 +470,27 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   void _showAddUserDialog(BuildContext context) {
     final emailController = TextEditingController();
     final nameController = TextEditingController();
+    final brandController = TextEditingController();
     String selectedRole = 'manager';
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.person_add, color: AppColors.primary, size: 36),
+                  const Icon(
+                    Icons.person_add,
+                    color: AppColors.primary,
+                    size: 36,
+                  ),
                   const SizedBox(height: 10),
                   const Text(
                     'Thêm người dùng',
@@ -437,9 +504,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       hintText: 'Email',
                       prefixIcon: const Icon(Icons.email_outlined, size: 20),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -449,23 +519,31 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       hintText: 'Họ tên',
                       prefixIcon: const Icon(Icons.person_outline, size: 20),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(color: AppColors.border),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.badge_outlined,
-                            size: 20, color: AppColors.textHint),
+                        const Icon(
+                          Icons.badge_outlined,
+                          size: 20,
+                          color: AppColors.textHint,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: DropdownButtonHideUnderline(
@@ -473,14 +551,18 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               value: selectedRole,
                               isExpanded: true,
                               style: const TextStyle(
-                                  fontSize: 14, color: AppColors.textPrimary),
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
                               items: const [
                                 DropdownMenuItem(
-                                    value: 'manager',
-                                    child: Text('Quản lý (Manager)')),
+                                  value: 'manager',
+                                  child: Text('Quản lý (Manager)'),
+                                ),
                                 DropdownMenuItem(
-                                    value: 'admin',
-                                    child: Text('Admin')),
+                                  value: 'admin',
+                                  child: Text('Admin'),
+                                ),
                               ],
                               onChanged: (v) {
                                 if (v != null) {
@@ -493,6 +575,23 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       ],
                     ),
                   ),
+                  if (selectedRole == 'manager') ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: brandController,
+                      decoration: InputDecoration(
+                        hintText: 'Tên thương hiệu',
+                        prefixIcon: const Icon(Icons.store_outlined, size: 20),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   Row(
                     children: [
@@ -506,8 +605,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text('Hủy',
-                              style: TextStyle(color: AppColors.textSecondary)),
+                          child: const Text(
+                            'Hủy',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -519,23 +620,30 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             if (email.isEmpty || !email.contains('@')) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('Email không hợp lệ')),
+                                  content: Text('Email không hợp lệ'),
+                                ),
                               );
                               return;
                             }
                             if (name.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('Vui lòng nhập họ tên')),
+                                  content: Text('Vui lòng nhập họ tên'),
+                                ),
                               );
                               return;
                             }
                             Navigator.pop(ctx);
-                            context.read<AdminBloc>().add(AdminAddUser(
-                                  email: email,
-                                  fullName: name,
-                                  role: selectedRole,
-                                ));
+                            context.read<AdminBloc>().add(
+                              AdminAddUser(
+                                email: email,
+                                fullName: name,
+                                role: selectedRole,
+                                brandName: selectedRole == 'manager'
+                                    ? brandController.text.trim()
+                                    : null,
+                              ),
+                            );
                           },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -544,8 +652,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text('Tạo',
-                              style: TextStyle(color: AppColors.primary)),
+                          child: const Text(
+                            'Tạo',
+                            style: TextStyle(color: AppColors.primary),
+                          ),
                         ),
                       ),
                     ],

@@ -32,6 +32,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Native Maps SDK key, resolved at build time from
+             android/local.properties via manifestPlaceholders — see
+             app/build.gradle.kts. Empty on machines without the key
+             configured; the map simply stays blank in that case. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${GOOGLE_MAPS_API_KEY}" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

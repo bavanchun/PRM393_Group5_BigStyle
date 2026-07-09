@@ -1,7 +1,7 @@
 ---
 title: "BigStyle Demo-Ready Fix Roadmap"
 description: "Demo-oriented fix roadmap turning docs/ux-flow-audit.md (111 findings) into a phased, on-camera-first fix plan for the PRM393 course demo. Flutter (BLoC) + Supabase."
-status: pending
+status: partial
 priority: P1
 branch: "dev"
 tags: [demo, bugfix, ux-audit, flutter, supabase]
@@ -63,11 +63,20 @@ None active. Prior plans `260620-0845-bigstyle-p0-p3-bugfixes` and `260703-1537-
 ## Acceptance Criteria (whole plan)
 
 - [ ] Fresh/logged-out launch reaches `/login` (no splash hang) — G1/G2.
-- [ ] Customer purchase flow works end-to-end incl. cart persistence + clear after order — C15/C16/C11/C12.
+- [x] Customer purchase flow works end-to-end incl. cart persistence + clear after order — C15/C16/C11/C12.
 - [ ] Manager can view orders, update status with visible success/error, and see non-zero today revenue — M7b/M7/M6b/M13.
 - [ ] Manager create/edit product saves the chosen category — M23/M31.
 - [ ] No wrong branding ("CurveFit Admin"), no on-camera dead buttons in the demo path, orders show human-readable `orderNumber` — M17/M19/X2/X7.
-- [ ] `flutter analyze` clean before each phase commit.
+- [x] `flutter analyze` clean before each phase commit.
+
+## Reconciliation Notes
+
+- 2026-07-10: Customer checkout criteria checked from
+  `plans/260709-2231-bigstyle-remote-data-testability-hardening/reports/260709-remote-data-android-smoke-report.md`
+  plus current `flutter analyze`/`flutter test` gates in
+  `plans/260710-0001-bigstyle-role-ops-hardening/reports/pm-role-ops-hardening-completion.md`.
+- Remaining unchecked criteria need a fresh demo-path runtime smoke, especially
+  logged-out splash and manager order status mutation.
 
 ## Validation Notes (deep mode)
 

@@ -1,20 +1,42 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/revenue_recognition.dart';
 import '../models/user_model.dart';
 
+typedef AdminFunctionInvoker =
+    Future<FunctionResponse> Function(String functionName, {Object? body});
+
 class AdminService {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient? _client;
+  final AdminFunctionInvoker? _functionInvoker;
+
+  AdminService({SupabaseClient? client, AdminFunctionInvoker? functionInvoker})
+    : _client = client,
+      _functionInvoker = functionInvoker;
+
+  SupabaseClient get _supabase => _client ?? Supabase.instance.client;
 
   // ─── Platform Stats ───
   Future<Map<String, dynamic>> getDashboardStats() async {
     final results = await Future.wait([
-      _client.from('profiles').select('id').then((r) => r.length),
-      _client.from('products').select('id').then((r) => r.length),
-      _client.from('orders').select('id').then((r) => r.length),
-      _client.from('orders').select('total').then((rows) =>
-          rows.fold<double>(0, (sum, r) => sum + (r['total'] as num).toDouble())),
-      _client.from('profiles').select('id').eq('role', 'customer').then((r) => r.length),
-      _client.from('profiles').select('id').eq('role', 'manager').then((r) => r.length),
-      _client.from('categories').select('id').then((r) => r.length),
+      _supabase.from('profiles').select('id').then((r) => r.length),
+      _supabase.from('products').select('id').then((r) => r.length),
+      _supabase.from('orders').select('id').then((r) => r.length),
+      _supabase
+          .from('orders')
+          .select('total,status')
+          .inFilter('status', RevenueRecognition.acceptedStatuses.toList())
+          .then((rows) => RevenueRecognition.recognizedRevenue(rows)),
+      _supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'customer')
+          .then((r) => r.length),
+      _supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'manager')
+          .then((r) => r.length),
+      _supabase.from('categories').select('id').then((r) => r.length),
     ]);
 
     return {
@@ -30,7 +52,7 @@ class AdminService {
 
   // ─── User Management ───
   Future<List<UserModel>> getAllUsers() async {
-    final data = await _client
+    final data = await _supabase
         .from('profiles')
         .select()
         .order('created_at', ascending: false);
@@ -41,31 +63,44 @@ class AdminService {
     required String email,
     required String fullName,
     required String role,
+    String? brandName,
   }) async {
-    final response = await _client.auth.admin.inviteUserByEmail(
-      email,
-      data: {'role': role},
-    );
-    final userId = response.user?.id;
-    if (userId == null) throw Exception('Không thể tạo người dùng');
-
-    await _client.from('profiles').update({
-      'full_name': fullName,
+    final body = {
+      'email': email,
+      'fullName': fullName,
       'role': role,
-    }).eq('id', userId);
+      if (brandName != null && brandName.trim().isNotEmpty)
+        'brandName': brandName.trim(),
+    };
+    final invoke = _functionInvoker ?? _supabase.functions.invoke;
+    final response = await invoke('admin-invite-user', body: body);
+    if (response.status < 200 || response.status >= 300) {
+      throw Exception(_functionErrorMessage(response.data));
+    }
+  }
+
+  String _functionErrorMessage(dynamic data) {
+    if (data is Map && data['error'] != null) return data['error'].toString();
+    return 'Không thể tạo người dùng';
   }
 
   Future<void> updateUserRole(String userId, UserRole newRole) async {
-    await _client.from('profiles').update({'role': newRole.name}).eq('id', userId);
+    await _supabase
+        .from('profiles')
+        .update({'role': newRole.name})
+        .eq('id', userId);
   }
 
   Future<void> updateBrandName(String userId, String brandName) async {
-    await _client.from('profiles').update({'brand_name': brandName}).eq('id', userId);
+    await _supabase
+        .from('profiles')
+        .update({'brand_name': brandName})
+        .eq('id', userId);
   }
 
   // ─── Category Management ───
   Future<List<Map<String, dynamic>>> getAllCategories() async {
-    final data = await _client
+    final data = await _supabase
         .from('categories')
         .select()
         .order('sort_order', ascending: true);
@@ -78,7 +113,7 @@ class AdminService {
     String? imageUrl,
     int sortOrder = 0,
   }) async {
-    await _client.from('categories').insert({
+    await _supabase.from('categories').insert({
       'name': name,
       'slug': slug,
       'image_url': imageUrl,
@@ -88,10 +123,10 @@ class AdminService {
   }
 
   Future<void> updateCategory(String id, Map<String, dynamic> updates) async {
-    await _client.from('categories').update(updates).eq('id', id);
+    await _supabase.from('categories').update(updates).eq('id', id);
   }
 
   Future<void> deleteCategory(String id) async {
-    await _client.from('categories').delete().eq('id', id);
+    await _supabase.from('categories').delete().eq('id', id);
   }
 }

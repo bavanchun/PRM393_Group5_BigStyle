@@ -18,6 +18,11 @@ import '../../services/voucher_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import 'payment_qr_screen.dart';
+import 'widgets/checkout_address_section.dart';
+import 'widgets/checkout_item_list.dart';
+import 'widgets/checkout_payment_method_selector.dart';
+import 'widgets/checkout_price_summary.dart';
+import 'widgets/checkout_voucher_field.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -421,127 +426,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Địa chỉ giao hàng',
-                        style: AppTypography.headlineSmall,
+                      CheckoutAddressSection(
+                        addressController: _addressController,
+                        isLoadingLocation: _isLoadingLocation,
+                        onUseCurrentLocation: _showLocationDialog,
+                        latitude: _latitude,
+                        longitude: _longitude,
                       ),
-                      const SizedBox(height: 12),
-                      AppTextField(
-                        controller: _addressController,
-                        hint: 'Nhập địa chỉ của bạn',
-                        prefixIcon: const Icon(Icons.location_on_outlined),
-                        maxLines: 2,
-                        validator: (v) => v == null || v.isEmpty
-                            ? 'Vui lòng nhập địa chỉ'
-                            : null,
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: _isLoadingLocation
-                              ? null
-                              : _showLocationDialog,
-                          icon: _isLoadingLocation
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.my_location, size: 18),
-                          label: Text(
-                            _isLoadingLocation
-                                ? 'Đang lấy vị trí...'
-                                : 'Dùng vị trí hiện tại',
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            side: BorderSide(
-                              color: AppColors.primary.withValues(alpha: 0.4),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (_latitude != null && _longitude != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                size: 14,
-                                color: Colors.green[600],
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Vĩ độ: ${_latitude!.toStringAsFixed(4)}, Kinh độ: ${_longitude!.toStringAsFixed(4)}',
-                                style: AppTypography.caption.copyWith(
-                                  color: Colors.green[600],
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       const SizedBox(height: 24),
-                      Text('Sản phẩm', style: AppTypography.headlineSmall),
-                      const SizedBox(height: 12),
-                      ...items.map(
-                        (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  width: 48,
-                                  height: 48,
-                                  color: AppColors.secondary.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  child: item.product?.images.isNotEmpty == true
-                                      ? Image.network(
-                                          item.product!.images.first,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : const Icon(
-                                          Icons.image_outlined,
-                                          size: 24,
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.product?.name ?? '',
-                                      style: AppTypography.bodySmall.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Size ${item.size} x${item.quantity}',
-                                      style: AppTypography.caption,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                '${item.totalPrice.toStringAsFixed(0)}đ',
-                                style: AppTypography.priceSmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      CheckoutItemList(items: items),
                       const SizedBox(height: 24),
                       Text('Ghi chú', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
@@ -556,54 +449,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         style: AppTypography.headlineSmall,
                       ),
                       const SizedBox(height: 12),
-                      _buildPaymentMethodSelector(),
-                      const SizedBox(height: 24),
-                      Text('Mã giảm giá', style: AppTypography.headlineSmall),
-                      const SizedBox(height: 12),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: AppTextField(
-                              controller: _promoController,
-                              hint: 'Nhập mã giảm giá',
-                              prefixIcon: const Icon(
-                                Icons.local_offer_outlined,
-                              ),
-                              errorText: _promoError,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          AppButton(
-                            label: 'Áp dụng',
-                            width: 110,
-                            isLoading: _applyingPromo,
-                            onPressed: () => _applyPromoCode(subtotal),
-                          ),
-                        ],
+                      CheckoutPaymentMethodSelector(
+                        value: _paymentMethod,
+                        onChanged: (value) {
+                          setState(() => _paymentMethod = value);
+                        },
                       ),
                       const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.cardRadius,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            _buildPriceRow('Tạm tính', subtotal),
-                            const SizedBox(height: 8),
-                            _buildPriceRow('Phí vận chuyển', _shippingFee),
-                            if (_discountAmount > 0) ...[
-                              const SizedBox(height: 8),
-                              _buildPriceRow('Giảm giá', -_discountAmount),
-                            ],
-                            const Divider(height: 24),
-                            _buildPriceRow('Tổng cộng', total, isTotal: true),
-                          ],
-                        ),
+                      CheckoutVoucherField(
+                        controller: _promoController,
+                        isLoading: _applyingPromo,
+                        errorText: _promoError,
+                        onApply: () => _applyPromoCode(subtotal),
+                      ),
+                      const SizedBox(height: 24),
+                      CheckoutPriceSummary(
+                        subtotal: subtotal,
+                        shippingFee: _shippingFee,
+                        discountAmount: _discountAmount,
+                        total: total,
                       ),
                       const SizedBox(height: 32),
                       AppButton(
@@ -620,96 +484,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildPaymentMethodSelector() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildPaymentMethodOption(
-            value: 'cod',
-            icon: Icons.payments_outlined,
-            label: 'Thanh toán khi nhận hàng',
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildPaymentMethodOption(
-            value: 'bank_transfer',
-            icon: Icons.qr_code_2_outlined,
-            label: 'Chuyển khoản (SePay)',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentMethodOption({
-    required String value,
-    required IconData icon,
-    required String label,
-  }) {
-    final selected = _paymentMethod == value;
-    return InkWell(
-      onTap: () => setState(() => _paymentMethod = value),
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.sm,
-          horizontal: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.primary.withValues(alpha: 0.08)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(
-            color: selected ? AppColors.primary : AppColors.border,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: selected ? AppColors.primary : AppColors.textSecondary,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AppTypography.bodySmall.copyWith(
-                color: selected ? AppColors.primary : AppColors.textSecondary,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriceRow(String label, double amount, {bool isTotal = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: isTotal
-              ? AppTypography.headlineSmall
-              : AppTypography.bodyMedium,
-        ),
-        Text(
-          '${amount.toStringAsFixed(0)}đ',
-          style: isTotal
-              ? AppTypography.headlineSmall.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                )
-              : AppTypography.bodyMedium,
-        ),
-      ],
     );
   }
 

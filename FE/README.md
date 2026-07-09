@@ -17,6 +17,7 @@ flutter run
 
 - `.env` nằm ở gốc `FE/` (cạnh `pubspec.yaml`), được gitignore. Nguồn tham chiếu key: `.env.example`.
 - Google Sign-In + OTP cần cấu hình dashboard (Supabase + Google Cloud) — xem checklist trong `plans/260703-1226-auth-otp-google-fix/`.
+- Native Google Maps (màn Store/Delivery) dùng key riêng, KHÁC với `GOOGLE_MAPS_API_KEY` trong `.env` (key đó chỉ dùng cho Directions REST và bị bundle vào APK). Tạo key thứ 2 trên Google Cloud, giới hạn theo package name + SHA-1 (debug/release), bật Maps SDK for Android, rồi đặt vào `android/local.properties` (gitignore) dưới dạng `GOOGLE_MAPS_API_KEY=<sdk-key>`. Không có key thì build vẫn chạy, map chỉ trống.
 
 ## QA debug login
 
