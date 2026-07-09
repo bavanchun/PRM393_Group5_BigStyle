@@ -15,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckSessionEvent>(_onCheckSession);
     on<SendOTPEvent>(_onSendOtp);
     on<VerifyOTPEvent>(_onVerifyOtp);
+    on<PasswordSignInEvent>(_onPasswordSignIn);
     on<GoogleSignInEvent>(_onGoogleSignIn);
     on<MockLoginEvent>(_onMockLogin);
     on<SignOutEvent>(_onSignOut);
@@ -70,6 +71,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } catch (_) {
       emit(const AuthError('Xác thực thất bại'));
+    }
+  }
+
+  Future<void> _onPasswordSignIn(
+    PasswordSignInEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (kReleaseMode) return;
+
+    emit(const AuthLoading());
+    try {
+      final user = await _authService.signInWithPassword(
+        email: event.email,
+        password: event.password,
+      );
+      if (user != null) {
+        emit(AuthSuccess(user));
+      } else {
+        emit(const AuthError('Đăng nhập test thất bại'));
+      }
+    } catch (_) {
+      emit(const AuthError('Đăng nhập test thất bại'));
     }
   }
 

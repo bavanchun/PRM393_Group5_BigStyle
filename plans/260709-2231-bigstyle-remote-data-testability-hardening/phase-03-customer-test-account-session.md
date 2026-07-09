@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Customer Test Account Session"
-status: pending
+status: completed
 priority: P1
 effort: "1.5h"
 dependencies: [1]
@@ -114,3 +114,17 @@ only and must be impossible in release builds.
   Mitigation: use real session for checkout smoke.
 - Risk: personal Google account privacy. Mitigation: explicit approval and
   delete/redact screenshots containing account info.
+
+## Completion Notes
+
+- Confirmed existing related accounts have Supabase Auth users and profiles:
+  `hoangbavan4478+manager@gmail.com` as `manager`,
+  `hoangbavan4478+customer2@gmail.com` as `customer`.
+- Set password hashes on those existing auth users for repeatable QA.
+- Added debug-only password login controlled by `kReleaseMode` and
+  `--dart-define` values. The buttons are hidden unless debug build and the
+  relevant email/password defines are provided.
+- Removed the remote SVG Google icon from the login screen because Flutter
+  Android could not decode SVG through `Image.network`; OTP/Google auth actions
+  remain available.
+- No personal Google account was used.
