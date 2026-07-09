@@ -4,6 +4,9 @@ import '../models/user_model.dart';
 import '../config/app_config.dart';
 
 class GoogleAuthService {
+  GoogleAuthService({SupabaseClient? client})
+    : _supabase = client ?? Supabase.instance.client;
+
   GoogleSignIn? _googleSignIn;
 
   GoogleSignIn _initGoogleSignIn() {
@@ -14,7 +17,7 @@ class GoogleAuthService {
     return _googleSignIn!;
   }
 
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final SupabaseClient _supabase;
 
   Future<UserModel?> signInWithGoogle() async {
     final googleUser = await _initGoogleSignIn().signIn();

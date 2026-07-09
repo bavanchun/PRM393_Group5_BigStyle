@@ -7,7 +7,6 @@ import '../../blocs/wishlist/wishlist_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
-import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/product_card.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -41,7 +40,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
       body: !isLoggedIn
           ? _buildLoginPrompt(context)
           : BlocBuilder<WishlistBloc, WishlistState>(
