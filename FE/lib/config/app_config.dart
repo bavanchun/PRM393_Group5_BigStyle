@@ -16,4 +16,8 @@ class AppConfig {
 
   /// Bank account number linked to the SePay account.
   static String get sepayAcc => dotenv.env['SEPAY_ACC'] ?? '';
+
+  /// Flat shipping fee (VND) actually charged at checkout. Single source of
+  /// truth so the delivery-map preview and the checkout total never diverge.
+  static const double flatShippingFee = 30000;
 }

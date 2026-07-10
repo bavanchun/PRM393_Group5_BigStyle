@@ -277,12 +277,10 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
     );
   }
 
-  int get shippingFee {
-    if (_distanceKm <= 3) return 15000;
-    if (_distanceKm <= 7) return 25000;
-    if (_distanceKm <= 15) return 35000;
-    return 50000;
-  }
+  // Phí ship phải khớp với phí flat thực thu ở checkout
+  // (AppConfig.flatShippingFee); không hiển thị mức tính theo khoảng cách mà hệ
+  // thống không bao giờ tính, tránh gây hiểu nhầm cho khách.
+  double get shippingFee => AppConfig.flatShippingFee;
 
   String get estimatedTime {
     if (_distanceKm <= 3) return '15-25 phút';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
@@ -160,7 +161,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             size: 20,
                             color: AppColors.textPrimary,
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            SharePlus.instance.share(
+                              ShareParams(
+                                text:
+                                    '${product.name} - ${product.price.toStringAsFixed(0)}đ\n'
+                                    'Xem sản phẩm trên BigStyle!',
+                              ),
+                            );
+                          },
                           padding: EdgeInsets.zero,
                         ),
                       ),

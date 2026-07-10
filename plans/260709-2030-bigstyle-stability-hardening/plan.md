@@ -71,12 +71,12 @@ demo-fix and feature-gap work. User chose **all items**, in this priority:
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | [Variant Color Edit Fix](./phase-01-variant-color-edit-fix.md) | Done |
-| 2 | [Transactional Product Update](./phase-02-transactional-product-update.md) | Done, DB applied |
-| 3 | [Checkout And Error-State Guards](./phase-03-checkout-and-error-state-guards.md) | Done |
-| 4 | [Manager Order Runtime Verification](./phase-04-manager-order-runtime-verification.md) | Blocked by no device/session |
-| 5 | [Test Harness And Smoke Matrix](./phase-05-test-harness-and-smoke-matrix.md) | Done automated, runtime pending |
-| 6 | [UI Modularization](./phase-06-ui-modularization.md) | Done automated, runtime smoke pending |
+| 1 | [Variant Color Edit Fix](./phase-01-variant-color-edit-fix.md) | Completed |
+| 2 | [Transactional Product Update](./phase-02-transactional-product-update.md) | Completed |
+| 3 | [Checkout And Error-State Guards](./phase-03-checkout-and-error-state-guards.md) | Completed |
+| 4 | [Manager Order Runtime Verification](./phase-04-manager-order-runtime-verification.md) | In-progress (status-mutation runtime unverified) |
+| 5 | [Test Harness And Smoke Matrix](./phase-05-test-harness-and-smoke-matrix.md) | Completed |
+| 6 | [UI Modularization](./phase-06-ui-modularization.md) | Completed |
 
 ## Dependencies
 

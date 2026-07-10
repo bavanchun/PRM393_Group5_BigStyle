@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Splash & Auth Unblock"
-status: pending
+status: completed
 priority: P0
 dependencies: []
 effort: "S"
@@ -41,11 +41,11 @@ Fix the P0 splash hang so a logged-out / first-launch user actually reaches `/lo
 
 ## Success Criteria
 
-- [ ] Cold start, no session → `/login` within ~1.5s (no hang).
-- [ ] Cold start with customer session → `/home`; manager session → `/manager`.
-- [ ] Simulated `getCurrentUser()` failure → error UI + working retry (not infinite spinner).
-- [ ] No "used after dispose" / navigation-after-unmount errors.
-- [ ] `flutter analyze` clean.
+- [x] Cold start, no session → `/login` within ~1.5s (no hang). — auth_bloc.dart:39 emits AuthUnauthenticated; splash_screen.dart:64-68 routes to /login.
+- [x] Cold start with customer session → `/home`; manager session → `/manager`. — splash_screen.dart:58-63 role switch.
+- [x] Simulated `getCurrentUser()` failure → error UI + working retry (not infinite spinner). — auth_bloc.dart:41-47 AuthError; splash_screen.dart:48-51 error UI + _retry:41-44.
+- [x] No "used after dispose" / navigation-after-unmount errors. — _navigated guard + if(!mounted) return (splash_screen.dart:47,52,81).
+- [x] `flutter analyze` clean. — "No issues found!" (ran 2026-07-10).
 
 ## Risk Assessment
 

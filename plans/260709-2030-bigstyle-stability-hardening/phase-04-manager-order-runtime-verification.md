@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Manager Order Runtime Verification"
-status: blocked
+status: in-progress
 priority: P1
 effort: "4h"
 dependencies: [3]
@@ -98,10 +98,12 @@ If code changes happen -> Phase 5 adds tests for changed behavior
 
 ## Success Criteria
 
-- [ ] Runtime report created with pass/fail evidence.
-- [ ] Manager orders tab no longer has unverified blank-tab risk.
-- [ ] Status update outcome visible to manager.
-- [ ] `flutter analyze` passes after any code changes.
+- [x] Runtime report created with pass/fail evidence.
+- [x] Manager orders tab no longer has unverified blank-tab risk.
+- [ ] Status update outcome visible to manager. (runtime smoke report notes "No
+      status mutation performed"; bloc-level covered by manager_bloc_test but
+      screen mutation path not exercised on device)
+- [x] `flutter analyze` passes after any code changes.
 
 ## Risk Assessment
 

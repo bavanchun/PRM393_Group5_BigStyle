@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "On-Camera Polish"
-status: pending
+status: completed
 priority: P2
 dependencies: []
 effort: "M"
@@ -46,12 +46,12 @@ Fix the things that work but look unfinished on screen: wrong app branding, UUID
 
 ## Success Criteria
 
-- [ ] Manager product screen: white AppBar, "BigStyle" branding, no dead hamburger/pagination (M17/M18/M19).
-- [ ] All order codes display `orderNumber` (e.g. `CF-20260703-…`), not raw UUID; COD success dialog too (X2).
-- [ ] One shipping fee, realistic value, no divergent unused code (X3/C21).
-- [ ] Chat: honest label, no fake green dot, no mock image snackbar (C40/C41/C42).
-- [ ] No dead buttons on the recorded demo path; "Sản phẩm yêu thích" opens favorites (X7).
-- [ ] `flutter analyze` clean.
+- [x] Manager product screen: white AppBar, "BigStyle" branding, no dead hamburger/pagination (M17/M18/M19). — manager_product_list_screen.dart:47 AppColors.surface, :53 "Quản trị BigStyle", no hamburger leading, footer :558 static count only.
+- [x] All order codes display `orderNumber` (e.g. `CF-20260703-…`), not raw UUID; COD success dialog too (X2). — orderNumber ?? fallback at checkout_screen.dart:356, orders_screen.dart:99, order_detail_screen.dart:103, manager_order_detail_screen.dart:116, manager_order_card.dart:50, payment_qr_screen.dart:90.
+- [x] One shipping fee, realistic value, no divergent unused code (X3/C21). — single source `AppConfig.flatShippingFee=30000` (app_config.dart); checkout_screen.dart:49 and delivery_map_screen.dart shippingFee getter both reference it; tiered getter removed.
+- [x] Chat: honest label, no fake green dot, no mock image snackbar (C40/C41/C42). — chat_screen.dart:121-124 "BigStyle Bot / Trợ lý thời trang AI"; no AppColors.success online dot; no image button / "sẽ sớm" snackbar found.
+- [x] No dead buttons on the recorded demo path; "Sản phẩm yêu thích" opens favorites (X7). — favorites wired (profile_screen.dart:116) + camera badge wired (edit_profile_screen.dart:118 _pickAvatar); product_detail_screen.dart:163 Share button now wired via share_plus `SharePlus.instance.share(...)`.
+- [x] `flutter analyze` clean. — "No issues found!" (ran 2026-07-10).
 
 ## Risk Assessment
 
