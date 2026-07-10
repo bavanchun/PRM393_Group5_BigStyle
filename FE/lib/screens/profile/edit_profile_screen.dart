@@ -142,14 +142,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white,
+                                    color: AppColors.onPrimary,
                                     width: 2,
                                   ),
                                 ),
                                 child: const Icon(
                                   Icons.camera_alt,
                                   size: 16,
-                                  color: Colors.white,
+                                  color: AppColors.onPrimary,
                                 ),
                               ),
                             ),
@@ -223,7 +223,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             (_saving || _uploadingAvatar) ? null : _save,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -235,7 +235,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: AppColors.onPrimary,
                                 ),
                               )
                             : const Text(

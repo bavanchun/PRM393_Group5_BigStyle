@@ -107,7 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 'BB',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
@@ -174,7 +174,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Text(
                   'BB',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                   ),
@@ -215,7 +215,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     boxShadow: isBot
                         ? [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
+                              color: AppColors.shadow.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -225,7 +225,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Text(
                     message.content,
                     style: AppTypography.bodyMedium.copyWith(
-                      color: isBot ? AppColors.textPrimary : Colors.white,
+                      color: isBot ? AppColors.textPrimary : AppColors.onPrimary,
                       height: 1.5,
                     ),
                   ),
@@ -336,7 +336,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 'BB',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onPrimary,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                 ),
@@ -355,7 +355,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: AppColors.shadow.withValues(alpha: 0.04),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -402,7 +402,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -456,7 +456,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               child: IconButton(
-                icon: const Icon(Icons.send, color: Colors.white, size: 18),
+                icon: const Icon(Icons.send, color: AppColors.onPrimary, size: 18),
                 onPressed: _sendMessage,
                 padding: EdgeInsets.zero,
               ),

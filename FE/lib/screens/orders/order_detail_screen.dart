@@ -10,6 +10,7 @@ import '../../models/order_model.dart';
 import '../../models/order_status.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/status_badge.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key});
@@ -80,21 +81,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               children: [
                                 Text('Đơn hàng',
                                     style: AppTypography.headlineSmall),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    order.status.label,
-                                    style: AppTypography.caption.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                                StatusBadge(
+                                  label: order.status.label,
+                                  status: order.status,
                                 ),
                               ],
                             ),
@@ -219,20 +208,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (status == OrderStatus.cancelled) {
       return Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              status.label,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          StatusBadge(label: status.label, status: status),
         ],
       );
     }
