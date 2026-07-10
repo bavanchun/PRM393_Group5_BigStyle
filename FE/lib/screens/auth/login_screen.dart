@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +9,7 @@ import '../../blocs/auth/auth_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
+import '../../utils/validators.dart';
 import 'otp_input.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -39,10 +42,41 @@ class _LoginScreenState extends State<LoginScreen> {
   // clear-on-error so a concurrent send or Google failure can't wipe the code.
   bool _verifyInFlight = false;
 
+  // Client-side resend courtesy countdown (per email). Not abuse protection —
+  // the server rate limits are the real guard; this only avoids obvious spam.
+  Timer? _resendTimer;
+  int _cooldown = 0;
+  String? _cooldownEmail;
+  // The email that actually received the current code, so verify targets it
+  // rather than whatever is in the field after an edit.
+  String? _otpEmail;
+
   @override
   void dispose() {
+    _resendTimer?.cancel();
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _startCooldown(String email) {
+    _resendTimer?.cancel();
+    setState(() {
+      _cooldown = 60;
+      _cooldownEmail = email;
+    });
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() {
+        _cooldown--;
+        if (_cooldown <= 0) {
+          _cooldown = 0;
+          t.cancel();
+        }
+      });
+    });
   }
 
   @override
@@ -62,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthOTPSent) {
+                _otpEmail = state.email;
                 setState(() => _showOtp = true);
               }
               if (state is AuthSuccess) {
@@ -88,9 +123,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   _otpKey.currentState?.clear();
                   setState(() => _verifyInFlight = false);
                 }
+                final raw = state.message;
+                final isRateLimit =
+                    raw.toLowerCase().contains('rate limit') ||
+                    raw.contains('over_email_send_rate_limit');
+                final message = isRateLimit
+                    ? 'Bạn gửi mã quá nhanh. Vui lòng thử lại sau ít phút.'
+                    : raw;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.message),
+                    content: Text(message),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -239,11 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
-      validator: (v) {
-        if (v == null || v.isEmpty) return 'Vui lòng nhập email';
-        if (!v.contains('@')) return 'Email không hợp lệ';
-        return null;
-      },
+      validator: validateEmail,
     );
   }
 
@@ -309,19 +347,14 @@ class _LoginScreenState extends State<LoginScreen> {
         OtpInput(
           key: _otpKey,
           enabled: !_verifyInFlight,
+          resendEnabled: _cooldown == 0,
+          resendLabel: _cooldown > 0 ? 'Gửi lại sau ${_cooldown}s' : null,
           onCompleted: (code) {
-            final email = (state is AuthOTPSent)
-                ? state.email
-                : _emailController.text.trim();
+            final email = _otpEmail ?? _emailController.text.trim();
             setState(() => _verifyInFlight = true);
             context.read<AuthBloc>().add(VerifyOTPEvent(email, code));
           },
-          onResend: () {
-            final email = _emailController.text.trim();
-            if (email.isNotEmpty) {
-              context.read<AuthBloc>().add(SendOTPEvent(email));
-            }
-          },
+          onResend: _sendOtp,
         ),
       ],
     );
@@ -429,7 +462,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _sendOtp() {
     if (!_formKey.currentState!.validate()) return;
-    context.read<AuthBloc>().add(SendOTPEvent(_emailController.text.trim()));
+    final email = _emailController.text.trim();
+    if (_cooldown > 0 && email == _cooldownEmail) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vui lòng đợi ${_cooldown}s trước khi gửi lại'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    context.read<AuthBloc>().add(SendOTPEvent(email));
+    _startCooldown(email);
   }
 
   void _signInTestUser(String email, String password) {
