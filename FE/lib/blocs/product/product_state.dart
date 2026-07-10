@@ -7,6 +7,9 @@ class ProductState extends Equatable {
   final List<ProductModel> products;
   final List<ProductModel> featuredProducts;
   final List<CategoryModel> categories;
+  // True when the last categories load failed (chips stay hidden, but the
+  // failure is observable rather than silently swallowed).
+  final bool categoriesFailed;
   final ProductModel? selectedProduct;
   final String? selectedCategory;
   final String searchQuery;
@@ -20,6 +23,7 @@ class ProductState extends Equatable {
     this.products = const [],
     this.featuredProducts = const [],
     this.categories = const [],
+    this.categoriesFailed = false,
     this.selectedProduct,
     this.selectedCategory,
     this.searchQuery = '',
@@ -73,6 +77,7 @@ class ProductState extends Equatable {
     List<ProductModel>? products,
     List<ProductModel>? featuredProducts,
     List<CategoryModel>? categories,
+    bool? categoriesFailed,
     ProductModel? selectedProduct,
     String? selectedCategory,
     String? searchQuery,
@@ -87,6 +92,7 @@ class ProductState extends Equatable {
         products: products ?? this.products,
         featuredProducts: featuredProducts ?? this.featuredProducts,
         categories: categories ?? this.categories,
+        categoriesFailed: categoriesFailed ?? this.categoriesFailed,
         selectedProduct: selectedProduct ?? this.selectedProduct,
         selectedCategory: selectedCategory ?? this.selectedCategory,
         searchQuery: searchQuery ?? this.searchQuery,
@@ -102,6 +108,7 @@ class ProductState extends Equatable {
         products,
         featuredProducts,
         categories,
+        categoriesFailed,
         selectedProduct,
         selectedCategory,
         searchQuery,

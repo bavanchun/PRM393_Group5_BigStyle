@@ -364,6 +364,25 @@ create trigger on_order_status_change
   after update on public.orders
   for each row execute procedure public.notify_order_update();
 
+-- Customer self-cancel: own order, only while pending or confirmed.
+create or replace function public.cancel_my_order(p_order_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.orders set status = 'cancelled'
+   where id = p_order_id
+     and user_id = auth.uid()
+     and status in ('pending', 'confirmed');
+  if not found then
+    raise exception 'Order cannot be cancelled';
+  end if;
+end $$;
+
+grant execute on function public.cancel_my_order(uuid) to authenticated;
+
 
 -- ============================================================
 -- BẢNG 9: reviews

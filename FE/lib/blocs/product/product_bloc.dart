@@ -73,8 +73,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ) async {
     try {
       final categories = await _productService.getCategories();
-      emit(state.copyWith(categories: categories));
-    } catch (_) {}
+      emit(state.copyWith(categories: categories, categoriesFailed: false));
+    } catch (e, stackTrace) {
+      debugPrint('ProductLoadCategories error: $e\n$stackTrace');
+      emit(state.copyWith(categoriesFailed: true));
+    }
   }
 
   void _onFilterBySize(FilterBySize event, Emitter<ProductState> emit) {

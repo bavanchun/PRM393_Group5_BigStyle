@@ -42,13 +42,6 @@ class CheckSessionEvent extends AuthEvent {
   const CheckSessionEvent();
 }
 
-class MockLoginEvent extends AuthEvent {
-  final String role;
-  const MockLoginEvent(this.role);
-
-  @override
-  List<Object?> get props => [role];
-}
 
 class SignOutEvent extends AuthEvent {
   const SignOutEvent();

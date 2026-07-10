@@ -2,7 +2,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/notification_model.dart';
 
 class NotificationService {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient _client;
+
+  NotificationService({SupabaseClient? client})
+    : _client = client ?? Supabase.instance.client;
 
   Future<List<NotificationModel>> getNotifications(String userId) async {
     final data = await _client

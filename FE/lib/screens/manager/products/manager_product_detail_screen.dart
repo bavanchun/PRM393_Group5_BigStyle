@@ -215,9 +215,7 @@ class _ManagerProductDetailScreenState
 
     final double price = double.tryParse(_priceController.text.trim()) ?? 0.0;
 
-    if (_imageUrls.isEmpty) {
-      _imageUrls.add('https://via.placeholder.com/150');
-    }
+    // No fake placeholder URL — empty images render the icon fallback in the UI.
 
     final updatedProduct = ProductModel(
       id: widget.product.id,

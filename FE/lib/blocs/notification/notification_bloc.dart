@@ -43,6 +43,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         notifications: notifications,
         unreadCount: unreadCount,
       ));
-    } catch (_) {}
+    } catch (_) {
+      // Keep the current list; surface the failure like the load path does.
+      emit(state.copyWith(error: 'Đánh dấu đã đọc thất bại'));
+    }
   }
 }

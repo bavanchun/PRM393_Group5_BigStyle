@@ -23,6 +23,10 @@ enum OrderStatus {
   bool get isActive =>
       this != OrderStatus.cancelled && this != OrderStatus.delivered;
 
+  /// A customer may cancel exactly when the state machine allows a transition
+  /// to `cancelled` (pending or confirmed).
+  bool get isCancellable => nextStatuses.contains(OrderStatus.cancelled);
+
   static const List<OrderStatus> happyPath = [
     OrderStatus.pending,
     OrderStatus.confirmed,
