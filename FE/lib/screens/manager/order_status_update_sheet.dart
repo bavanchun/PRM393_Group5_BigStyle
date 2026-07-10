@@ -278,9 +278,9 @@ class _OrderStatusUpdateSheetContentState
                       width: double.infinity,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: managerOrderStatusColor(status),
+                          foregroundColor: managerOrderStatusColor(context, status),
                           side: BorderSide(
-                            color: managerOrderStatusColor(status),
+                            color: managerOrderStatusColor(context, status),
                           ),
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSpacing.sm,

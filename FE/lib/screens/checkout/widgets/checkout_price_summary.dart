@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/currency_format.dart';
 
 import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/app_spacing.dart';
@@ -62,7 +63,7 @@ class _PriceRow extends StatelessWidget {
               : AppTypography.bodyMedium,
         ),
         Text(
-          '${amount.toStringAsFixed(0)}đ',
+          formatVnd(amount),
           style: isTotal
               ? AppTypography.headlineSmall.copyWith(
                   color: AppColors.primary,

@@ -262,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
           border: Border.all(color: AppColors.border),
         ),
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Icon(
               Icons.style,
               size: 140,
-              color: Colors.white.withValues(alpha: 0.1),
+              color: AppColors.onPrimary.withValues(alpha: 0.1),
             ),
           ),
           Padding(
@@ -315,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'BST MỚI',
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: AppColors.onPrimary.withValues(alpha: 0.8),
                     letterSpacing: 2,
                   ),
                 ),
@@ -323,14 +323,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'Bigger & Bolder',
                   style: AppTypography.displaySmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Giảm đến 30% đơn đầu tiên',
                   style: AppTypography.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: AppColors.onPrimary.withValues(alpha: 0.9),
                   ),
                 ),
               ],
@@ -403,11 +403,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
           return Shimmer.fromColors(
-            baseColor: Colors.grey[200]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: AppColors.skeletonBase,
+            highlightColor: AppColors.skeletonHighlight,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
               ),
             ),

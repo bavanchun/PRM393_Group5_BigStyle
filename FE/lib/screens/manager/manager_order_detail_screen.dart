@@ -8,7 +8,8 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
 import '../../widgets/app_card.dart';
-import 'manager_order_card.dart';
+import '../../widgets/status_badge.dart';
+import '../../utils/currency_format.dart';
 import 'order_status_update_sheet.dart';
 
 /// Manager-only order detail screen. Unlike the customer-facing
@@ -134,24 +135,9 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('DH-$reference', style: AppTypography.headlineSmall),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: managerOrderStatusColor(
-                            order.status,
-                          ).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          order.status.label,
-                          style: AppTypography.caption.copyWith(
-                            color: managerOrderStatusColor(order.status),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      StatusBadge(
+                        label: order.status.label,
+                        status: order.status,
                       ),
                     ],
                   ),
@@ -234,7 +220,7 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
                         ),
                       ),
                       Text(
-                        formatOrderCurrency(item.unitPrice),
+                        formatVnd(item.unitPrice),
                         style: AppTypography.priceSmall,
                       ),
                     ],
@@ -304,7 +290,7 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
               : AppTypography.bodyMedium,
         ),
         Text(
-          formatOrderCurrency(amount),
+          formatVnd(amount),
           style: isBold
               ? AppTypography.headlineSmall.copyWith(
                   color: AppColors.primary,

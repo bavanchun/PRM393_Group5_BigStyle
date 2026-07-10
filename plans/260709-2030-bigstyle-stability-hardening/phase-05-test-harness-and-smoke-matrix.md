@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Test Harness And Smoke Matrix"
-status: done_runtime_pending
+status: completed
 priority: P1
 effort: "1d"
 dependencies: [4]
@@ -48,11 +48,11 @@ Service RPC contract -> manual/integration checklist if Supabase client hard to 
 
 ## Interface Checklist
 
-- [ ] `flutter test` runs without Supabase initialization failure.
-- [ ] Tests do not require `.env`.
-- [ ] Any fake service/client is local to tests.
-- [ ] Manual smoke matrix includes exact actor, route, action, expected result.
-- [ ] CI/dev commands documented in report.
+- [x] `flutter test` runs without Supabase initialization failure.
+- [x] Tests do not require `.env`.
+- [x] Any fake service/client is local to tests.
+- [x] Manual smoke matrix includes exact actor, route, action, expected result.
+- [x] CI/dev commands documented in report.
 
 ## Dependency Map
 
@@ -96,11 +96,11 @@ Phase 5 coverage -> Phase 6 modularization safety gate
 
 ## Success Criteria
 
-- [ ] `FE/test` exists.
-- [ ] `flutter test` passes.
-- [ ] Smoke matrix report exists.
-- [ ] Tests cover at least Phase 1 and one Phase 3 behavior.
-- [ ] Known unautomated cases are explicitly listed, not implied covered.
+- [x] `FE/test` exists.
+- [x] `flutter test` passes.
+- [x] Smoke matrix report exists.
+- [x] Tests cover at least Phase 1 and one Phase 3 behavior.
+- [x] Known unautomated cases are explicitly listed, not implied covered.
 
 ## Risk Assessment
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../config/theme/app_colors.dart';
+import '../../utils/currency_format.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../blocs/product_detail/product_detail_bloc.dart';
@@ -110,7 +111,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   left: 16,
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.surface,
                     child: IconButton(
                       icon: const Icon(
                         Icons.arrow_back,
@@ -132,7 +133,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           final isWishlisted = wishlist.contains(product.id);
                           return CircleAvatar(
                             radius: 20,
-                            backgroundColor: Colors.white,
+                            backgroundColor: AppColors.surface,
                             child: IconButton(
                               icon: Icon(
                                 isWishlisted
@@ -153,14 +154,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       const SizedBox(width: 8),
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.surface,
                         child: IconButton(
                           icon: const Icon(
                             Icons.share_outlined,
                             size: 20,
                             color: AppColors.textPrimary,
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            SharePlus.instance.share(
+                              ShareParams(
+                                text:
+                                    '${product.name} - ${formatVnd(product.price)}\n'
+                                    'Xem sản phẩm trên BigStyle!',
+                              ),
+                            );
+                          },
                           padding: EdgeInsets.zero,
                         ),
                       ),
@@ -303,7 +312,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     borderRadius: BorderRadius.circular(4),
                     color: state.currentImageIndex == i
                         ? AppColors.primary
-                        : Colors.white.withValues(alpha: 0.6),
+                        : AppColors.onPrimary.withValues(alpha: 0.6),
                   ),
                 );
               }),
@@ -316,11 +325,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget _buildProductName(ProductDetailState state) {
     return Text(
       state.product!.name,
-      style: GoogleFonts.playfairDisplay(
+      style: AppTypography.displaySmall.copyWith(
         fontSize: 22,
         fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
-        height: 1.3,
       ),
     );
   }
@@ -360,22 +367,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '${product.price.toStringAsFixed(0)}đ',
-          style: GoogleFonts.dmSans(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: AppColors.primary,
-            height: 1.2,
-          ),
+          formatVnd(product.price),
+          style: AppTypography.price.copyWith(fontSize: 24),
         ),
         if (product.hasDiscount) ...[
           const SizedBox(width: 10),
           Text(
-            '${product.originalPrice!.toStringAsFixed(0)}đ',
-            style: GoogleFonts.dmSans(
+            formatVnd(product.originalPrice!),
+            style: AppTypography.caption.copyWith(
               fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textHint,
               decoration: TextDecoration.lineThrough,
               height: 1.2,
             ),
@@ -472,7 +472,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   boxShadow: [
                     if (hex.toUpperCase() == '#FFFFFF')
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
+                        color: AppColors.shadow.withValues(alpha: 0.08),
                         blurRadius: 4,
                       ),
                   ],
@@ -516,7 +516,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.background,
+                  color: isSelected
+                      ? AppColors.primary.withValues(alpha: 0.12)
+                      : AppColors.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected ? AppColors.primary : AppColors.border,
@@ -526,7 +528,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: Text(
                   size,
                   style: AppTypography.labelLarge.copyWith(
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -565,7 +567,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: AppColors.shadow.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

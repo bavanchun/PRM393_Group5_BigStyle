@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Checkout And Error-State Guards"
-status: done
+status: completed
 priority: P1
 effort: "1d"
 dependencies: [2]
@@ -52,12 +52,12 @@ Load once in `initState`/post-frame and provide retry.
 
 ## Interface Checklist
 
-- [ ] `_placeOrder()` checks `items.isEmpty` before dispatch.
-- [ ] Empty cart and error cart are distinct UI states.
-- [ ] Empty orders and failed orders load are distinct UI states.
-- [ ] Home/product list do not label load failures as no products.
-- [ ] Notifications load only once per screen entry, not every rebuild.
-- [ ] Retry controls dispatch the same existing load events.
+- [x] `_placeOrder()` checks `items.isEmpty` before dispatch.
+- [x] Empty cart and error cart are distinct UI states.
+- [x] Empty orders and failed orders load are distinct UI states.
+- [x] Home/product list do not label load failures as no products.
+- [x] Notifications load only once per screen entry, not every rebuild.
+- [x] Retry controls dispatch the same existing load events.
 
 ## Dependency Map
 
@@ -99,10 +99,10 @@ Phase 3 avoids DB contract changes -> independent from Phase 4
 
 ## Success Criteria
 
-- [ ] Empty checkout cannot call order RPC.
-- [ ] At least four screens distinguish error from empty state.
-- [ ] Notifications load is not dispatched from `build`.
-- [ ] `flutter analyze` passes.
+- [x] Empty checkout cannot call order RPC.
+- [x] At least four screens distinguish error from empty state.
+- [x] Notifications load is not dispatched from `build`.
+- [x] `flutter analyze` passes.
 
 ## Risk Assessment
 

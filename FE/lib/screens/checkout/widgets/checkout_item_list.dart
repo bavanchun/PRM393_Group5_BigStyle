@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/currency_format.dart';
 
 import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/app_typography.dart';
@@ -54,7 +55,7 @@ class CheckoutItemList extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${item.totalPrice.toStringAsFixed(0)}đ',
+                  formatVnd(item.totalPrice),
                   style: AppTypography.priceSmall,
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
@@ -10,6 +11,7 @@ import '../../models/order_model.dart';
 import '../../models/order_status.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/status_badge.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key});
@@ -80,21 +82,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               children: [
                                 Text('Đơn hàng',
                                     style: AppTypography.headlineSmall),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    order.status.label,
-                                    style: AppTypography.caption.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                                StatusBadge(
+                                  label: order.status.label,
+                                  status: order.status,
                                 ),
                               ],
                             ),
@@ -140,7 +130,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       ],
                                     ),
                                   ),
-                                  Text('${item.unitPrice.toStringAsFixed(0)}đ',
+                                  Text(formatVnd(item.unitPrice),
                                       style: AppTypography.priceSmall),
                                 ],
                               ),
@@ -219,20 +209,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (status == OrderStatus.cancelled) {
       return Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              status.label,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          StatusBadge(label: status.label, status: status),
         ],
       );
     }
@@ -349,7 +326,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ? AppTypography.headlineSmall
                 : AppTypography.bodyMedium),
         Text(
-          '${amount.toStringAsFixed(0)}đ',
+          formatVnd(amount),
           style: isBold
               ? AppTypography.headlineSmall.copyWith(
                   color: AppColors.primary, fontWeight: FontWeight.w700)

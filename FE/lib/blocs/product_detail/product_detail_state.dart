@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../models/product_model.dart';
+import '../../utils/currency_format.dart';
 
 class ProductDetailState extends Equatable {
   final bool isLoading;
@@ -22,12 +23,12 @@ class ProductDetailState extends Equatable {
 
   String get displayPrice {
     if (product == null) return '';
-    return '${product!.price.toStringAsFixed(0)}đ';
+    return formatVnd(product!.price);
   }
 
   String get displayOriginalPrice {
     if (product == null || !product!.hasDiscount) return '';
-    return '${product!.originalPrice!.toStringAsFixed(0)}đ';
+    return formatVnd(product!.originalPrice!);
   }
 
   ProductDetailState copyWith({

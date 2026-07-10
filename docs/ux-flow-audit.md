@@ -9,7 +9,7 @@
 **Severity:** `P0` chặn nghiệp vụ/mất tiền/crash · `P1` sai chức năng, silent failure · `P2` UX kém · `P3` cosmetic.
 **Type:** `flow` · `ui` · `ux` · `dead` (nút/màn chết) · `consistency` (lệch design-system).
 **Marker:** ✅ = đã kiểm chứng trực tiếp trên emulator · 🖥 = code-review (chưa dựng được visual).
-**Design tokens** (`FE/lib/config/theme/`): primary `#C4517A`, primaryDark `#A03560`, background `#FDF8F9`, surface `#FFFFFF`, error `#E53E3E`, textSecondary `#6B6B6B`, border `#E8E0E2`; spacing 4/8/12/16/24/32/48; radius card16/button12/input12/sheet24/chip20. Mọi `Colors.*` hardcode, `.withOpacity` deprecated, số lẻ = `consistency`.
+**Design tokens** (`FE/lib/config/theme/`): superseded 2026-07-10 by the Warm Terracotta v2 palette — see `docs/design-tokens-v2.md` for current values (primary `#9A3F35`, background `#FBF6EF`, radius card20/button14/input14/sheet28/chip24, etc.). The `#C4517A`-family values below are the v1 snapshot this audit was originally written against; findings citing specific v1 hex values below are historical, not current. Mọi `Colors.*` hardcode, `.withOpacity` deprecated, số lẻ = `consistency`.
 
 ---
 

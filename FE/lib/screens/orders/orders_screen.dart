@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
@@ -13,6 +14,7 @@ import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/app_error_state.dart';
+import '../../widgets/status_badge.dart';
 import '../checkout/payment_qr_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -99,24 +101,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             'Đơn #${order.orderNumber ?? order.id.substring(0, 8)}',
                             style: AppTypography.labelLarge,
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _statusColor(
-                                order.status,
-                              ).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              order.status.label,
-                              style: AppTypography.caption.copyWith(
-                                color: _statusColor(order.status),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                          StatusBadge(
+                            label: order.status.label,
+                            status: order.status,
                           ),
                         ],
                       ),
@@ -146,7 +133,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             style: AppTypography.caption,
                           ),
                           Text(
-                            '${order.total.toStringAsFixed(0)}đ',
+                            formatVnd(order.total),
                             style: AppTypography.priceSmall,
                           ),
                         ],
@@ -188,21 +175,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
         clearCartOnPaid: false,
       ),
     );
-  }
-
-  Color _statusColor(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.pending:
-        return AppColors.warning;
-      case OrderStatus.confirmed:
-        return AppColors.primary;
-      case OrderStatus.shipping:
-        return Colors.blue;
-      case OrderStatus.delivered:
-        return AppColors.success;
-      case OrderStatus.cancelled:
-        return AppColors.error;
-    }
   }
 
   String _formatDate(DateTime date) {

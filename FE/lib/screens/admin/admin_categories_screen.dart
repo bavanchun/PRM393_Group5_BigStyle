@@ -24,11 +24,12 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'admin-categories-fab',
         backgroundColor: AppColors.primary,
         onPressed: () => _showAddCategoryDialog(context),
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: AppColors.onPrimary),
         label: const Text('Thêm danh mục',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.w600)),
       ),
       body: Column(
         children: [
@@ -51,12 +52,12 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
       ),
       child: const Row(
         children: [
-          Icon(Icons.category, color: Colors.white, size: 22),
+          Icon(Icons.category, color: AppColors.onPrimary, size: 22),
           SizedBox(width: 10),
           Text(
             'Quản lý danh mục',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.onPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -125,7 +126,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
+                    color: AppColors.shadow.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

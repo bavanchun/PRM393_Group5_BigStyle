@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../utils/currency_format.dart';
 import '../../../blocs/manager_product/manager_product_bloc.dart';
 import '../../../blocs/manager_product/manager_product_event.dart';
 import '../../../blocs/manager_product/manager_product_state.dart';
@@ -32,11 +33,6 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  String _formatPrice(double price) {
-    final formatter = NumberFormat('#,###', 'vi_VN');
-    return '${formatter.format(price)}đ';
   }
 
   @override
@@ -139,7 +135,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -147,7 +143,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                             'Quản lý kho hàng, giá bán và trạng thái hiển thị.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -193,6 +189,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'manager-products-fab',
         onPressed: () {
           final bloc = context.read<ManagerProductBloc>();
           Navigator.push(
@@ -206,10 +203,10 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
           );
         },
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: AppColors.onPrimary),
         label: const Text(
           'THÊM SẢN PHẨM MỚI',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -220,7 +217,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
@@ -235,7 +232,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             },
             decoration: InputDecoration(
               hintText: 'Tìm kiếm sản phẩm...',
-              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+              hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
               prefixIcon: Icon(
                 Icons.search,
                 size: 20,
@@ -291,7 +288,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  style: const TextStyle(fontSize: 12, color: Colors.black),
+                  style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
                   items: const [
                     DropdownMenuItem<String>(
                       value: 'all',
@@ -334,12 +331,12 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             const Icon(
               Icons.inventory_2_outlined,
               size: 64,
-              color: Colors.grey,
+              color: AppColors.textHint,
             ),
             const SizedBox(height: 12),
             Text(
               'Không tìm thấy sản phẩm nào.',
-              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
           ],
         ),
@@ -369,13 +366,13 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
 
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
-            color: isHidden ? const Color(0xFFF9F6F5) : Colors.white,
+            color: isHidden ? AppColors.divider : AppColors.surface,
             elevation: 1,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
                 color: isHidden
-                    ? Colors.grey.shade300
+                    ? AppColors.border
                     : AppColors.border.withValues(alpha: 0.3),
               ),
             ),
@@ -405,7 +402,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                         child: ColorFiltered(
                           colorFilter: isHidden
                               ? const ColorFilter.mode(
-                                  Colors.grey,
+                                  AppColors.grayscaleFilter,
                                   BlendMode.saturation,
                                 )
                               : const ColorFilter.mode(
@@ -419,10 +416,10 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
-                                color: Colors.grey[300],
+                                color: AppColors.divider,
                                 child: const Icon(
                                   Icons.image,
-                                  color: Colors.white,
+                                  color: AppColors.onPrimary,
                                 ),
                               );
                             },
@@ -442,7 +439,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: isHidden ? Colors.grey[700] : Colors.black,
+                              color: isHidden
+                                  ? AppColors.textSecondary
+                                  : AppColors.textPrimary,
                               decoration: isHidden
                                   ? TextDecoration.lineThrough
                                   : null,
@@ -450,11 +449,13 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            _formatPrice(product.price),
+                            formatVnd(product.price),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: isHidden ? Colors.grey : AppColors.primary,
+                              color: isHidden
+                                  ? AppColors.textSecondary
+                                  : AppColors.primary,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -467,8 +468,8 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isHidden
-                                      ? Colors.grey[300]
-                                      : Colors.green[100],
+                                      ? AppColors.divider
+                                      : AppColors.success.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
@@ -479,8 +480,8 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                           : Icons.check_circle,
                                       size: 10,
                                       color: isHidden
-                                          ? Colors.grey[700]
-                                          : Colors.green[700],
+                                          ? AppColors.textSecondary
+                                          : AppColors.success,
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
@@ -489,8 +490,8 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                         fontSize: 8,
                                         fontWeight: FontWeight.bold,
                                         color: isHidden
-                                            ? Colors.grey[700]
-                                            : Colors.green[700],
+                                            ? AppColors.textSecondary
+                                            : AppColors.success,
                                       ),
                                     ),
                                   ],
@@ -502,7 +503,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black54,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
@@ -516,7 +517,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                   'Danh mục: ${product.category?.name ?? "Chưa phân loại"}',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Colors.grey[600],
+                                    color: AppColors.textSecondary,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -526,7 +527,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                 'Ngày tạo: ${DateFormat('dd/MM/yyyy').format(product.createdAt)}',
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: Colors.grey[500],
+                                  color: AppColors.textHint,
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -536,7 +537,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: Colors.grey),
+                    const Icon(Icons.chevron_right, color: AppColors.textHint),
                   ],
                 ),
               ),
@@ -552,12 +553,12 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
       ),
       child: Text(
         'Hiển thị $count trên $count sản phẩm',
-        style: const TextStyle(fontSize: 11, color: Colors.grey),
+        style: const TextStyle(fontSize: 11, color: AppColors.textHint),
       ),
     );
   }

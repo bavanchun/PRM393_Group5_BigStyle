@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
@@ -46,7 +48,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isLoadingLocation = false;
   // Phí vận chuyển cố định (flat). Dùng chung cho hiển thị và khi đặt hàng để
   // số tiền trên màn khớp với total của đơn tạo ra.
-  static const double _shippingFee = 30000;
+  static const double _shippingFee = AppConfig.flatShippingFee;
 
   // Promo code preview state — validated client-side for UI feedback only;
   // the create_order RPC re-derives the discount authoritatively.
@@ -260,9 +262,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (address != null && address.isNotEmpty) {
         _addressController.text = address;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã lấy vị trí thành công'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text(
+              'Đã lấy vị trí thành công',
+              style: TextStyle(color: AppColors.onPrimary),
+            ),
+            backgroundColor: AppColors.success,
           ),
         );
       } else {
@@ -471,7 +476,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       const SizedBox(height: 32),
                       AppButton(
-                        label: 'Đặt hàng (${total.toStringAsFixed(0)}đ)',
+                        label: 'Đặt hàng (${formatVnd(total)})',
                         isLoading: checkoutState.isLoading,
                         onPressed: _placeOrder,
                       ),

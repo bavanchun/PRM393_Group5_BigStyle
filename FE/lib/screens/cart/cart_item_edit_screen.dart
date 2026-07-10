@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
@@ -214,7 +215,7 @@ class _CartItemEditScreenState extends State<CartItemEditScreen> {
                     style: AppTypography.headlineMedium.copyWith(
                         fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
-                Text('${product.price.toStringAsFixed(0)}đ',
+                Text(formatVnd(product.price),
                     style: AppTypography.price.copyWith(
                         color: AppColors.primary)),
                 const SizedBox(height: 16),
@@ -281,7 +282,7 @@ class _CartItemEditScreenState extends State<CartItemEditScreen> {
                                 boxShadow: [
                                   if (entry.key.toUpperCase() == '#FFFFFF')
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.08),
+                                      color: AppColors.shadow.withValues(alpha: 0.08),
                                       blurRadius: 4,
                                     ),
                                 ],
@@ -338,7 +339,7 @@ class _CartItemEditScreenState extends State<CartItemEditScreen> {
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2, color: AppColors.onPrimary))
                         : Text(
                             _hasChanges ? 'Xác nhận thay đổi' : 'Quay lại',
                             style: AppTypography.button.copyWith(fontSize: 15),

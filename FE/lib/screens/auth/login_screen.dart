@@ -1,13 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
+import '../../utils/validators.dart';
 import 'otp_input.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -33,12 +35,48 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _otpKey = GlobalKey<OtpInputState>();
   bool _showOtp = false;
+  // True between dispatching a VerifyOTPEvent and the next terminal auth state.
+  // Gates the OTP boxes / resend / Google / debug triggers and scopes the
+  // clear-on-error so a concurrent send or Google failure can't wipe the code.
+  bool _verifyInFlight = false;
+
+  // Client-side resend courtesy countdown (per email). Not abuse protection —
+  // the server rate limits are the real guard; this only avoids obvious spam.
+  Timer? _resendTimer;
+  int _cooldown = 0;
+  String? _cooldownEmail;
+  // The email that actually received the current code, so verify targets it
+  // rather than whatever is in the field after an edit.
+  String? _otpEmail;
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _startCooldown(String email) {
+    _resendTimer?.cancel();
+    setState(() {
+      _cooldown = 60;
+      _cooldownEmail = email;
+    });
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() {
+        _cooldown--;
+        if (_cooldown <= 0) {
+          _cooldown = 0;
+          t.cancel();
+        }
+      });
+    });
   }
 
   @override
@@ -51,16 +89,18 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFFDF8F9), Color(0xFFF7C0D0)],
+            colors: [AppColors.background, AppColors.secondary],
           ),
         ),
         child: SafeArea(
           child: BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthOTPSent) {
+                _otpEmail = state.email;
                 setState(() => _showOtp = true);
               }
               if (state is AuthSuccess) {
+                _verifyInFlight = false;
                 final user = state.user;
                 if (user == null) return;
                 String route;
@@ -77,9 +117,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.pushReplacementNamed(context, route);
               }
               if (state is AuthError) {
+                // Only a verify-originated error clears the boxes; resend and
+                // Google errors leave the entered code intact. Re-enable first,
+                // then clear on the next frame so box 0 is focusable again and
+                // the keyboard reappears for the retry.
+                if (_verifyInFlight) {
+                  setState(() => _verifyInFlight = false);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _otpKey.currentState?.clear();
+                  });
+                }
+                final raw = state.message;
+                final isRateLimit =
+                    raw.toLowerCase().contains('rate limit') ||
+                    raw.contains('over_email_send_rate_limit');
+                final message = isRateLimit
+                    ? 'Bạn gửi mã quá nhanh. Vui lòng thử lại sau ít phút.'
+                    : raw;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.message),
+                    content: Text(message),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -137,20 +194,17 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Text(
           'BigStyle',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFFC4517A),
+          style: AppTypography.displayLarge.copyWith(
+            color: AppColors.primary,
             letterSpacing: 1,
           ),
         ),
         const SizedBox(height: 6),
         Text(
           'Mặc đẹp không giới hạn',
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
+          style: AppTypography.bodyMedium.copyWith(
             fontStyle: FontStyle.italic,
-            color: const Color(0xFF777777),
+            color: AppColors.textSecondary,
           ),
         ),
       ],
@@ -193,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'PHONG CÁCH\nRIÊNG CỦA BẠN',
-                  style: GoogleFonts.playfairDisplay(
+                  style: AppTypography.displaySmall.copyWith(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary,
@@ -217,25 +271,21 @@ class _LoginScreenState extends State<LoginScreen> {
         hintText: 'Email của bạn',
         prefixIcon: const Icon(Icons.email_outlined),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE8E0E2)),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE8E0E2)),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFC4517A), width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
-      validator: (v) {
-        if (v == null || v.isEmpty) return 'Vui lòng nhập email';
-        if (!v.contains('@')) return 'Email không hợp lệ';
-        return null;
-      },
+      validator: validateEmail,
     );
   }
 
@@ -246,13 +296,13 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: const LinearGradient(
-          colors: [Color(0xFFC4517A), Color(0xFFA03560)],
+          colors: [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFC4517A).withValues(alpha: 0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -270,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                     ),
                   )
                 : const Text(
@@ -278,7 +328,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -299,18 +349,16 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 20),
         OtpInput(
+          key: _otpKey,
+          enabled: !_verifyInFlight,
+          resendEnabled: _cooldown == 0,
+          resendLabel: _cooldown > 0 ? 'Gửi lại sau ${_cooldown}s' : null,
           onCompleted: (code) {
-            final email = (state is AuthOTPSent)
-                ? state.email
-                : _emailController.text.trim();
+            final email = _otpEmail ?? _emailController.text.trim();
+            setState(() => _verifyInFlight = true);
             context.read<AuthBloc>().add(VerifyOTPEvent(email, code));
           },
-          onResend: () {
-            final email = _emailController.text.trim();
-            if (email.isNotEmpty) {
-              context.read<AuthBloc>().add(SendOTPEvent(email));
-            }
-          },
+          onResend: _sendOtp,
         ),
       ],
     );
@@ -319,7 +367,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildDivider() {
     return Row(
       children: [
-        const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
+        const Expanded(child: Divider(color: AppColors.border)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -327,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: AppTypography.caption.copyWith(color: AppColors.textHint),
           ),
         ),
-        const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
+        const Expanded(child: Divider(color: AppColors.border)),
       ],
     );
   }
@@ -337,21 +385,21 @@ class _LoginScreenState extends State<LoginScreen> {
       width: double.infinity,
       height: 52,
       child: OutlinedButton(
-        onPressed: state is AuthLoading
+        onPressed: (state is AuthLoading || _verifyInFlight)
             ? null
             : () => context.read<AuthBloc>().add(const GoogleSignInEvent()),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFFE8E0E2), width: 1.5),
+          side: const BorderSide(color: AppColors.border, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.g_mobiledata, size: 28, color: Color(0xFF2D2D2D)),
+            const Icon(Icons.g_mobiledata, size: 28, color: AppColors.accent),
             const SizedBox(width: 10),
             Flexible(
               child: Text(
@@ -359,7 +407,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D2D2D),
+                  color: AppColors.accent,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -378,7 +426,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildDebugTestLoginButtons(AuthState state) {
-    final isLoading = state is AuthLoading;
+    final isLoading = state is AuthLoading || _verifyInFlight;
     return Row(
       children: [
         if (_testManagerEmail.isNotEmpty && _testManagerPassword.isNotEmpty)
@@ -418,7 +466,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _sendOtp() {
     if (!_formKey.currentState!.validate()) return;
-    context.read<AuthBloc>().add(SendOTPEvent(_emailController.text.trim()));
+    final email = _emailController.text.trim();
+    if (_cooldown > 0 && email == _cooldownEmail) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vui lòng đợi ${_cooldown}s trước khi gửi lại'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    context.read<AuthBloc>().add(SendOTPEvent(email));
+    _startCooldown(email);
   }
 
   void _signInTestUser(String email, String password) {

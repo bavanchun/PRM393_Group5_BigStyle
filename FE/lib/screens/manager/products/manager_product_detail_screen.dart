@@ -8,6 +8,7 @@ import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/app_typography.dart';
 import '../../../models/category_model.dart';
 import '../../../models/product_model.dart';
+import '../../../models/product_swatch_colors.dart';
 import '../../../models/variant_model.dart';
 import '../../../services/product_service.dart';
 import 'form/manager_product_variant_form_row.dart';
@@ -39,11 +40,6 @@ class _ManagerProductDetailScreenState
 
   String _selectedSwatchColor = 'Đất nung';
   String _selectedSwatchHex = '#914B34';
-  static const Map<String, String> _swatchHexByName = {
-    'Đất nung': '#914B34',
-    'Xanh ngọc': '#2A6767',
-    'Đen': '#313030',
-  };
   final List<String> _imageUrls = [];
   final List<ManagerProductVariantFormRow> _variantsList = [];
 
@@ -146,7 +142,7 @@ class _ManagerProductDetailScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Không', style: TextStyle(color: Colors.grey)),
+            child: const Text('Không', style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -273,7 +269,7 @@ class _ManagerProductDetailScreenState
                 DeleteManagerProductEvent(widget.product.id),
               );
             },
-            child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+            child: const Text('Xóa', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -302,7 +298,7 @@ class _ManagerProductDetailScreenState
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.surface,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -327,15 +323,15 @@ class _ManagerProductDetailScreenState
           ),
           title: Text(
             'Chi tiết & Cập nhật',
-            style: AppTypography.headlineMedium.copyWith(color: Colors.white),
+            style: AppTypography.headlineMedium.copyWith(color: AppColors.textPrimary),
           ),
-          iconTheme: const IconThemeData(color: Colors.white),
+          iconTheme: const IconThemeData(color: AppColors.textPrimary),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
                 onPressed: _deleteProduct,
-                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                icon: const Icon(Icons.delete_outline, color: AppColors.error),
               ),
             ),
             Padding(
@@ -347,8 +343,8 @@ class _ManagerProductDetailScreenState
                     0,
                     36,
                   ), // Ghi đè minimumSize của global theme
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.primary,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -421,7 +417,7 @@ class _ManagerProductDetailScreenState
                                   width: double.infinity,
                                   height: 160,
                                   decoration: const BoxDecoration(
-                                    color: Colors.white,
+                                    color: AppColors.surface,
                                     borderRadius: BorderRadius.all(
                                       Radius.circular(8),
                                     ),
@@ -555,7 +551,7 @@ class _ManagerProductDetailScreenState
                                                       fontSize: 9,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: Colors.white,
+                                                      color: AppColors.onPrimary,
                                                     ),
                                                   ),
                                                 ),
@@ -572,7 +568,7 @@ class _ManagerProductDetailScreenState
                                                 child: Container(
                                                   decoration:
                                                       const BoxDecoration(
-                                                        color: Colors.white,
+                                                        color: AppColors.surface,
                                                         shape: BoxShape.circle,
                                                       ),
                                                   padding: const EdgeInsets.all(
@@ -581,7 +577,7 @@ class _ManagerProductDetailScreenState
                                                   child: const Icon(
                                                     Icons.close,
                                                     size: 14,
-                                                    color: Colors.red,
+                                                    color: AppColors.error,
                                                   ),
                                                 ),
                                               ),
@@ -598,7 +594,7 @@ class _ManagerProductDetailScreenState
                                           width: 100,
                                           height: 100,
                                           decoration: const BoxDecoration(
-                                            color: Colors.white,
+                                            color: AppColors.surface,
                                             borderRadius: BorderRadius.all(
                                               Radius.circular(8),
                                             ),
@@ -639,17 +635,17 @@ class _ManagerProductDetailScreenState
                                 children: [
                                   _buildColorSwatch(
                                     'Đất nung',
-                                    const Color(0xFF914B34),
+                                    ProductSwatchColors.datNung,
                                   ),
                                   const SizedBox(width: 16),
                                   _buildColorSwatch(
                                     'Xanh ngọc',
-                                    const Color(0xFF2A6767),
+                                    ProductSwatchColors.xanhNgoc,
                                   ),
                                   const SizedBox(width: 16),
                                   _buildColorSwatch(
                                     'Đen',
-                                    const Color(0xFF313030),
+                                    ProductSwatchColors.den,
                                   ),
                                 ],
                               ),
@@ -722,7 +718,7 @@ class _ManagerProductDetailScreenState
                                       ),
                                       style: const TextStyle(
                                         fontSize: 13,
-                                        color: Colors.black,
+                                        color: AppColors.textPrimary,
                                       ),
                                       items: _categories.map((cat) {
                                         return DropdownMenuItem<String>(
@@ -751,7 +747,7 @@ class _ManagerProductDetailScreenState
                                 ),
                                 style: const TextStyle(
                                   fontSize: 13,
-                                  color: Colors.black,
+                                  color: AppColors.textPrimary,
                                 ),
                                 items: const [
                                   DropdownMenuItem(
@@ -849,7 +845,7 @@ class _ManagerProductDetailScreenState
                 ),
                 if (_isSaving)
                   Container(
-                    color: Colors.black26,
+                    color: AppColors.shadow.withValues(alpha: 0.26),
                     child: const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primary,
@@ -869,7 +865,7 @@ class _ManagerProductDetailScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
@@ -893,7 +889,8 @@ class _ManagerProductDetailScreenState
       onTap: () {
         setState(() {
           _selectedSwatchColor = name;
-          _selectedSwatchHex = _swatchHexByName[name] ?? _selectedSwatchHex;
+          _selectedSwatchHex =
+              ProductSwatchColors.hexByName[name] ?? _selectedSwatchHex;
         });
       },
       child: Column(
@@ -906,7 +903,7 @@ class _ManagerProductDetailScreenState
               shape: BoxShape.circle,
               border: isSelected
                   ? Border.all(color: AppColors.primary, width: 3)
-                  : Border.all(color: Colors.grey.shade300),
+                  : Border.all(color: AppColors.border),
             ),
           ),
           const SizedBox(height: 4),
@@ -924,7 +921,7 @@ class _ManagerProductDetailScreenState
   }
 
   String _swatchNameForHex(String hex) {
-    for (final entry in _swatchHexByName.entries) {
+    for (final entry in ProductSwatchColors.hexByName.entries) {
       if (entry.value.toLowerCase() == hex.toLowerCase()) {
         return entry.key;
       }
@@ -964,7 +961,7 @@ class DashedBorderPainter extends CustomPainter {
   final double gap;
 
   DashedBorderPainter({
-    this.color = Colors.grey,
+    this.color = AppColors.border,
     this.strokeWidth = 1.0,
     this.gap = 5.0,
   });

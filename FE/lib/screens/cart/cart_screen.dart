@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
@@ -221,7 +222,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${item.totalPrice.toStringAsFixed(0)}đ',
+                    formatVnd(item.totalPrice),
                     style: AppTypography.priceSmall,
                   ),
                 ],
@@ -316,7 +317,7 @@ class _CartScreenState extends State<CartScreen> {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -331,7 +332,7 @@ class _CartScreenState extends State<CartScreen> {
               children: [
                 Text('Tạm tính:', style: AppTypography.bodyMedium),
                 Text(
-                  '${selectedSubtotal.toStringAsFixed(0)}đ',
+                  formatVnd(selectedSubtotal),
                   style: AppTypography.headlineSmall.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,

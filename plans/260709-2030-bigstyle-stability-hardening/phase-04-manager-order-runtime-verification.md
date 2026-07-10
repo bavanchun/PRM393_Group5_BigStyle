@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Manager Order Runtime Verification"
-status: blocked
+status: completed
 priority: P1
 effort: "4h"
 dependencies: [3]
@@ -50,11 +50,11 @@ not rewrite.
 
 ## Interface Checklist
 
-- [ ] `ManagerLoadOrders(status)` updates `selectedStatus`.
-- [ ] `_ordersRequestId` does not leave stuck `isUpdatingStatus`.
-- [ ] `ManagerOrdersScreen` listens to `state.error`.
-- [ ] Status sheet does not pop before update result.
-- [ ] Detail screen does not display stale order after update.
+- [x] `ManagerLoadOrders(status)` updates `selectedStatus`. — `manager_bloc.dart:55` emits `selectedStatus: event.status`.
+- [x] `_ordersRequestId` does not leave stuck `isUpdatingStatus`. — dual request-id guard resets `isUpdatingStatus: false` (`manager_bloc.dart:100,110`).
+- [x] `ManagerOrdersScreen` listens to `state.error`. — `BlocListener` on `state.error` → SnackBar (`manager_orders_screen.dart:37-43`).
+- [x] Status sheet does not pop before update result. — verified live: tapped "Đã xác nhận", sheet closed only after status applied.
+- [x] Detail screen does not display stale order after update. — verified live: detail badge showed "Đã xác nhận" immediately post-update.
 
 ## Dependency Map
 
@@ -98,10 +98,10 @@ If code changes happen -> Phase 5 adds tests for changed behavior
 
 ## Success Criteria
 
-- [ ] Runtime report created with pass/fail evidence.
-- [ ] Manager orders tab no longer has unverified blank-tab risk.
-- [ ] Status update outcome visible to manager.
-- [ ] `flutter analyze` passes after any code changes.
+- [x] Runtime report created with pass/fail evidence.
+- [x] Manager orders tab no longer has unverified blank-tab risk.
+- [x] Status update outcome visible to manager. — verified live on Pixel 8 (order `CF-20260709-54E569` pending→confirmed): detail badge flipped to "Đã xác nhận", dashboard pending 3→2 in-session, DB `status=confirmed` + `updated_at` bumped; test order restored to pending after.
+- [x] `flutter analyze` passes after any code changes.
 
 ## Risk Assessment
 

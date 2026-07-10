@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../config/theme/app_colors.dart';
+import '../../config/theme/app_spacing.dart';
+import '../../config/theme/app_typography.dart';
+import '../../utils/currency_format.dart';
 
 class ProductCard extends StatelessWidget {
   final String imageUrl;
@@ -35,7 +37,7 @@ class ProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
             child: AspectRatio(
               aspectRatio: 1,
               child: Stack(
@@ -59,12 +61,13 @@ class ProductCard extends StatelessWidget {
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.microRadius),
                         ),
                         child: Text(
                           'SALE',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.onPrimary,
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
@@ -84,11 +87,11 @@ class ProductCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: BorderRadius.circular(AppSpacing.microRadius),
                 ),
                 child: Text(
                   brandName!,
-                  style: GoogleFonts.dmSans(
+                  style: AppTypography.labelSmall.copyWith(
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
@@ -100,10 +103,8 @@ class ProductCard extends StatelessWidget {
             ),
           Text(
             name,
-            style: GoogleFonts.dmSans(
+            style: AppTypography.labelLarge.copyWith(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
               height: 1.2,
             ),
             maxLines: 1,
@@ -119,7 +120,8 @@ class ProductCard extends StatelessWidget {
                         horizontal: 4, vertical: 1),
                     decoration: BoxDecoration(
                       color: AppColors.background,
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.microRadius),
                     ),
                     child: Text(
                       s,
@@ -136,23 +138,17 @@ class ProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${price.toStringAsFixed(0)}đ',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
+                formatVnd(price),
+                style: AppTypography.priceSmall,
               ),
               if (hasDiscount) ...[
                 const SizedBox(width: 4),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 1),
                   child: Text(
-                    '${originalPrice!.toStringAsFixed(0)}đ',
-                    style: GoogleFonts.dmSans(
+                    formatVnd(originalPrice!),
+                    style: AppTypography.caption.copyWith(
                       fontSize: 10,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textHint,
                       decoration: TextDecoration.lineThrough,
                       decorationColor: AppColors.textHint,
                     ),
@@ -171,10 +167,9 @@ class ProductCard extends StatelessWidget {
                   const SizedBox(width: 2),
                   Text(
                     'Đã bán $soldCount',
-                    style: GoogleFonts.dmSans(
+                    style: AppTypography.labelSmall.copyWith(
                       fontSize: 9,
                       color: AppColors.textHint,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
