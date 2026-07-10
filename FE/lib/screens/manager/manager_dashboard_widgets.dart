@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
+import '../../config/theme/status_colors.dart';
 import '../../models/manager_dashboard_stats.dart';
 import '../../utils/currency_format.dart';
 
@@ -12,6 +13,7 @@ class ManagerStatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statusColors = Theme.of(context).extension<StatusColors>()!;
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -30,13 +32,13 @@ class ManagerStatsGrid extends StatelessWidget {
           label: 'Đơn chờ xác nhận',
           value: '${stats.pendingOrderCount}',
           icon: Icons.receipt_long,
-          color: AppColors.success,
+          color: AppColors.warning,
         ),
         _StatCard(
           label: 'Tổng sản phẩm',
           value: '${stats.productCount}',
           icon: Icons.inventory_2,
-          color: AppColors.warning,
+          color: statusColors.info,
         ),
         _StatCard(
           label: 'Khách hàng',
@@ -87,7 +89,7 @@ class _StatCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: AppTypography.caption.copyWith(fontSize: 11),
+                  style: AppTypography.labelSmall.copyWith(fontSize: 11),
                 ),
               ),
               Icon(icon, size: 20, color: color),
@@ -97,9 +99,9 @@ class _StatCard extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.displaySmall.copyWith(
+            style: AppTypography.headlineLarge.copyWith(
               fontSize: 20,
-              color: color,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
