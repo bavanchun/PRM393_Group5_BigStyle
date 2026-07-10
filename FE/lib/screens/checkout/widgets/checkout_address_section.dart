@@ -65,12 +65,12 @@ class CheckoutAddressSection extends StatelessWidget {
             padding: const EdgeInsets.only(top: 6),
             child: Row(
               children: [
-                Icon(Icons.check_circle, size: 14, color: Colors.green[600]),
+                Icon(Icons.check_circle, size: 14, color: AppColors.success),
                 const SizedBox(width: 4),
                 Text(
                   'Vĩ độ: ${latitude!.toStringAsFixed(4)}, Kinh độ: ${longitude!.toStringAsFixed(4)}',
                   style: AppTypography.caption.copyWith(
-                    color: Colors.green[600],
+                    color: AppColors.success,
                     fontSize: 11,
                   ),
                 ),

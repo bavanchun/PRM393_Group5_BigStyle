@@ -24,4 +24,10 @@ class AppColors {
   // semantic token before the reskin.
   static const Color onPrimary = Color(0xFFFFFFFF);
   static const Color shadow = Color(0xFF000000);
+
+  // Shimmer/skeleton-loading placeholder tones — warm-neutral counterparts
+  // to Colors.grey[200]/[100] (same subtle lightness delta so the sweep
+  // animation stays visible) instead of the palette's cool default greys.
+  static const Color skeletonBase = Color(0xFFEDE6DD);
+  static const Color skeletonHighlight = Color(0xFFF6F1E9);
 }

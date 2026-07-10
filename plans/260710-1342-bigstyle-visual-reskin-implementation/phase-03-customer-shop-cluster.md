@@ -60,3 +60,27 @@ Checkout and PaymentQr were **never visually captured** (blocked by the cart-CTA
 ## Risk Assessment
 
 - **Checkout/PaymentQr migrated blind and something breaks visually** → low risk (both low-debt, high-shared-widget-use per Phase 1), but explicitly re-verify once the cart-CTA bug unblocks live capture — don't let "inferred token-swap-only" quietly become "verified."
+
+## Completion Note (2026-07-10)
+
+**Status:** Done. Cart CTA confirmed a capture-tool artifact (user hand-tap on `emulator-5554`, see Phase 0) — no bug-fix step needed.
+
+**Per-screen:**
+- **Home:** 8 hits fixed (search-bar/hero-banner white→surface/onPrimary, shimmer greys→new `AppColors.skeletonBase/skeletonHighlight`).
+- **ProductList:** 8 hits fixed (cart-badge/search-bar/selected-filter-chip text/shimmer — same skeleton tokens as Home, since this screen shares the identical `Shimmer.fromColors(Colors.grey[200]!, Colors.grey[100]!)` pattern verbatim).
+- **ProductDetail (L):** 11 hits fixed across the screen + `size_guide_sheet.dart` (product name/price fonts moved off direct `GoogleFonts.playfairDisplay`/`dmSans` onto `AppTypography.displaySmall`/`price`/`caption` with `.copyWith()` for the sizes that don't have an exact preset; now-unused `google_fonts` import removed). Inline size-selector (`:504-550`) reworked tonal per the plan's explicit instruction: selected state is now `AppColors.primary.withValues(alpha:0.12)` bg + `AppColors.primary` text (was solid-fill + white). `product_review_section.dart` and `review_editor_sheet.dart` were already zero-hardcode (the latter's `ChoiceChip` picks up Phase 1's tonal chip fix automatically, no code change needed).
+- **Cart:** 1 hit (bottom-bar shadow).
+- **CartItemEdit:** 2 hits (white-swatch shadow, saving-spinner color). Its `ChoiceChip` size selector (the literal finding source for the plan's "CartItemEdit tonal-violation") needed **zero code change** — Phase 1's `chipTheme` rework already fixes it at the theme level, confirming that fix actually reaches its intended target.
+- **Checkout:** 3 hits, all `Colors.green` (location-found success signal) → `AppColors.success`, with an explicit white content-text style added (see contrast note below) rather than relying on inherited SnackBar theme defaults.
+- **PaymentQr:** zero hits — already fully token-driven. Migrated "blind" per the plan (no customer-role credentials this session to live-capture); flagged `unverified` visually, though the guard scan + `flutter analyze` prove the code itself has no hardcode debt.
+- **Favorites:** zero hits, confirmed token-swap-only as the plan predicted.
+
+**Contrast re-verification (both of ProductDetail's audit-cited findings are false positives):** the original audit claimed "(1) price + 'Hướng dẫn chọn size' link stay under AA even after v2 primary swap (3.9:1 vs 4.5:1 needed)" and "(2) white text on solid 'L' chip/'Mua ngay' button also under AA." I independently computed the WCAG relative-luminance contrast for `AppColors.primary` (`#9A3F35`) against white by hand: **6.70:1** — which exactly matches `docs/design-tokens-v2.md`'s own pre-verified "white-on-primary 6.70:1 (button text)" figure (identical color pair, contrast ratio is direction-symmetric). Also checked primary-as-text against the `background` cream tone (`#FBF6EF`): 6.23:1. Both comfortably clear the 4.5:1 AA threshold — the audit's 3.9:1 is stale/wrong, same failure class as the M2/M34/C30 findings Phase 0 already caught. No color-darkening fix applied (none needed); the size-selector tonal rework stands on its own design-consistency rationale, not a contrast one.
+
+**New additive token:** `AppColors.skeletonBase`/`skeletonHighlight` (warm-toned counterparts to `Colors.grey[200]/[100]`) — the identical shimmer color-pair repeats verbatim in Home and ProductList, so this closes it once instead of twice, and gives the codebase one documented place recording "shimmer intentionally stays neutral, this isn't missed reskin debt."
+
+**Guard:** 199 → 166 (−33; matches the edit count exactly: Home 8 + ProductList 8 + ProductDetail 11 + Cart 1 + CartItemEdit 2 + Checkout 3).
+
+**Regression checklist:** NOT manually walked end-to-end in the emulator — no customer-role QA credentials available this session (same constraint noted in Phase 1; the cached emulator session is Admin, overwritten by my own Phase 1 smoke test). All changes this phase are either (a) mechanical `Colors.*`/`GoogleFonts.*` → token substitutions with the exact same values/behavior, or (b) the one tonal rework, which is a pure `BoxDecoration`/`TextStyle` color change with no touched `onTap`/state logic. `flutter analyze` + `flutter test` (43/43) both clean; no navigation, bloc-event, or conditional-logic lines were touched anywhere in this phase's diff.
+
+**Verification:** `flutter analyze` clean; `flutter test` 43/43 pass; guard-scoped scan of this cluster's files returns zero non-allowlisted hits.

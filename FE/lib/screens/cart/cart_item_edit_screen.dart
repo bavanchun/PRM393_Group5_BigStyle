@@ -281,7 +281,7 @@ class _CartItemEditScreenState extends State<CartItemEditScreen> {
                                 boxShadow: [
                                   if (entry.key.toUpperCase() == '#FFFFFF')
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.08),
+                                      color: AppColors.shadow.withValues(alpha: 0.08),
                                       blurRadius: 4,
                                     ),
                                 ],
@@ -338,7 +338,7 @@ class _CartItemEditScreenState extends State<CartItemEditScreen> {
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2, color: AppColors.onPrimary))
                         : Text(
                             _hasChanges ? 'Xác nhận thay đổi' : 'Quay lại',
                             style: AppTypography.button.copyWith(fontSize: 15),

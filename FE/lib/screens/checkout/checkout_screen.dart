@@ -261,9 +261,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (address != null && address.isNotEmpty) {
         _addressController.text = address;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã lấy vị trí thành công'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text(
+              'Đã lấy vị trí thành công',
+              style: TextStyle(color: AppColors.onPrimary),
+            ),
+            backgroundColor: AppColors.success,
           ),
         );
       } else {
