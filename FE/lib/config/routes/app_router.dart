@@ -15,6 +15,7 @@ import '../../screens/profile/edit_profile_screen.dart';
 import '../../screens/chat/chat_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/delivery/delivery_map_screen.dart';
+import '../../screens/delivery/delivery_map_args.dart';
 import '../../screens/manager/manager_shell.dart';
 import '../../screens/admin/admin_shell.dart';
 import '../../screens/favorites/favorites_screen.dart';
@@ -53,7 +54,16 @@ class AppRouter {
       case '/notifications':
         return MaterialPageRoute(settings: settings, builder: (_) => const NotificationsScreen());
       case '/delivery-map':
-        return MaterialPageRoute(settings: settings, builder: (_) => const DeliveryMapScreen());
+        final deliveryArgs =
+            DeliveryMapArgs.fromRouteArguments(settings.arguments);
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => DeliveryMapScreen(
+            destination: deliveryArgs?.destination,
+            destinationLabel: deliveryArgs?.destinationLabel,
+            title: deliveryArgs?.title,
+          ),
+        );
       case '/manager':
         return MaterialPageRoute(settings: settings, builder: (_) => const ManagerShell());
       case '/admin':

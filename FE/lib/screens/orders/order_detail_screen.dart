@@ -12,6 +12,7 @@ import '../../blocs/review/review_event.dart';
 import '../../models/order_model.dart';
 import '../../models/order_status.dart';
 import '../product_detail/review_editor_sheet.dart';
+import '../delivery/delivery_map_args.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/status_badge.dart';
@@ -104,6 +105,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                       const SizedBox(height: 16),
                       AppCard(child: _buildTimeline(order.status)),
+                      if (deliveryRouteCtaVisible(
+                          order.status, order.latitude, order.longitude)) ...[
+                        const SizedBox(height: 12),
+                        AppButton(
+                          label: 'Xem lộ trình giao hàng',
+                          isOutlined: true,
+                          onPressed: () => _openDeliveryRoute(order),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       Text('Sản phẩm', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
@@ -314,6 +324,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       // provenance guard.
       orderItemId: loaded.myReview?.orderItemId ?? orderItemId,
       existingReview: loaded.myReview,
+    );
+  }
+
+  void _openDeliveryRoute(OrderModel order) {
+    Navigator.pushNamed(
+      context,
+      '/delivery-map',
+      arguments: {
+        'latitude': order.latitude,
+        'longitude': order.longitude,
+        'label': order.address,
+        'title': 'Lộ trình giao hàng',
+      },
     );
   }
 
