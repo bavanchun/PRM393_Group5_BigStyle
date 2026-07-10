@@ -36,6 +36,8 @@ import 'blocs/manager_product/manager_product_bloc.dart';
 import 'blocs/manager_category/manager_category_bloc.dart';
 import 'blocs/manager_voucher/manager_voucher_bloc.dart';
 import 'blocs/admin/admin_bloc.dart';
+import 'blocs/support_inbox/support_inbox_bloc.dart';
+import 'services/support_chat_service.dart';
 import 'services/category_service.dart';
 import 'services/voucher_service.dart';
 
@@ -136,6 +138,9 @@ class _BigStyleAppState extends State<BigStyleApp> {
             create: (_) => PaymentBloc(paymentService, CartService()),
           ),
           BlocProvider(create: (_) => AdminBloc(AdminService())),
+          BlocProvider(
+            create: (_) => SupportInboxBloc(SupportChatService()),
+          ),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listenWhen: (previous, current) =>
