@@ -31,6 +31,15 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
           : _reviewService.getMyReview(event.productId, event.userId!);
       final reviews = await reviewsFuture;
       final myReview = await myReviewFuture;
+      // An existing review's order_item_id is immutable (DB trigger), so reuse
+      // it instead of re-resolving; otherwise resolve eligibility for the user.
+      String? eligibleOrderItemId = myReview?.orderItemId;
+      if (eligibleOrderItemId == null && event.userId != null) {
+        eligibleOrderItemId = await _reviewService.getEligibleOrderItem(
+          event.productId,
+          event.userId!,
+        );
+      }
       if (requestId != _loadRequestId) return;
       emit(
         state.copyWith(
@@ -38,6 +47,9 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
           reviews: reviews,
           myReview: myReview,
           clearMyReview: myReview == null,
+          canReview: eligibleOrderItemId != null,
+          eligibleOrderItemId: eligibleOrderItemId,
+          clearEligibility: eligibleOrderItemId == null,
         ),
       );
     } catch (_) {
@@ -59,6 +71,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       await _reviewService.upsertReview(
         productId: event.productId,
         userId: event.userId,
+        orderItemId: event.orderItemId,
         rating: event.rating,
         comment: event.comment,
         sizeFeedback: event.sizeFeedback,

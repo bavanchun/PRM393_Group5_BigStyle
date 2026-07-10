@@ -230,6 +230,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       isLoading: reviewState.isLoading,
                                     reviews: reviewState.reviews,
                                     myReview: reviewState.myReview,
+                                    canReview: reviewState.canReview,
                                     error: reviewState.error,
                                     onWrite: () =>
                                         _openReviewEditor(product.id),
@@ -799,10 +800,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
     if (!mounted) return;
 
+    final orderItemId = reviewState.eligibleOrderItemId;
+    if (orderItemId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mua và nhận hàng để đánh giá sản phẩm này'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final saved = await ReviewEditorSheet.show(
       context,
       productId: productId,
       userId: userId,
+      orderItemId: orderItemId,
       existingReview: reviewState.myReview,
     );
     if (!mounted || saved != true) return;
