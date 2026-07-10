@@ -7,8 +7,11 @@ import '../models/product_model.dart';
 import '../utils/slug.dart';
 
 class ProductService {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient _client;
   final http.Client _httpClient = http.Client();
+
+  ProductService({SupabaseClient? client})
+    : _client = client ?? Supabase.instance.client;
 
   Future<List<ProductModel>> getProducts({
     String? categoryId,

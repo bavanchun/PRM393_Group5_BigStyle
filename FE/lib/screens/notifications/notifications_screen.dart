@@ -35,7 +35,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Thông báo')),
-      body: BlocBuilder<NotificationBloc, NotificationState>(
+      body: BlocConsumer<NotificationBloc, NotificationState>(
+        // Surface transient failures (e.g. mark-read) that keep the list intact;
+        // the empty-list case is handled by the full-screen error state below.
+        listenWhen: (previous, current) =>
+            current.error != null &&
+            current.error != previous.error &&
+            current.notifications.isNotEmpty,
+        listener: (context, state) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
         builder: (context, state) {
           if (state.isLoading) {
             return const Center(child: CircularProgressIndicator());

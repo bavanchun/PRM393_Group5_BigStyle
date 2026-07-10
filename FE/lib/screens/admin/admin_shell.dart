@@ -163,21 +163,6 @@ class _AdminProfileScreen extends StatelessWidget {
                 title: 'Chỉnh sửa hồ sơ',
                 onTap: () => Navigator.pushNamed(context, '/edit-profile'),
               ),
-              _ProfileMenuItem(
-                icon: Icons.person_outline,
-                title: 'Hồ sơ',
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.settings_outlined,
-                title: 'Cài đặt',
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.help_outline,
-                title: 'Trợ giúp',
-                onTap: () {},
-              ),
 
               const Spacer(),
 

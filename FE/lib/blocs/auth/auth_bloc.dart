@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
-import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/google_auth_service.dart';
 
@@ -17,7 +16,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<VerifyOTPEvent>(_onVerifyOtp);
     on<PasswordSignInEvent>(_onPasswordSignIn);
     on<GoogleSignInEvent>(_onGoogleSignIn);
-    on<MockLoginEvent>(_onMockLogin);
     on<SignOutEvent>(_onSignOut);
     on<UpdateProfileEvent>(_onUpdateProfile);
   }
@@ -114,40 +112,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       debugPrint(stackTrace.toString());
       emit(const AuthError('Đăng nhập Google thất bại'));
     }
-  }
-
-  Future<void> _onMockLogin(
-    MockLoginEvent event,
-    Emitter<AuthState> emit,
-  ) async {
-    if (kReleaseMode) return;
-
-    emit(const AuthLoading());
-    UserRole role;
-    switch (event.role) {
-      case 'admin':
-        role = UserRole.admin;
-        break;
-      case 'manager':
-        role = UserRole.manager;
-        break;
-      default:
-        role = UserRole.customer;
-    }
-
-    final user = UserModel(
-      id: 'mock-${event.role}-id',
-      email: '${event.role}@bigstyle.com',
-      fullName: event.role == 'admin'
-          ? 'Admin BigStyle'
-          : event.role == 'manager'
-          ? 'Quản lý BigStyle'
-          : 'Nguyễn Văn A',
-      phone: '0123456789',
-      role: role,
-      createdAt: DateTime.now(),
-    );
-    emit(AuthSuccess(user));
   }
 
   Future<void> _onSignOut(SignOutEvent event, Emitter<AuthState> emit) async {

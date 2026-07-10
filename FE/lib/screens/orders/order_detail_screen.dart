@@ -204,7 +204,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             ),
                           ),
                       ],
-                      if (order.status == OrderStatus.pending) ...[
+                      if (order.status.isCancellable) ...[
                         const SizedBox(height: 24),
                         AppButton(
                           label: 'Huỷ đơn hàng',

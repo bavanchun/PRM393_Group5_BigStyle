@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../utils/currency_format.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../blocs/auth/auth_state.dart';
 import '../../../blocs/manager_product/manager_product_bloc.dart';
 import '../../../blocs/manager_product/manager_product_event.dart';
 import '../../../blocs/manager_product/manager_product_state.dart';
 import '../../../config/theme/app_colors.dart';
 import '../../../models/product_model.dart';
+import '../../../models/user_model.dart';
 import 'manager_create_product_screen.dart';
 import 'manager_product_detail_screen.dart';
 
@@ -35,6 +38,17 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
     super.dispose();
   }
 
+  String _roleBadgeLabel(UserRole? role) {
+    switch (role) {
+      case UserRole.admin:
+        return 'Quản trị';
+      case UserRole.manager:
+        return 'Quản lý';
+      default:
+        return 'Nhân viên';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,37 +56,46 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 2,
-        title: Row(
-          children: [
-            const Flexible(
-              child: Text(
-                'Quản trị BigStyle',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: AppColors.textPrimary,
+        title: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, authState) {
+            final user = authState.user;
+            final title = user?.fullName.isNotEmpty == true
+                ? user!.fullName
+                : 'BigStyle';
+            return Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Quản trị',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _roleBadgeLabel(user?.role),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
       body: BlocConsumer<ManagerProductBloc, ManagerProductState>(
@@ -409,21 +432,27 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                   Colors.transparent,
                                   BlendMode.multiply,
                                 ),
-                          child: Image.network(
-                            product.images.isNotEmpty
-                                ? product.images.first
-                                : 'https://via.placeholder.com/150',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: AppColors.divider,
-                                child: const Icon(
-                                  Icons.image,
-                                  color: AppColors.onPrimary,
+                          child: product.images.isNotEmpty
+                              ? Image.network(
+                                  product.images.first,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: AppColors.divider,
+                                      child: const Icon(
+                                        Icons.image,
+                                        color: AppColors.onPrimary,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  color: AppColors.divider,
+                                  child: const Icon(
+                                    Icons.image,
+                                    color: AppColors.onPrimary,
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
                         ),
                       ),
                     ),
