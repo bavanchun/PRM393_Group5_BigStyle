@@ -387,15 +387,74 @@ alter table public.reviews enable row level security;
 create policy "Anyone can view reviews"
   on public.reviews for select using (true);
 
-create policy "Users insert own reviews"
+-- Purchase-gate: only a customer with a delivered order item for the product
+-- may write/edit the review, bound to that specific order_item_id.
+create policy "Purchasers insert own verified reviews"
   on public.reviews for insert
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.order_items oi
+      join public.orders o on o.id = oi.order_id
+      join public.product_variants pv on pv.id = oi.variant_id
+      where oi.id = reviews.order_item_id
+        and o.user_id = auth.uid()
+        and o.status = 'delivered'
+        and pv.product_id = reviews.product_id
+    )
+  );
 
-create policy "Users update own reviews"
+create policy "Purchasers update own verified reviews"
   on public.reviews for update
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.order_items oi
+      join public.orders o on o.id = oi.order_id
+      join public.product_variants pv on pv.id = oi.variant_id
+      where oi.id = reviews.order_item_id
+        and o.user_id = auth.uid()
+        and o.status = 'delivered'
+        and pv.product_id = reviews.product_id
+    )
+  );
 
--- Trigger: tự động cập nhật avg_rating trên products
+-- Provenance immutable + is_verified recomputed server-side (client value ignored).
+create or replace function public.enforce_review_gate()
+returns trigger as $$
+begin
+  if (tg_op = 'UPDATE') then
+    if new.product_id is distinct from old.product_id
+       or new.user_id is distinct from old.user_id
+       or new.order_item_id is distinct from old.order_item_id then
+      raise exception 'review provenance is immutable';
+    end if;
+  end if;
+
+  new.is_verified := exists (
+    select 1
+    from public.order_items oi
+    join public.orders o on o.id = oi.order_id
+    join public.product_variants pv on pv.id = oi.variant_id
+    where oi.id = new.order_item_id
+      and o.user_id = new.user_id
+      and o.status = 'delivered'
+      and pv.product_id = new.product_id
+  );
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger on_review_guard
+  before insert or update on public.reviews
+  for each row execute procedure public.enforce_review_gate();
+
+-- Trigger: tự động cập nhật avg_rating trên products.
+-- SECURITY DEFINER so a customer's review insert can bump the manager-owned
+-- products row.
 create or replace function public.update_product_rating()
 returns trigger as $$
 begin
@@ -406,7 +465,7 @@ begin
   where id = new.product_id;
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_review_insert
   after insert on public.reviews

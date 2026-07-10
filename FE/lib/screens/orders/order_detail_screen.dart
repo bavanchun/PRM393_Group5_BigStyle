@@ -7,8 +7,11 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/order/order_bloc.dart';
 import '../../blocs/order/order_event.dart';
 import '../../blocs/order/order_state.dart';
+import '../../blocs/review/review_bloc.dart';
+import '../../blocs/review/review_event.dart';
 import '../../models/order_model.dart';
 import '../../models/order_status.dart';
+import '../product_detail/review_editor_sheet.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/status_badge.dart';
@@ -107,31 +110,51 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ...order.items.map((item) => Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: AppCard(
-                              child: Row(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.productName.isNotEmpty
-                                              ? item.productName
-                                              : 'Sản phẩm',
-                                          style: AppTypography.bodyMedium
-                                              .copyWith(
-                                                  fontWeight: FontWeight.w600),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.productName.isNotEmpty
+                                                  ? item.productName
+                                                  : 'Sản phẩm',
+                                              style: AppTypography.bodyMedium
+                                                  .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Size ${item.size} x${item.quantity}',
+                                              style: AppTypography.caption,
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Size ${item.size} x${item.quantity}',
-                                          style: AppTypography.caption,
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                      Text(formatVnd(item.unitPrice),
+                                          style: AppTypography.priceSmall),
+                                    ],
                                   ),
-                                  Text(formatVnd(item.unitPrice),
-                                      style: AppTypography.priceSmall),
+                                  if (order.status == OrderStatus.delivered &&
+                                      item.id != null &&
+                                      item.product?.id != null)
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton.icon(
+                                        onPressed: () =>
+                                            _openReview(order, item),
+                                        icon: const Icon(
+                                            Icons.rate_review_outlined,
+                                            size: 18),
+                                        label: const Text('Đánh giá'),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -261,6 +284,36 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
         ],
       ],
+    );
+  }
+
+  /// Opens the review editor for a delivered order item. The order item is the
+  /// eligibility proof, so its id is passed directly as the review's
+  /// order_item_id; the current review (if any) is loaded to prefill the sheet.
+  Future<void> _openReview(OrderModel order, OrderItem item) async {
+    final productId = item.product?.id;
+    final orderItemId = item.id;
+    if (productId == null || orderItemId == null) return;
+
+    final reviewBloc = context.read<ReviewBloc>();
+    reviewBloc.add(ReviewLoad(productId, userId: order.userId));
+    final loaded = await reviewBloc.stream.firstWhere(
+      (state) =>
+          state.productId == productId &&
+          state.userId == order.userId &&
+          !state.isLoading,
+    );
+    if (!mounted) return;
+
+    await ReviewEditorSheet.show(
+      context,
+      productId: productId,
+      userId: order.userId,
+      // An existing review's order_item_id is immutable (DB trigger); reuse it
+      // so resubmitting from a different delivered item doesn't violate the
+      // provenance guard.
+      orderItemId: loaded.myReview?.orderItemId ?? orderItemId,
+      existingReview: loaded.myReview,
     );
   }
 

@@ -5,6 +5,8 @@ import 'product_model.dart';
 /// Maps an order_items row joined as:
 /// *, variant:product_variants(*, product:products(*))
 class OrderItem extends Equatable {
+  // order_items row id — null for items built pre-insert at checkout.
+  final String? id;
   final String variantId;
   final String productName;
   final String? productImage;
@@ -16,6 +18,7 @@ class OrderItem extends Equatable {
   final ProductModel? product;
 
   const OrderItem({
+    this.id,
     required this.variantId,
     required this.productName,
     this.productImage,
@@ -46,6 +49,7 @@ class OrderItem extends Equatable {
     }
 
     return OrderItem(
+      id: map['id'] as String?,
       variantId: map['variant_id'] ?? '',
       productName: map['product_name'] ?? '',
       productImage: map['product_image'] as String?,
@@ -59,6 +63,7 @@ class OrderItem extends Equatable {
 
   @override
   List<Object?> get props => [
+    id,
     variantId,
     productName,
     productImage,

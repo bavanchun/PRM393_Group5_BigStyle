@@ -9,6 +9,7 @@ class ProductReviewSection extends StatelessWidget {
   final bool isLoading;
   final List<ReviewModel> reviews;
   final ReviewModel? myReview;
+  final bool canReview;
   final String? error;
   final VoidCallback onWrite;
   final VoidCallback onReload;
@@ -18,6 +19,7 @@ class ProductReviewSection extends StatelessWidget {
     required this.isLoading,
     required this.reviews,
     required this.myReview,
+    required this.canReview,
     required this.error,
     required this.onWrite,
     required this.onReload,
@@ -32,11 +34,20 @@ class ProductReviewSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Đánh giá', style: AppTypography.headlineSmall),
-            TextButton.icon(
-              onPressed: onWrite,
-              icon: const Icon(Icons.rate_review_outlined, size: 18),
-              label: Text(myReview == null ? 'Viết đánh giá' : 'Sửa đánh giá'),
-            ),
+            if (canReview || myReview != null)
+              TextButton.icon(
+                onPressed: onWrite,
+                icon: const Icon(Icons.rate_review_outlined, size: 18),
+                label:
+                    Text(myReview == null ? 'Viết đánh giá' : 'Sửa đánh giá'),
+              )
+            else
+              Text(
+                'Mua và nhận hàng để đánh giá',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
