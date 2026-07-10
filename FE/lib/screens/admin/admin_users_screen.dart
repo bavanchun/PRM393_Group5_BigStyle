@@ -28,6 +28,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'admin-users-fab',
         backgroundColor: AppColors.primary,
         onPressed: () => _showAddUserDialog(context),
         icon: const Icon(Icons.person_add, color: AppColors.onPrimary),

@@ -40,6 +40,7 @@ class _ManagerVoucherListScreenState extends State<ManagerVoucherListScreen> {
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'manager-vouchers-fab',
         onPressed: () => showManagerVoucherEditSheet(context),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add),

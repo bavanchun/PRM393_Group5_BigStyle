@@ -189,6 +189,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'manager-products-fab',
         onPressed: () {
           final bloc = context.read<ManagerProductBloc>();
           Navigator.push(

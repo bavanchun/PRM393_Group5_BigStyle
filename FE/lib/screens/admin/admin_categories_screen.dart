@@ -24,6 +24,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'admin-categories-fab',
         backgroundColor: AppColors.primary,
         onPressed: () => _showAddCategoryDialog(context),
         icon: const Icon(Icons.add, color: AppColors.onPrimary),

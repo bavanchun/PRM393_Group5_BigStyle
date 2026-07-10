@@ -39,6 +39,7 @@ class _ManagerCategoryListScreenState extends State<ManagerCategoryListScreen> {
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'manager-categories-fab',
         onPressed: () => showManagerCategoryEditSheet(context),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add),

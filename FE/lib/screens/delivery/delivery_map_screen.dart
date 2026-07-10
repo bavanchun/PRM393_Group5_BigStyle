@@ -363,6 +363,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
             right: 16,
             bottom: 240,
             child: FloatingActionButton.small(
+              heroTag: 'delivery-map-recenter-fab',
               onPressed: _goToMyLocation,
               backgroundColor: AppColors.surface,
               child: const Icon(Icons.my_location, color: AppColors.primary),
