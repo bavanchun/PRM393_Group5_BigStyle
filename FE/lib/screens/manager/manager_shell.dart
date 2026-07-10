@@ -78,7 +78,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
                       child: user?.avatarUrl != null
                           ? ClipOval(
                               child: Image.network(user!.avatarUrl!,
@@ -88,7 +88,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                                   ? user!.fullName[0]
                                   : 'M'),
                               style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.onPrimary,
                                   fontSize: 24,
                                   fontWeight: FontWeight.w700),
                             ),
@@ -101,7 +101,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                           Text(
                             user?.fullName ?? 'Quản lý',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.onPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                             ),
@@ -110,7 +110,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                           Text(
                             user?.email ?? '',
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: AppColors.onPrimary.withValues(alpha: 0.8),
                               fontSize: 13,
                             ),
                           ),
@@ -121,12 +121,12 @@ class _ManagerProfileScreen extends StatelessWidget {
                               children: [
                                 Icon(Icons.store,
                                     size: 12,
-                                    color: Colors.white.withValues(alpha: 0.8)),
+                                    color: AppColors.onPrimary.withValues(alpha: 0.8)),
                                 const SizedBox(width: 4),
                                 Text(
                                   user.brandName!,
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.8),
+                                    color: AppColors.onPrimary.withValues(alpha: 0.8),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -138,7 +138,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.edit_outlined,
-                          color: Colors.white, size: 20),
+                          color: AppColors.onPrimary, size: 20),
                       onPressed: () =>
                           Navigator.pushNamed(context, '/edit-profile'),
                     ),

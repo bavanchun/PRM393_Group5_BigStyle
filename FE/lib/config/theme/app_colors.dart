@@ -30,4 +30,10 @@ class AppColors {
   // animation stays visible) instead of the palette's cool default greys.
   static const Color skeletonBase = Color(0xFFEDE6DD);
   static const Color skeletonHighlight = Color(0xFFF6F1E9);
+
+  // ColorFilter.mode(_, BlendMode.saturation) needs a truly achromatic
+  // (zero-saturation) value to fully desaturate an image — any warm-toned
+  // palette color would leave a tint instead of a clean grayscale. Not a
+  // missed reskin token; this is a technical constraint of the blend mode.
+  static const Color grayscaleFilter = Color(0xFF9E9E9E);
 }

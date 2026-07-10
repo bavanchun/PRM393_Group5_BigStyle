@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
+import '../../config/theme/status_colors.dart';
 import '../../models/order_model.dart';
 import '../../models/order_status.dart';
 import '../../widgets/status_badge.dart';
@@ -15,14 +16,18 @@ final _currencyFormat = NumberFormat.currency(
 
 String formatOrderCurrency(double amount) => _currencyFormat.format(amount);
 
-Color managerOrderStatusColor(OrderStatus status) {
+/// Takes [context] (rather than reading `StatusColors` as a bare constant)
+/// since the shipping tone lives on the theme extension, resolved the same
+/// way `StatusBadge` resolves it — kept as one source of truth, not a
+/// duplicate `AppColors.info` constant.
+Color managerOrderStatusColor(BuildContext context, OrderStatus status) {
   switch (status) {
     case OrderStatus.pending:
       return AppColors.warning;
     case OrderStatus.confirmed:
       return AppColors.primary;
     case OrderStatus.shipping:
-      return Colors.blue;
+      return Theme.of(context).extension<StatusColors>()!.info;
     case OrderStatus.delivered:
       return AppColors.success;
     case OrderStatus.cancelled:
