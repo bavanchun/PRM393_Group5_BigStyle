@@ -78,3 +78,19 @@ Verified call sites (red-team grep, at pinned SHA): `orders_screen.dart:102-118,
 - **The app's OrderStatus enum may have variants/labels this phase's spec doesn't anticipate** → read the actual enum + all 4 existing `_getStatusColor` maps FIRST; the maps are the contract, the spec above is the shape.
 - **No existing radius constant fits `product_card.dart`'s smaller radii (4, 3)** → adding 1-2 new named constants to `app_spacing.dart` is acceptable (small, additive) — just don't invent a new *raw* hardcode to replace the old one.
 - **Deleting `size_selector.dart` while a teammate's in-flight branch imports it** → grep at delete time (step 1) covers the current tree only; if a later merge reintroduces an import, `flutter analyze` on the reskin branch will catch the missing file immediately.
+
+## Completion Note (2026-07-10)
+
+**Status:** Done.
+
+**`size_selector.dart`:** grep-reconfirmed zero importers (the only match was `product_detail_screen.dart`'s own private `_buildSizeSelector` method — same name, unrelated code, not an import) — deleted. `flutter analyze` stayed clean.
+
+**`product_card.dart`:** the 4 raw radii (:38 cardRadius=20, :62/:87/:122 → new `AppSpacing.microRadius`=4, added since no existing constant fit) and 5 `GoogleFonts.dmSans` calls (→ `AppTypography.labelSmall`/`labelLarge`/`priceSmall`/`caption` bases with `.copyWith()` for the sizes that don't have an exact-match preset — only `priceSmall` matched exactly with zero overrides) are fixed. Also caught and fixed a 6th guard hit the plan's own itemization missed: `Colors.white` on the SALE badge text (line 67) → `AppColors.onPrimary` — found by re-running the guard scoped to this one file before editing, not by re-reading the plan's list uncritically.
+
+**`StatusBadge`:** built exactly per Phase 0's re-verified contract (OrderStatus-aware switch: pending→warning, confirmed→`AppColors.primary` directly — not part of the `StatusColors` tuple since it's the brand color not a status semantic, shipping→new `info` tone, delivered→success, cancelled→error), resolving from `Theme.of(context).extension<StatusColors>()`. Migrated `manager_order_card.dart` as the real consumer (its inline `Container`+`Text` badge replaced with `StatusBadge(label: order.status.label, status: order.status)`; the now-unused local `statusColor` var removed). **Did not** delete or touch the top-level `managerOrderStatusColor()` function in the same file — it's still a live dependency of `order_status_update_sheet.dart` and `manager_order_detail_screen.dart` (both need a raw `Color`, not a full badge widget; their `StatusBadge`/consolidation rollout is Phase 4/5's job per the plan's own phasing, not this one's).
+
+Added `test/widgets/status_badge_test.dart` (6 cases: all 5 status→tone mappings resolve correctly including the `shipping`→`info`-not-`Colors.blue` case, plus a tonal-not-solid-fill structural check) — new shared component with real branching logic that Phase 4/5 will wire into ~6 more screens, worth a permanent regression guard before that fan-out happens.
+
+**Guard re-run:** 206 → 199 (−7: product_card.dart's 6 hits + size_selector.dart's 1; `manager_order_card.dart:24`'s `Colors.blue` inside `managerOrderStatusColor` is unchanged and still counted, correctly — that function wasn't touched). No new occurrences introduced.
+
+**Verification:** `flutter analyze` clean (2 runs); `flutter test` 43/43 pass (37 prior + 6 new).

@@ -14,4 +14,9 @@ class AppSpacing {
   static const double bottomSheetRadius = 28;
   static const double inputRadius = 14;
   static const double chipRadius = 24;
+
+  // Additive (docs/design-tokens-v2.md changelog) — micro-badge/tag pills
+  // (product_card's SALE badge, brand pill, size tags) are too small for
+  // chipRadius; no v1 constant fit them either.
+  static const double microRadius = 4;
 }

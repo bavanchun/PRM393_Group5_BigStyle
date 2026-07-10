@@ -51,7 +51,7 @@ source: skill
 |-------|------|--------|
 | 0 | [Pre-flight: SHA Diff & Bug Triage](./phase-00-preflight-sha-diff-bug-triage.md) | Done (pending live-tap verification, non-blocking) |
 | 1 | [Tokens v2 in Code + Hardcode Guard](./phase-01-tokens-v2-in-code-hardcode-guard.md) | Done |
-| 2 | [Shared Component Layer](./phase-02-shared-component-layer.md) | Pending |
+| 2 | [Shared Component Layer](./phase-02-shared-component-layer.md) | Done |
 | 3 | [Customer-Shop Cluster](./phase-03-customer-shop-cluster.md) | Pending |
 | 4 | [Customer-Account Cluster](./phase-04-customer-account-cluster.md) | Pending |
 | 5 | [Manager Cluster](./phase-05-manager-cluster.md) | Pending |

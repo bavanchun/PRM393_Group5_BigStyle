@@ -5,6 +5,7 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
 import '../../models/order_status.dart';
+import '../../widgets/status_badge.dart';
 
 final _currencyFormat = NumberFormat.currency(
   locale: 'vi_VN',
@@ -45,7 +46,6 @@ class ManagerOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = managerOrderStatusColor(order.status);
     final reference =
         order.orderNumber ??
         (order.id.length >= 8
@@ -92,24 +92,7 @@ class ManagerOrderCard extends StatelessWidget {
                       style: AppTypography.labelLarge.copyWith(fontSize: 13),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.xs,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        order.status.label,
-                        style: AppTypography.caption.copyWith(
-                          color: statusColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                    StatusBadge(label: order.status.label, status: order.status),
                   ],
                 ),
               ],
