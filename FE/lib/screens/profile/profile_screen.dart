@@ -74,6 +74,8 @@ class ProfileScreen extends StatelessWidget {
                               Text(
                                 user?.email ?? '',
                                 style: AppTypography.bodySmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Container(
@@ -81,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
                                     horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: AppColors.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(AppSpacing.microRadius),
                                 ),
                                 child: Text(
                                   user?.roleLabel ?? 'Khách hàng',

@@ -77,11 +77,11 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
-    final paint = Paint()..color = const Color(0xFFC4517A);
+    final paint = Paint()..color = AppColors.primary;
     canvas.drawCircle(const Offset(24, 24), 20, paint);
 
     final whitePaint = Paint()
-      ..color = Colors.white
+      ..color = AppColors.onPrimary
       ..style = PaintingStyle.fill;
     canvas.drawCircle(const Offset(24, 24), 16, whitePaint);
 
@@ -93,7 +93,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
               fontWeight: FontWeight.w700,
             ),
           )
-          ..pushStyle(ui.TextStyle(color: const Color(0xFFC4517A)))
+          ..pushStyle(ui.TextStyle(color: AppColors.primary))
           ..addText('B');
     final paragraph = textBuilder.build()
       ..layout(const ui.ParagraphConstraints(width: 32));
@@ -122,7 +122,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
     final dotPaint = Paint()..color = AppColors.primary;
     canvas.drawCircle(Offset(half, half), 8, dotPaint);
 
-    final innerPaint = Paint()..color = Colors.white;
+    final innerPaint = Paint()..color = AppColors.onPrimary;
     canvas.drawCircle(Offset(half, half), 4, innerPaint);
 
     final image = await recorder.endRecording().toImage(s, s);
@@ -203,7 +203,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
         Polyline(
           polylineId: const PolylineId('route'),
           points: _routePoints,
-          color: const Color(0xFFC4517A),
+          color: AppColors.primary,
           width: 4,
           jointType: JointType.round,
           geodesic: true,
@@ -363,7 +363,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
             bottom: 240,
             child: FloatingActionButton.small(
               onPressed: _goToMyLocation,
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.surface,
               child: const Icon(Icons.my_location, color: AppColors.primary),
             ),
           ),
@@ -372,12 +372,12 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
             left: 16,
             child: CircleAvatar(
               radius: 20,
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.surface,
               child: IconButton(
                 icon: const Icon(
                   Icons.arrow_back,
                   size: 20,
-                  color: Colors.black87,
+                  color: AppColors.textPrimary,
                 ),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
@@ -386,9 +386,9 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
           ),
           _buildBottomSheet(),
           if (_isLoading)
-            const ColoredBox(
-              color: Colors.black26,
-              child: Center(child: CircularProgressIndicator()),
+            ColoredBox(
+              color: AppColors.shadow.withValues(alpha: 0.26),
+              child: const Center(child: CircularProgressIndicator()),
             ),
         ],
       ),
@@ -401,14 +401,14 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
       left: 0,
       right: 0,
       child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: AppColors.shadow.withValues(alpha: 0.12),
               blurRadius: 16,
-              offset: Offset(0, -4),
+              offset: const Offset(0, -4),
             ),
           ],
         ),
@@ -424,7 +424,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -512,11 +512,11 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
                   height: 50,
                   child: ElevatedButton.icon(
                     onPressed: _openGoogleMaps,
-                    icon: const Icon(Icons.directions, color: Colors.white),
+                    icon: const Icon(Icons.directions, color: AppColors.onPrimary),
                     label: Text(
                       'Chỉ đường',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                       ),

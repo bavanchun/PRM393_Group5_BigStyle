@@ -30,10 +30,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
         onPressed: () => _showAddUserDialog(context),
-        icon: const Icon(Icons.person_add, color: Colors.white),
+        icon: const Icon(Icons.person_add, color: AppColors.onPrimary),
         label: const Text(
           'Thêm người dùng',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.w600),
         ),
       ),
       body: Column(
@@ -59,12 +59,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       ),
       child: const Row(
         children: [
-          Icon(Icons.people, color: Colors.white, size: 22),
+          Icon(Icons.people, color: AppColors.onPrimary, size: 22),
           SizedBox(width: 10),
           Text(
             'Quản lý người dùng',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.onPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -135,7 +135,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: isSelected ? Colors.white : AppColors.textSecondary,
+            color: isSelected ? AppColors.onPrimary : AppColors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
@@ -233,7 +233,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

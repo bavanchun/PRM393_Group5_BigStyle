@@ -38,7 +38,7 @@ class _AdminShellState extends State<AdminShell> {
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: AppColors.shadow.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, -2),
             ),
@@ -106,7 +106,7 @@ class _AdminProfileScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
                       child: user?.avatarUrl != null
                           ? ClipOval(
                               child: Image.network(user!.avatarUrl!,
@@ -116,7 +116,7 @@ class _AdminProfileScreen extends StatelessWidget {
                                   ? user!.fullName[0]
                                   : 'A'),
                               style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.onPrimary,
                                   fontSize: 24,
                                   fontWeight: FontWeight.w700),
                             ),
@@ -129,7 +129,7 @@ class _AdminProfileScreen extends StatelessWidget {
                           Text(
                             user?.fullName ?? 'Admin',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.onPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                             ),
@@ -138,7 +138,7 @@ class _AdminProfileScreen extends StatelessWidget {
                           Text(
                             user?.email ?? '',
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: AppColors.onPrimary.withValues(alpha: 0.8),
                               fontSize: 13,
                             ),
                           ),
@@ -147,7 +147,7 @@ class _AdminProfileScreen extends StatelessWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.edit_outlined,
-                          color: Colors.white, size: 20),
+                          color: AppColors.onPrimary, size: 20),
                       onPressed: () =>
                           Navigator.pushNamed(context, '/edit-profile'),
                     ),

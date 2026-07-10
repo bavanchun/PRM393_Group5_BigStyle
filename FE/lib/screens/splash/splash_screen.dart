@@ -97,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen>
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: const Center(
@@ -117,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen>
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -126,13 +126,13 @@ class _SplashScreenState extends State<SplashScreen>
                   'Mặc đẹp không giới hạn',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: AppColors.onPrimary.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 48),
                 if (_error == null)
                   const CircularProgressIndicator(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     strokeWidth: 2,
                   )
                 else ...[
@@ -143,7 +143,7 @@ class _SplashScreenState extends State<SplashScreen>
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: AppColors.onPrimary.withValues(alpha: 0.9),
                       ),
                     ),
                   ),
@@ -151,8 +151,8 @@ class _SplashScreenState extends State<SplashScreen>
                   OutlinedButton(
                     onPressed: _retry,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white),
+                      foregroundColor: AppColors.onPrimary,
+                      side: const BorderSide(color: AppColors.onPrimary),
                     ),
                     child: const Text('Thử lại'),
                   ),

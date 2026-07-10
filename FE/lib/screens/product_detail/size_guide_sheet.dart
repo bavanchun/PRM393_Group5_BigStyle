@@ -154,7 +154,7 @@ class SizeGuideSheet extends StatelessWidget {
                           h,
                           textAlign: TextAlign.center,
                           style: AppTypography.labelLarge.copyWith(
-                            color: Colors.white,
+                            color: AppColors.onPrimary,
                             fontSize: 13,
                           ),
                         ),

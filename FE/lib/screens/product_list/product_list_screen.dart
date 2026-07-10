@@ -127,7 +127,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       child: Text(
                         count > 99 ? '99+' : '$count',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.onPrimary,
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
                         ),
@@ -149,7 +149,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         height: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(50),
-          color: Colors.white,
+          color: AppColors.surface,
           border: Border.all(color: AppColors.border),
         ),
         child: TextField(
@@ -224,7 +224,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     label,
                     style: AppTypography.labelSmall.copyWith(
                       color: isSelected
-                          ? Colors.white
+                          ? AppColors.onPrimary
                           : AppColors.textSecondary,
                       fontWeight: isSelected
                           ? FontWeight.w600
@@ -323,8 +323,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
       itemCount: 6,
       itemBuilder: (_, _) => Shimmer.fromColors(
-        baseColor: Colors.grey[200]!,
-        highlightColor: Colors.grey[100]!,
+        baseColor: AppColors.skeletonBase,
+        highlightColor: AppColors.skeletonHighlight,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -334,7 +334,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 aspectRatio: 1,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
@@ -345,7 +345,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               height: 14,
               width: 140,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -354,7 +354,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               height: 12,
               width: 80,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),

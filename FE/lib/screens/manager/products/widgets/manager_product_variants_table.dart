@@ -168,7 +168,7 @@ class _VariantTableRow extends StatelessWidget {
               child: IconButton(
                 icon: const Icon(
                   Icons.delete_outline,
-                  color: Colors.red,
+                  color: AppColors.error,
                   size: 18,
                 ),
                 onPressed: onRemove,

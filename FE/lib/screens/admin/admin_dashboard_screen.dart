@@ -5,6 +5,7 @@ import '../../blocs/admin/admin_event.dart';
 import '../../blocs/admin/admin_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_typography.dart';
+import '../../config/theme/status_colors.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -64,25 +65,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: AppColors.onPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.admin_panel_settings,
-                    color: Colors.white, size: 22),
+                    color: AppColors.onPrimary, size: 22),
               ),
               const SizedBox(width: 12),
               const Expanded(
                 child: Text(
                   'Admin Panel',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.refresh, color: Colors.white),
+                icon: const Icon(Icons.refresh, color: AppColors.onPrimary),
                 onPressed: () =>
                     context.read<AdminBloc>().add(const AdminLoadDashboard()),
               ),
@@ -92,7 +93,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const Text(
             'Xin chào, Admin!',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.onPrimary,
               fontSize: 14,
             ),
           ),
@@ -100,7 +101,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Text(
             'Tổng quan nền tảng BigStyle',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: AppColors.onPrimary.withValues(alpha: 0.8),
               fontSize: 13,
             ),
           ),
@@ -134,7 +135,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: AppColors.shadow.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -200,7 +201,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   label: 'Sản phẩm',
                   value: '${stats['totalProducts'] ?? 0}',
                   icon: Icons.inventory_2_outlined,
-                  color: Colors.blue,
+                  color: Theme.of(context).extension<StatusColors>()!.info,
                 ),
               ),
             ],
@@ -213,7 +214,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   label: 'Đơn hàng',
                   value: '${stats['totalOrders'] ?? 0}',
                   icon: Icons.receipt_long_outlined,
-                  color: Colors.orange,
+                  color: AppColors.primaryDark,
                 ),
               ),
               const SizedBox(width: 12),
@@ -222,7 +223,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   label: 'Danh mục',
                   value: '${stats['totalCategories'] ?? 0}',
                   icon: Icons.category_outlined,
-                  color: Colors.purple,
+                  color: AppColors.accent,
                 ),
               ),
             ],
@@ -276,7 +277,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             icon: Icons.category_outlined,
             title: 'Quản lý danh mục',
             subtitle: 'Thêm, sửa, xóa danh mục sản phẩm',
-            color: Colors.purple,
+            color: AppColors.accent,
             onTap: () {
               // Trigger tab switch via parent
             },
@@ -320,7 +321,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

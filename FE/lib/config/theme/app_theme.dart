@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
+import 'status_colors.dart';
 
 class AppTheme {
   AppTheme._();
@@ -15,11 +16,12 @@ class AppTheme {
         secondary: AppColors.secondary,
         surface: AppColors.surface,
         error: AppColors.error,
-        onPrimary: Colors.white,
+        onPrimary: AppColors.onPrimary,
         onSecondary: AppColors.accent,
         onSurface: AppColors.textPrimary,
-        onError: Colors.white,
+        onError: AppColors.onPrimary,
       ),
+      extensions: const [StatusColors.standard],
       scaffoldBackgroundColor: AppColors.background,
       textTheme: TextTheme(
         displayLarge: AppTypography.displayLarge,
@@ -37,7 +39,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
@@ -50,7 +52,7 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
@@ -73,7 +75,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
@@ -130,10 +132,22 @@ class AppTheme {
         thickness: 1,
         space: 0,
       ),
+      // Tonal selected state (light-tint bg + primary text) per
+      // docs/design-tokens-v2.md's status-badge rule — was solid-fill
+      // primary + theme-default label color, the root cause of the
+      // CartItemEdit tonal-violation finding. WidgetStateColor lets a single
+      // ChipThemeData.labelStyle resolve a different color per chip instance
+      // (see RawChip.build's WidgetStateProperty.resolveAs(effectiveLabelStyle.color, ...)).
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.background,
-        selectedColor: AppColors.primary,
-        labelStyle: AppTypography.labelSmall,
+        selectedColor: AppColors.primary.withValues(alpha: 0.12),
+        labelStyle: AppTypography.labelSmall.copyWith(
+          color: WidgetStateColor.resolveWith(
+            (states) => states.contains(WidgetState.selected)
+                ? AppColors.primary
+                : AppColors.textSecondary,
+          ),
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.chipRadius),
         ),

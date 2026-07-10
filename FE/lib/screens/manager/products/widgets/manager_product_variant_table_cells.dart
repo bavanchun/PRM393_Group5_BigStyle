@@ -92,7 +92,7 @@ class VariantTableInputCell extends StatelessWidget {
           decoration: InputDecoration(
             isDense: true,
             hintText: hintText,
-            hintStyle: const TextStyle(fontSize: 10, color: Colors.grey),
+            hintStyle: const TextStyle(fontSize: 10, color: AppColors.textHint),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 4,
               vertical: 6,
@@ -146,7 +146,7 @@ class VariantSizeDropdownCell extends StatelessWidget {
                 borderSide: BorderSide(color: AppColors.border, width: 0.5),
               ),
             ),
-            style: const TextStyle(fontSize: 11, color: Colors.black),
+            style: const TextStyle(fontSize: 11, color: AppColors.textPrimary),
             items: items.map((size) {
               return DropdownMenuItem<String>(
                 value: size,
