@@ -55,7 +55,7 @@ source: skill
 | 3 | [Customer-Shop Cluster](./phase-03-customer-shop-cluster.md) | Done |
 | 4 | [Customer-Account Cluster](./phase-04-customer-account-cluster.md) | Done |
 | 5 | [Manager Cluster](./phase-05-manager-cluster.md) | Done |
-| 6 | [Admin Cluster](./phase-06-admin-cluster.md) | Pending |
+| 6 | [Admin Cluster](./phase-06-admin-cluster.md) | Done |
 | 7 | [Auth/Guest Cluster](./phase-07-auth-guest-cluster.md) | Pending |
 
 ## Dependency Chain
