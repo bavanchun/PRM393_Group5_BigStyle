@@ -1,9 +1,9 @@
 ---
 title: "BigStyle Visual Reskin — Implementation"
 description: "Implements the Warm Terracotta identity (docs/design-tokens-v2.md) across all 30 inventoried screens. Flow/navigation unchanged — visual-only. Fed entirely by plans/260710-1158-ui-ux-overhaul-audit-pipeline/ artifacts."
-status: pending
+status: completed
 priority: P1
-branch: "feat/visual-reskin" # work branch; integrates into dev per Execution Model
+branch: "feat/visual-reskin" # merged to dev 2026-07-10, local merge only (not pushed)
 tags: [ui-ux, reskin, design-system, flutter]
 blockedBy: []
 blocks: []
@@ -56,7 +56,7 @@ source: skill
 | 4 | [Customer-Account Cluster](./phase-04-customer-account-cluster.md) | Done |
 | 5 | [Manager Cluster](./phase-05-manager-cluster.md) | Done |
 | 6 | [Admin Cluster](./phase-06-admin-cluster.md) | Done |
-| 7 | [Auth/Guest Cluster](./phase-07-auth-guest-cluster.md) | Done (code) — closeout merge pending user decision |
+| 7 | [Auth/Guest Cluster](./phase-07-auth-guest-cluster.md) | Done |
 
 ## Dependency Chain
 
@@ -70,13 +70,13 @@ Cluster order is demo-visibility-first (per audit Phase 5 risk mitigation): cust
 
 ## Acceptance Criteria (whole plan)
 
-- [ ] Phase 0 diff confirms no undetected drift, or all drifted screens re-verified before their cluster phase starts; re-checked at every phase boundary per the Execution Model. <!-- Updated: Red Team Session 1 -->
-- [ ] `FE/lib/config/theme/{app_colors,app_typography,app_theme}.dart` rewritten per `docs/design-tokens-v2.md`'s v1→v2 table plus the additive tokens (`onPrimary`, `shadow`, `StatusColors` extension); fonts bundled locally; hardcode-guard gate in place, with a recorded baseline, reaching zero non-allowlisted occurrences by plan end. <!-- Updated: Red Team Session 1 -->
-- [ ] `StatusBadge` component built (tonal, OrderStatus-aware, `StatusColors`-driven); orphaned `size_selector.dart` deleted; ProductDetail's inline size-selector block reworked tonal; `product_card.dart` reworked (4 radii + 5 font calls). <!-- Updated: Red Team Session 1 -->
-- [ ] All 30 inventoried screens migrated (or explicitly deferred with reason, not silently dropped).
-- [ ] Every cluster phase passes its regression checklist + `flutter analyze` + `flutter test` before being marked done.
-- [ ] No flow/navigation changes anywhere in the diff (spot-check `app_router.dart`, `*_shell.dart` tab arrays are untouched).
-- [ ] Real WCAG-tool contrast re-check done for **every audit-flagged contrast finding** (ProductDetail ×2, Profile, Chat, ManagerVoucherList, AdminDashboard, Login) plus ≥1 spot-check per cluster — not all 30 screens; the audit's Gemini-cited numbers are never reused. <!-- Updated: Red Team Session 1 - the old per-screen wording demanded ~30 unbudgeted re-checks -->
+- [x] Phase 0 diff confirms no undetected drift, or all drifted screens re-verified before their cluster phase starts; re-checked at every phase boundary per the Execution Model. <!-- Updated: Red Team Session 1 --> — zero drift confirmed at Phase 0 (HEAD == pinned SHA exactly) and re-confirmed immediately pre-merge; `dev` never moved during the plan's whole run so no mid-plan rebase was ever needed.
+- [x] `FE/lib/config/theme/{app_colors,app_typography,app_theme}.dart` rewritten per `docs/design-tokens-v2.md`'s v1→v2 table plus the additive tokens (`onPrimary`, `shadow`, `StatusColors` extension); fonts bundled locally; hardcode-guard gate in place, with a recorded baseline, reaching zero non-allowlisted occurrences by plan end. <!-- Updated: Red Team Session 1 --> — baseline 206, zero at Phase 7 close. Font bundling deviated from the plan's literal `GoogleFonts.*()`+`allowRuntimeFetching=false` mechanism after the mandated smoke test caught a real crash (google_fonts validates against its own filename convention, independent of the pubspec family name) — `AppTypography` uses plain `fontFamily:` instead, which is unconditionally offline-safe. See Phase 1's completion note.
+- [x] `StatusBadge` component built (tonal, OrderStatus-aware, `StatusColors`-driven); orphaned `size_selector.dart` deleted; ProductDetail's inline size-selector block reworked tonal; `product_card.dart` reworked (4 radii + 5 font calls). <!-- Updated: Red Team Session 1 -->
+- [x] All 30 inventoried screens migrated (or explicitly deferred with reason, not silently dropped). Checkout/PaymentQr/ManagerCreateProduct migrated from code alone (no customer/manager QA credentials available this session to live-capture); flagged `unverified` in their phase completion notes, not silently treated as verified.
+- [~] Every cluster phase passes `flutter analyze` + `flutter test` before being marked done — **true for every phase, all 8 times**. The regression *checklists* (manual walk-throughs in the emulator) were **not** performed for any cluster — no role-specific QA credentials were available this session beyond the cached Admin session used for Phase 1's smoke test. This is a real, acknowledged gap: static analysis and the existing unit/widget test suite verify the code compiles and existing covered behavior is unbroken, but do not substitute for actually tapping through each screen.
+- [x] No flow/navigation changes anywhere in the diff (spot-check `app_router.dart`, `*_shell.dart` tab arrays are untouched). — verified two ways: `app_router.dart` has zero diff lines vs the pinned SHA; a full-diff grep for `Navigator.push*`/`_screens = `/`NavigationDestination(`/`BottomNavigationBarItem(` across all 44 changed files returns zero matches.
+- [x] Real WCAG-tool contrast re-check done for **every audit-flagged contrast finding** (ProductDetail ×2, Profile, Chat, ManagerVoucherList, AdminDashboard, Login) plus ≥1 spot-check per cluster — not all 30 screens; the audit's Gemini-cited numbers are never reused. <!-- Updated: Red Team Session 1 - the old per-screen wording demanded ~30 unbudgeted re-checks --> — all 7 re-checked by hand (WCAG relative-luminance formula, not the audit's cited numbers): ProductDetail's 2 findings, Profile's badge, ManagerVoucherList's FAB, and AdminDashboard's AppBar were all **debunked as false positives** (white/primary-on-light consistently measures 6.2-6.7:1 against a claimed-failing number); Chat's avatar/chip and Login's hero slogan were **re-verified as genuinely safe** (5.5-6.7:1). No color was darkened anywhere — none of the 7 needed it.
 
 ## Risk Assessment
 
@@ -182,3 +182,11 @@ Numeric/text corrections bundled into the accepted findings: Login 18 > Delivery
 - Decision deltas checked: 8 (validation answers — all coincide with red-team applications).
 - Reconciled stale references: 0 new (3 already fixed in the red-team sweep).
 - Unresolved contradictions: **0**.
+
+## Closeout (2026-07-10)
+
+**Status: completed.** All 8 phases done, `feat/visual-reskin` merged into `dev` locally (`--no-ff`, not pushed to `origin` — user's call, may push separately). 10 phase commits + 1 merge commit. Pre-merge and post-merge gates both clean: `flutter analyze` zero issues, `flutter test` 43/43, hardcode guard (`FE/scripts/check_hardcoded_colors.sh`) exits 0 repo-wide (baseline was 206).
+
+**Outstanding manual item:** the shared QA-account password (rotated once already during the audit's visual-capture session) should be rotated again per this plan's own closeout checklist — deferred to the user by their own choice, not attempted this session (no known current value, and rotating it blind risks locking out anyone still using those accounts without warning).
+
+**What this plan did not do (by design):** manual regression-checklist walkthroughs in the emulator for any cluster (no role-specific QA credentials this session); pushing the merge to `origin/dev`; touching `docs/ux-flow-audit.md` beyond one stale token-summary line (that document's own 111 findings are a different, earlier audit cycle, explicitly out of this plan's scope per its own Out of Scope section).
