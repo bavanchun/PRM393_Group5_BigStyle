@@ -33,7 +33,7 @@ begin
   values (new.id, new.email, new.raw_user_meta_data->>'full_name');
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -443,7 +443,9 @@ create policy "Purchasers update own verified reviews"
 
 -- Provenance immutable + is_verified recomputed server-side (client value ignored).
 create or replace function public.enforce_review_gate()
-returns trigger as $$
+returns trigger
+language plpgsql set search_path = public
+as $$
 begin
   if (tg_op = 'UPDATE') then
     if new.product_id is distinct from old.product_id
@@ -465,7 +467,7 @@ begin
   );
   return new;
 end;
-$$ language plpgsql;
+$$;
 
 create trigger on_review_guard
   before insert or update on public.reviews
@@ -626,7 +628,7 @@ end $$;
 -- Force server-controlled timestamps on insert (client must not set them).
 create or replace function public.force_support_message_defaults()
 returns trigger
-language plpgsql
+language plpgsql set search_path = public
 as $$
 begin
   new.created_at := now();
