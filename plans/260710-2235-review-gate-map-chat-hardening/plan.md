@@ -42,7 +42,7 @@ From brainstorm `plans/reports/brainstorm-260710-2227-remaining-issues-flows-and
 | 2 | [Cancel-on-Confirmed & Defect Batch D1-D6](./phase-02-cancel-on-confirmed-defect-batch-d1-d6.md) | Done (PR #18) |
 | 3 | [Order-Linked Delivery Map](./phase-03-order-linked-delivery-map.md) | Done (PR #19) |
 | 4 | [Manager-Customer Human Chat](./phase-04-manager-customer-human-chat.md) | Done (PR #21) |
-| 5 | [Emulator & Supabase Verification Pass](./phase-05-emulator-supabase-verification-pass.md) | Pending (live session required) |
+| 5 | [Emulator & Supabase Verification Pass](./phase-05-emulator-supabase-verification-pass.md) | DB pass done (migrations applied + gate/chat triggers verified live 2026-07-11); device pass pending |
 | 6 | [Email-Password Sign-In & Sign-Up](./phase-06-email-password-sign-in-sign-up.md) | Done (PR #20) |
 
 **Execution note (2026-07-11):** Phases 1→2→3→6→4 implemented TDD, each its own PR squash-merged to `dev` (each code-reviewed; findings fixed pre-merge). `flutter analyze` 0, `flutter test` 104 green, hardcode-color guard 0 on `dev`. Migrations written but NOT applied — Phase 5 applies + verifies them live.

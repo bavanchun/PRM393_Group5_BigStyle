@@ -79,3 +79,22 @@ Email-password auth (Phase 6):
 - Hosted-vs-local Supabase OTP limits may make rate-limit snackbar unreachable — document observed env behavior instead of forcing.
 - Junk-row deletion is destructive → per-row user confirmation mandatory.
 - Manual SQL applied during live debugging can desync migration state — record every manual statement; publication adds already guarded in Phase 4 migration.
+
+## Execution Log — 2026-07-11 (DB pass via Supabase MCP; project `agbnpqgxsppdrpbqoipo` bigstyle-prm393)
+
+**Done (automated, DB side):**
+- Drift inventory: live already had `add_cancel_my_order_rpc`; dumped its source → **permits `status in ('pending','confirmed')`**, closing Phase 2 step-0 verification from live source.
+- Applied migrations live: `cancel_my_order` (idempotent no-op), `handle_new_user_full_name`, `review_purchase_gate` (seed prune = no-op, 0 reviews), `support_chat`. Objects confirmed present: 6 new policies, triggers `on_review_guard`/`before_support_message_insert`/`on_support_message_insert`, all SECURITY DEFINER RPCs.
+- **Review-gate trigger verified live** (probe rows, cleaned up, 0 residue): eligible→`is_verified=true`; ineligible(null item)→`false`; UPDATE of `order_item_id`→raises `review provenance is immutable`; client `is_verified=false` spoof→overwritten to `true`; `update_product_rating` bumped/reset product aggregates.
+- **Chat triggers verified live**: customer msg→`unread_for_staff=1`; staff reply→`unread_for_customer=1`; preview updated; bogus far-future `created_at`→forced to `now()` (force_support_message_defaults). Test conversation deleted (0 residue).
+- `get_advisors(security)` reviewed. Fixed genuine new issue: mutable `search_path` on `handle_new_user`/`enforce_review_gate`/`force_support_message_defaults` → applied `harden_secdef_search_path` migration + synced schema.sql. Remaining advisor WARNs (anon-executable SECURITY DEFINER functions, leaked-password protection off, public-bucket listing) are the project's pre-existing posture — out of this plan's scope.
+
+**User decisions (2026-07-11):** junk-row cleanup → **skip all deletes** (the "10k" item `e7b513e5` is the delivered order's item needed for the review demo); seed gaps (1 customer, 0 shipping-with-coords) → **user seeds via the app**.
+
+**Deferred — needs device/human (NOT automatable headless):**
+- RLS *rejection* probes as specific users (execute_sql runs as service role → bypasses RLS; needs real user JWTs / the app).
+- Emulator + mock location: map route render shop→order coord; recenter not re-anchoring to GPS.
+- Two-session realtime chat round-trip + inbox badge live; realtime leak probe.
+- App smoke: checkout COD/bank-transfer, currency separators, manager order-status mutation refresh, product color persistence, OTP UX, "multiple heroes" check.
+- Auth device checks: password sign-in/up lands `/home` with full_name; manager→`/manager`; duplicate-email. Precondition: turn **"Confirm email" OFF** in the dashboard.
+- `CODEBASE.md` count refresh; flip `260703-1750-bigstyle-demo-fix-roadmap` → completed once device pass done.
