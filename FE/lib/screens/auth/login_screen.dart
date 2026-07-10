@@ -118,10 +118,14 @@ class _LoginScreenState extends State<LoginScreen> {
               }
               if (state is AuthError) {
                 // Only a verify-originated error clears the boxes; resend and
-                // Google errors leave the entered code intact.
+                // Google errors leave the entered code intact. Re-enable first,
+                // then clear on the next frame so box 0 is focusable again and
+                // the keyboard reappears for the retry.
                 if (_verifyInFlight) {
-                  _otpKey.currentState?.clear();
                   setState(() => _verifyInFlight = false);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _otpKey.currentState?.clear();
+                  });
                 }
                 final raw = state.message;
                 final isRateLimit =
