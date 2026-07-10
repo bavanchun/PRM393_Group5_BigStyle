@@ -52,3 +52,21 @@ Smallest, lowest-urgency cluster (2 screens) — last in the demo-visibility-ord
 ## Risk Assessment
 
 - **Splash genuinely can't be visually verified without extra engineering effort** (clearing app session state) → accept the code-only migration; this is a low-risk screen (7 hardcode lines, momentary display) — not worth the effort to force a visual QA loop.
+
+## Completion Note (2026-07-10)
+
+**Status:** Done.
+
+**Login (22 hits, highest in the app — the audit's "18" was an undercount, same pattern as every other screen in this plan):** all fixed, including 3 sites carrying literal **v1 hex values that were never token-referenced at all** (background gradient `#FDF8F9`/`#F7C0D0`, primary `#C4517A` ×4 sites, accent `#2D2D2D` ×2, border `#E8E0E2` ×5) — these don't auto-update via the theme rewrite the way `AppColors.*` references do, so Login stayed visibly on v1 colors through every prior phase despite being on the reskin branch the whole time (harmless per the plan's Execution Model — work happens off `dev`). `GoogleFonts.playfairDisplay`/`dmSans` direct calls (title + hero slogan) replaced with `AppTypography.displayLarge`/`displaySmall` bases; now-unused `google_fonts` import removed.
+
+**kDebugMode gate — verified byte-identical, not just "probably fine":** ran `git diff 6e77ccf -- login_screen.dart` filtered to `_hasDebugTestLogin`/`kDebugMode`/`_buildDebugTestLoginButtons` — zero matching diff lines. The debug-login method itself had no hardcodes to begin with (default `OutlinedButton.icon` styling throughout), so the "migrate their styling too" instruction had nothing to actually change.
+
+**Login's contrast finding** (hero-image slogan text, primary-on-light-tint): consistent with the same safe pairing verified independently in Phases 3-6 (white/primary-on-light clears AA with wide margin every time it's been hand-checked this plan). No fix applied.
+
+**OtpInput:** 1 hit (input-box fill color).
+
+**Splash:** 7 hits, all `Colors.white`-family on the `AppColors.primary` full-screen background — fixed. Code-only migration accepted per the plan's own risk note (session-cached routing makes this screen structurally uncapturable live).
+
+**Guard: 30 → 0.** Repo-wide `./scripts/check_hardcoded_colors.sh` now exits 0 with zero output — the plan's hardcode-elimination goal is met.
+
+**Verification:** `flutter analyze` clean; `flutter test` 43/43 pass.

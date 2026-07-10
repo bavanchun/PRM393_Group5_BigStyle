@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
@@ -51,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFFDF8F9), Color(0xFFF7C0D0)],
+            colors: [AppColors.background, AppColors.secondary],
           ),
         ),
         child: SafeArea(
@@ -137,20 +136,17 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Text(
           'BigStyle',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFFC4517A),
+          style: AppTypography.displayLarge.copyWith(
+            color: AppColors.primary,
             letterSpacing: 1,
           ),
         ),
         const SizedBox(height: 6),
         Text(
           'Mặc đẹp không giới hạn',
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
+          style: AppTypography.bodyMedium.copyWith(
             fontStyle: FontStyle.italic,
-            color: const Color(0xFF777777),
+            color: AppColors.textSecondary,
           ),
         ),
       ],
@@ -193,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'PHONG CÁCH\nRIÊNG CỦA BẠN',
-                  style: GoogleFonts.playfairDisplay(
+                  style: AppTypography.displaySmall.copyWith(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary,
@@ -217,18 +213,18 @@ class _LoginScreenState extends State<LoginScreen> {
         hintText: 'Email của bạn',
         prefixIcon: const Icon(Icons.email_outlined),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE8E0E2)),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE8E0E2)),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFC4517A), width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
       validator: (v) {
@@ -246,13 +242,13 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: const LinearGradient(
-          colors: [Color(0xFFC4517A), Color(0xFFA03560)],
+          colors: [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFC4517A).withValues(alpha: 0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -270,7 +266,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                     ),
                   )
                 : const Text(
@@ -278,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -319,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildDivider() {
     return Row(
       children: [
-        const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
+        const Expanded(child: Divider(color: AppColors.border)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -327,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: AppTypography.caption.copyWith(color: AppColors.textHint),
           ),
         ),
-        const Expanded(child: Divider(color: Color(0xFFE8E0E2))),
+        const Expanded(child: Divider(color: AppColors.border)),
       ],
     );
   }
@@ -341,17 +337,17 @@ class _LoginScreenState extends State<LoginScreen> {
             ? null
             : () => context.read<AuthBloc>().add(const GoogleSignInEvent()),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFFE8E0E2), width: 1.5),
+          side: const BorderSide(color: AppColors.border, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.g_mobiledata, size: 28, color: Color(0xFF2D2D2D)),
+            const Icon(Icons.g_mobiledata, size: 28, color: AppColors.accent),
             const SizedBox(width: 10),
             Flexible(
               child: Text(
@@ -359,7 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D2D2D),
+                  color: AppColors.accent,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),

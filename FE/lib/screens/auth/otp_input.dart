@@ -63,7 +63,7 @@ class _OtpInputState extends State<OtpInput> {
                       decoration: InputDecoration(
                         counterText: '',
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppColors.surface,
                         contentPadding: EdgeInsets.zero,
                         border: OutlineInputBorder(
                           borderRadius:
