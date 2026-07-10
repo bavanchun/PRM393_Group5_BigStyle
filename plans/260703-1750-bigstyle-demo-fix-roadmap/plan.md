@@ -37,7 +37,7 @@ Turn `docs/ux-flow-audit.md` (111 findings, 2026-07-03, audit-only) into a **dem
 | 2 | [Splash & Auth Unblock](./phase-02-splash-auth-unblock.md) | P0 | ✅ Completed — code-verified |
 | 3 | [Customer Purchase-Flow Blockers](./phase-03-customer-purchase-flow-blockers.md) | P1 | ✅ Completed — code-verified |
 | 4 | [Manager Operations Blockers](./phase-04-manager-operations-blockers.md) | P1 | ✅ Completed — code-verified |
-| 5 | [On-Camera Polish](./phase-05-on-camera-polish.md) | P2 | 🔄 In-progress — X3 delivery_map divergent shipping + X7 product-detail Share dead button remain |
+| 5 | [On-Camera Polish](./phase-05-on-camera-polish.md) | P2 | ✅ Completed — X3 shipping unified (AppConfig.flatShippingFee) + X7 Share wired via SharePlus (verified 2026-07-10) |
 
 ## Dependency Chain
 
@@ -66,7 +66,7 @@ None active. Prior plans `260620-0845-bigstyle-p0-p3-bugfixes` and `260703-1537-
 - [x] Customer purchase flow works end-to-end incl. cart persistence + clear after order — C15/C16/C11/C12.
 - [x] Manager can view orders, update status with visible success/error, and see non-zero today revenue — M7b/M7/M6b/M13. — Phase 4 code-verified.
 - [x] Manager create/edit product saves the chosen category — M23/M31. — create :211 / edit :233.
-- [ ] No wrong branding ("CurveFit Admin"), no on-camera dead buttons in the demo path, orders show human-readable `orderNumber` — M17/M19/X2/X7. — branding + orderNumber done, but product_detail_screen.dart:163 Share button still dead (X7).
+- [x] No wrong branding ("CurveFit Admin"), no on-camera dead buttons in the demo path, orders show human-readable `orderNumber` — M17/M19/X2/X7. — branding + orderNumber done; product_detail_screen.dart:165 Share button wired via `SharePlus.instance.share(...)` (X7 verified 2026-07-10).
 - [x] `flutter analyze` clean before each phase commit. — "No issues found!" (ran 2026-07-10).
 
 ## Reconciliation Notes
@@ -77,6 +77,13 @@ None active. Prior plans `260620-0845-bigstyle-p0-p3-bugfixes` and `260703-1537-
   `plans/260710-0001-bigstyle-role-ops-hardening/reports/pm-role-ops-hardening-completion.md`.
 - Remaining unchecked criteria need a fresh demo-path runtime smoke, especially
   logged-out splash and manager order status mutation.
+- 2026-07-10 (post-reskin sync): Phase 5 reconciled to ✅ Completed — X7 Share
+  button confirmed wired (`product_detail_screen.dart:165` `SharePlus.instance.share`)
+  and X3 shipping unified on `AppConfig.flatShippingFee`; the stale "Share dead"
+  rollup was code-contradicted. All CODE phases (2–5) are complete; plan stays
+  `partial` solely on Phase 1 DB/runtime seed verification (manager OTP login +
+  seeded customers/orders), which is unverifiable code-only and needs one live
+  emulator + Supabase pass.
 
 ## Validation Notes (deep mode)
 
