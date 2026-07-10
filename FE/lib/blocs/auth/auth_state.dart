@@ -53,3 +53,10 @@ class AuthError extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+/// Sign-up succeeded but requires email confirmation before a session exists
+/// (hosted "Confirm email" ON). Defensive path — the demo turns confirmations
+/// OFF, but the code still handles it.
+class AuthSignUpConfirmationPending extends AuthState {
+  const AuthSignUpConfirmationPending();
+}
