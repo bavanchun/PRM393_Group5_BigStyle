@@ -32,7 +32,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _otpKey = GlobalKey<OtpInputState>();
   bool _showOtp = false;
+  // True between dispatching a VerifyOTPEvent and the next terminal auth state.
+  // Gates the OTP boxes / resend / Google / debug triggers and scopes the
+  // clear-on-error so a concurrent send or Google failure can't wipe the code.
+  bool _verifyInFlight = false;
 
   @override
   void dispose() {
@@ -60,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 setState(() => _showOtp = true);
               }
               if (state is AuthSuccess) {
+                _verifyInFlight = false;
                 final user = state.user;
                 if (user == null) return;
                 String route;
@@ -76,6 +82,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.pushReplacementNamed(context, route);
               }
               if (state is AuthError) {
+                // Only a verify-originated error clears the boxes; resend and
+                // Google errors leave the entered code intact.
+                if (_verifyInFlight) {
+                  _otpKey.currentState?.clear();
+                  setState(() => _verifyInFlight = false);
+                }
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
@@ -295,10 +307,13 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 20),
         OtpInput(
+          key: _otpKey,
+          enabled: !_verifyInFlight,
           onCompleted: (code) {
             final email = (state is AuthOTPSent)
                 ? state.email
                 : _emailController.text.trim();
+            setState(() => _verifyInFlight = true);
             context.read<AuthBloc>().add(VerifyOTPEvent(email, code));
           },
           onResend: () {
@@ -333,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen> {
       width: double.infinity,
       height: 52,
       child: OutlinedButton(
-        onPressed: state is AuthLoading
+        onPressed: (state is AuthLoading || _verifyInFlight)
             ? null
             : () => context.read<AuthBloc>().add(const GoogleSignInEvent()),
         style: OutlinedButton.styleFrom(
@@ -374,7 +389,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildDebugTestLoginButtons(AuthState state) {
-    final isLoading = state is AuthLoading;
+    final isLoading = state is AuthLoading || _verifyInFlight;
     return Row(
       children: [
         if (_testManagerEmail.isNotEmpty && _testManagerPassword.isNotEmpty)
