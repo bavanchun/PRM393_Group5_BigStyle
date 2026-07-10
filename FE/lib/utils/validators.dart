@@ -9,3 +9,10 @@ String? validateEmail(String? v) {
   if (!_emailPattern.hasMatch(v.trim())) return 'Email không hợp lệ';
   return null;
 }
+
+/// Supabase's default minimum is 6 characters.
+String? validatePassword(String? v) {
+  if (v == null || v.isEmpty) return 'Vui lòng nhập mật khẩu';
+  if (v.length < 6) return 'Mật khẩu tối thiểu 6 ký tự';
+  return null;
+}

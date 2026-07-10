@@ -1,6 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
 
+enum SignUpOutcome { success, confirmationPending, alreadyRegistered }
+
+class SignUpResult {
+  final SignUpOutcome outcome;
+  final UserModel? user;
+  const SignUpResult(this.outcome, [this.user]);
+}
+
 class AuthService {
   final SupabaseClient _client;
 
@@ -42,20 +50,48 @@ class AuthService {
     );
     final user = response.user;
     if (user == null) return null;
-
-    final existing = _client
-        .from('profiles')
-        .select()
-        .eq('id', user.id)
-        .maybeSingle();
-    if (await existing == null) {
-      // Profile is already created by database trigger, update with name
-      await _client
-          .from('profiles')
-          .update({'full_name': email.split('@').first})
-          .eq('id', user.id);
-    }
+    // full_name is populated by the handle_new_user trigger from signup
+    // metadata; no client-side backfill (RLS blocks it in the no-session case).
     return _fetchUser(user.id);
+  }
+
+  /// Email+password sign-up. full_name is passed as user metadata so the
+  /// handle_new_user trigger writes it into profiles. Distinguishes an
+  /// immediate session, a confirmation-pending signup, and the obfuscated
+  /// "fake user" Supabase returns when the email already exists (confirmations
+  /// ON) — the last must NOT be treated as confirmation-pending.
+  Future<SignUpResult> signUpWithPassword({
+    required String email,
+    required String password,
+    required String fullName,
+  }) async {
+    final response = await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: {'full_name': fullName},
+    );
+    final user = response.user;
+    if (user != null && (user.identities?.isEmpty ?? false)) {
+      return const SignUpResult(SignUpOutcome.alreadyRegistered);
+    }
+    if (response.session != null && user != null) {
+      // A session means the user is authenticated. If the profile read lags
+      // (RLS race before the trigger commits), fall back to a user built from
+      // the known signup data so we emit success, not a false "confirm email".
+      final profile = await _fetchUser(user.id);
+      return SignUpResult(
+        SignUpOutcome.success,
+        profile ??
+            UserModel(
+              id: user.id,
+              email: user.email ?? email,
+              fullName: fullName,
+              role: UserRole.customer,
+              createdAt: DateTime.now(),
+            ),
+      );
+    }
+    return const SignUpResult(SignUpOutcome.confirmationPending);
   }
 
   Future<UserModel?> signInWithPassword({
