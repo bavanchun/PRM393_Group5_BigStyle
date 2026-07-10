@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../blocs/support_chat/support_chat_bloc.dart';
+import '../../services/support_chat_service.dart';
+import '../../screens/chat/support_chat_screen.dart';
 import '../../screens/splash/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/home/home_screen.dart';
@@ -51,6 +55,14 @@ class AppRouter {
         return MaterialPageRoute(settings: settings, builder: (_) => const EditProfileScreen());
       case '/chat':
         return MaterialPageRoute(settings: settings, builder: (_) => const ChatScreen());
+      case '/support-chat':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => BlocProvider(
+            create: (_) => SupportChatBloc(SupportChatService()),
+            child: const SupportChatScreen(title: 'Chat với nhân viên'),
+          ),
+        );
       case '/notifications':
         return MaterialPageRoute(settings: settings, builder: (_) => const NotificationsScreen());
       case '/delivery-map':

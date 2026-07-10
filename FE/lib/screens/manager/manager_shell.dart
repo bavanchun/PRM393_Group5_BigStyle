@@ -5,11 +5,14 @@ import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_event.dart';
+import '../../blocs/support_inbox/support_inbox_bloc.dart';
+import '../../blocs/support_inbox/support_inbox_event.dart';
 import '../../config/theme/app_colors.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
 import 'manager_orders_screen.dart';
 import 'products/manager_product_list_screen.dart';
+import 'support/manager_support_inbox_screen.dart';
 
 /// Index of the Orders tab within [_ManagerShellState._screens].
 const _ordersTabIndex = 2;
@@ -28,8 +31,16 @@ class _ManagerShellState extends State<ManagerShell> {
     ManagerDashboard(),
     ManagerProductListScreen(),
     ManagerOrdersScreen(),
+    ManagerSupportInboxScreen(),
     _ManagerProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Start the live staff inbox so the nav badge stays current.
+    context.read<SupportInboxBloc>().add(const SupportInboxSubscribe());
+  }
 
   @override
   Widget build(BuildContext context) {
