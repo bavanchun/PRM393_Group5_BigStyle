@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Manager Operations Blockers"
-status: pending
+status: completed
 priority: P1
 dependencies: [1]
 effort: "L"
@@ -55,13 +55,13 @@ Make the manager half of the demo actually work: orders visible + refreshable, s
 
 ## Success Criteria
 
-- [ ] Manager Đơn hàng tab lists the seeded orders; leaving and returning reloads (M7b).
-- [ ] Changing an order's status shows a spinner, then success or a visible error; detail reflects the new status (M7/M13/M40/M9).
-- [ ] Cancel/refund asks for confirmation (M14).
-- [ ] Dashboard "Doanh thu hôm nay" shows the seeded today revenue, not 0đ (M6b).
-- [ ] Dashboard recent-order opens the manager detail with status controls (M4).
-- [ ] Creating and editing a product saves the selected category (verify in DB) (M23/M31).
-- [ ] `flutter analyze` clean.
+- [x] Manager Đơn hàng tab lists the seeded orders; leaving and returning reloads (M7b). — manager_shell.dart:46-47 dispatches ManagerLoadOrders on orders-tab re-entry.
+- [x] Changing an order's status shows a spinner, then success or a visible error; detail reflects the new status (M7/M13/M40/M9). — manager_bloc.dart:80 isUpdatingStatus + :51 requestId guards; manager_orders_screen.dart:38-44 surfaces state.error regardless of isEmpty; manager_order_detail_screen.dart:105-107 re-resolves order from state.orders.
+- [x] Cancel/refund asks for confirmation (M14). — order_status_update_sheet.dart:93-94 cancel → _showCancelReasonDialog before _confirm.
+- [x] Dashboard "Doanh thu hôm nay" shows the seeded today revenue, not 0đ (M6b). — revenue_recognition.dart:2 acceptedStatuses={confirmed,shipping,delivered}; manager_dashboard_stats.dart:24 uses recognizedRevenueForLocalDate.
+- [x] Dashboard recent-order opens the manager detail with status controls (M4). — manager_dashboard.dart:134 routes to ManagerOrderDetailScreen.
+- [x] Creating and editing a product saves the selected category (M23/M31). — manager_create_product_screen.dart:211 categoryId:_selectedCategoryId; manager_product_detail_screen.dart:233 categoryId:_selectedCategoryId.
+- [x] `flutter analyze` clean. — "No issues found!" (ran 2026-07-10).
 
 ## Risk Assessment
 

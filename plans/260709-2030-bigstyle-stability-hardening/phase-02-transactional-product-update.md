@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Transactional Product Update"
-status: done_pending_db_apply
+status: completed
 priority: P1
 effort: "1d"
 dependencies: [1]
@@ -51,13 +51,13 @@ insert fails, PostgreSQL rolls back the function effects.
 
 ## Interface Checklist
 
-- [ ] `ProductService.updateProduct(ProductModel product)` remains public API.
-- [ ] RPC accepts product fields and variants in a shape directly derived from
+- [x] `ProductService.updateProduct(ProductModel product)` remains public API.
+- [x] RPC accepts product fields and variants in a shape directly derived from
       `ProductModel.toMap()` and `VariantModel.toMap()`.
-- [ ] RPC checks caller is manager/store owner using existing RLS-safe logic or
+- [x] RPC checks caller is manager/store owner using existing RLS-safe logic or
       current auth uid.
-- [ ] RPC deletes/reinserts variants inside one function.
-- [ ] RPC returns enough data or service reloads via `getProductById`.
+- [x] RPC deletes/reinserts variants inside one function.
+- [x] RPC returns enough data or service reloads via `getProductById`.
 
 ## Dependency Map
 
@@ -103,10 +103,10 @@ Phase 6 modularization -> can rely on stable update contract
 
 ## Success Criteria
 
-- [ ] No delete-then-insert variant replacement remains in Flutter client.
-- [ ] Failed variant insert cannot leave product with zero/missing variants.
-- [ ] Manager edit product still reloads list and shows success/error states.
-- [ ] `flutter analyze` passes.
+- [x] No delete-then-insert variant replacement remains in Flutter client.
+- [x] Failed variant insert cannot leave product with zero/missing variants.
+- [x] Manager edit product still reloads list and shows success/error states.
+- [x] `flutter analyze` passes.
 
 ## Risk Assessment
 

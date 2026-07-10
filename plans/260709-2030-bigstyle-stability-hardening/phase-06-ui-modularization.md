@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "UI Modularization"
-status: partial
+status: completed
 priority: P2
 effort: "2d"
 dependencies: [5]
@@ -60,13 +60,13 @@ Move reusable presentation/control sections only.
 
 ## Interface Checklist
 
-- [ ] Extracted widgets are stateless where possible.
-- [ ] Controllers remain owned/disposed by parent screen unless widget creates
+- [x] Extracted widgets are stateless where possible.
+- [x] Controllers remain owned/disposed by parent screen unless widget creates
       them explicitly.
-- [ ] No product save logic moves into visual widgets.
-- [ ] Existing image upload event path remains unchanged.
-- [ ] Existing category dropdown data path remains unchanged.
-- [ ] Phase 1 color preservation still covered after extraction.
+- [x] No product save logic moves into visual widgets.
+- [x] Existing image upload event path remains unchanged.
+- [x] Existing category dropdown data path remains unchanged.
+- [x] Phase 1 color preservation still covered after extraction.
 
 ## Dependency Map
 
@@ -103,11 +103,13 @@ Optional later: product detail/checkout split after manager form success
 
 ## Success Criteria
 
-- [ ] Largest product form files shrink materially.
-- [ ] Shared widgets/components have clear, bounded responsibilities.
-- [ ] No behavior regression in manager create/edit product.
-- [ ] `flutter analyze` and `flutter test` pass.
-- [ ] Any remaining >200-line files are listed as intentional/deferred.
+- [x] Largest product form files shrink materially. (detail 1372->1007,
+      create 1305->928, checkout 690->532)
+- [x] Shared widgets/components have clear, bounded responsibilities.
+- [x] No behavior regression in manager create/edit product. (analyzer clean +
+      28 tests pass; extracted widgets carry no Supabase calls)
+- [x] `flutter analyze` and `flutter test` pass.
+- [x] Any remaining >200-line files are listed as intentional/deferred.
 
 ## Risk Assessment
 

@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Customer Purchase-Flow Blockers"
-status: pending
+status: completed
 priority: P1
 dependencies: [1]
 effort: "L"
@@ -54,14 +54,14 @@ Fix the P1 defects on the main customer demo path so browse→cart→checkout→
 
 ## Success Criteria
 
-- [ ] Log in on a fresh device → previously-persisted cart appears (C15).
-- [ ] Place COD order → cart empties + badge clears immediately (C16); same for bank-paid.
-- [ ] "Mua ngay" navigates once; selecting a size/color with no variant shows out-of-stock, never adds a different color (C11/C12).
-- [ ] Tapping a home category / chip filters the list to that category (C6/C7).
-- [ ] Order detail shows content or an error+retry, never an infinite spinner (C28/C29).
-- [ ] Edit profile shows success only when the update actually succeeds (C35).
-- [ ] A pending bank_transfer order offers "Thanh toán lại" back to the QR (C24/C22).
-- [ ] `flutter analyze` clean.
+- [x] Log in on a fresh device → previously-persisted cart appears (C15). — main.dart:146 dispatches CartLoad on AuthSuccess.
+- [x] Place COD order → cart empties + badge clears immediately (C16); same for bank-paid. — checkout_screen.dart:331 CartRemoveItem via CartBloc (COD); payment_qr_screen.dart:116 CartClear (bank).
+- [x] "Mua ngay" navigates once; selecting a size/color with no variant shows out-of-stock, never adds a different color (C11/C12). — product_detail_screen.dart:722 _buyNow awaits :749 then navigates once :765; :701 "Sản phẩm đã hết size/màu này".
+- [x] Tapping a home category / chip filters the list to that category (C6/C7). — product_list_screen.dart:52-66 reads arg in didChangeDependencies; :419 chip→category.id.
+- [x] Order detail shows content or an error+retry, never an infinite spinner (C28/C29). — order_detail_screen.dart:14 Stateful, :36 initState load, :64 error branch, :41 _retry.
+- [x] Edit profile shows success only when the update actually succeeds (C35). — edit_profile_screen.dart:89-98 BlocListener pops+success only on AuthSuccess, error on AuthError.
+- [x] A pending bank_transfer order offers "Thanh toán lại" back to the QR (C24/C22). — orders_screen.dart:154-181 bank_transfer+pending → /payment-qr.
+- [x] `flutter analyze` clean. — "No issues found!" (ran 2026-07-10).
 
 ## Risk Assessment
 

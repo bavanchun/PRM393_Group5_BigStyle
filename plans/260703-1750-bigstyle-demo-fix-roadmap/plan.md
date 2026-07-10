@@ -33,11 +33,11 @@ Turn `docs/ux-flow-audit.md` (111 findings, 2026-07-03, audit-only) into a **dem
 
 | Phase | Name | Priority | Status |
 |-------|------|----------|--------|
-| 1 | [Demo Environment & Seed Data](./phase-01-demo-environment-seed-data.md) · [runbook](./phase-01-setup-runbook.md) | P1 | ✅ Seeded via MCP (manager + 2 customers + 5 orders); only manager OTP login left |
-| 2 | [Splash & Auth Unblock](./phase-02-splash-auth-unblock.md) | P0 | ✅ Completed |
-| 3 | [Customer Purchase-Flow Blockers](./phase-03-customer-purchase-flow-blockers.md) | P1 | ✅ Completed |
-| 4 | [Manager Operations Blockers](./phase-04-manager-operations-blockers.md) | P1 | ✅ Completed |
-| 5 | [On-Camera Polish](./phase-05-on-camera-polish.md) | P2 | ✅ Completed |
+| 1 | [Demo Environment & Seed Data](./phase-01-demo-environment-seed-data.md) · [runbook](./phase-01-setup-runbook.md) | P1 | 🔄 In-progress — seed SQL committed; DB seed unverifiable code-only + manager OTP login not done |
+| 2 | [Splash & Auth Unblock](./phase-02-splash-auth-unblock.md) | P0 | ✅ Completed — code-verified |
+| 3 | [Customer Purchase-Flow Blockers](./phase-03-customer-purchase-flow-blockers.md) | P1 | ✅ Completed — code-verified |
+| 4 | [Manager Operations Blockers](./phase-04-manager-operations-blockers.md) | P1 | ✅ Completed — code-verified |
+| 5 | [On-Camera Polish](./phase-05-on-camera-polish.md) | P2 | 🔄 In-progress — X3 delivery_map divergent shipping + X7 product-detail Share dead button remain |
 
 ## Dependency Chain
 
@@ -62,12 +62,12 @@ None active. Prior plans `260620-0845-bigstyle-p0-p3-bugfixes` and `260703-1537-
 
 ## Acceptance Criteria (whole plan)
 
-- [ ] Fresh/logged-out launch reaches `/login` (no splash hang) — G1/G2.
+- [x] Fresh/logged-out launch reaches `/login` (no splash hang) — G1/G2. — auth_bloc.dart:39 + splash_screen.dart:64-68 (Phase 2, code-verified).
 - [x] Customer purchase flow works end-to-end incl. cart persistence + clear after order — C15/C16/C11/C12.
-- [ ] Manager can view orders, update status with visible success/error, and see non-zero today revenue — M7b/M7/M6b/M13.
-- [ ] Manager create/edit product saves the chosen category — M23/M31.
-- [ ] No wrong branding ("CurveFit Admin"), no on-camera dead buttons in the demo path, orders show human-readable `orderNumber` — M17/M19/X2/X7.
-- [x] `flutter analyze` clean before each phase commit.
+- [x] Manager can view orders, update status with visible success/error, and see non-zero today revenue — M7b/M7/M6b/M13. — Phase 4 code-verified.
+- [x] Manager create/edit product saves the chosen category — M23/M31. — create :211 / edit :233.
+- [ ] No wrong branding ("CurveFit Admin"), no on-camera dead buttons in the demo path, orders show human-readable `orderNumber` — M17/M19/X2/X7. — branding + orderNumber done, but product_detail_screen.dart:163 Share button still dead (X7).
+- [x] `flutter analyze` clean before each phase commit. — "No issues found!" (ran 2026-07-10).
 
 ## Reconciliation Notes
 

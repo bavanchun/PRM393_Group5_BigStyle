@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Variant Color Edit Fix"
-status: done
+status: completed
 priority: P1
 effort: "3h"
 dependencies: []
@@ -52,12 +52,12 @@ rows.
 
 ## Interface Checklist
 
-- [ ] `VariantModel.colorHex` remains required.
-- [ ] `VariantModel.toMap()` still emits `color_hex`.
-- [ ] `ManagerProductDetailScreen._updateProduct()` no longer hardcodes
+- [x] `VariantModel.colorHex` remains required.
+- [x] `VariantModel.toMap()` still emits `color_hex`.
+- [x] `ManagerProductDetailScreen._updateProduct()` no longer hardcodes
       `'#914B34'` for existing variants.
-- [ ] New edit-screen rows have predictable `colorHex`.
-- [ ] No caller signature changes.
+- [x] New edit-screen rows have predictable `colorHex`.
+- [x] No caller signature changes.
 
 ## Dependency Map
 
@@ -92,10 +92,10 @@ Phase 6 modularization -> can extract color controls after behavior locked
 
 ## Success Criteria
 
-- [ ] No `colorHex: '#914B34'` hardcode remains in edit save path.
-- [ ] Existing variants preserve their stored `color_hex` after edit.
-- [ ] Create product behavior is unchanged.
-- [ ] `flutter analyze` passes.
+- [x] No `colorHex: '#914B34'` hardcode remains in edit save path.
+- [x] Existing variants preserve their stored `color_hex` after edit.
+- [x] Create product behavior is unchanged.
+- [x] `flutter analyze` passes.
 
 ## Risk Assessment
 

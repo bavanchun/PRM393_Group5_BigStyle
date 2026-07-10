@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Demo Environment & Seed Data"
-status: pending
+status: in-progress
 priority: P1
 dependencies: []
 effort: "M"
@@ -46,11 +46,11 @@ Current gap: `FE/seed_data.sql` (417 lines) seeds categories/products/variants b
 
 ## Success Criteria
 
-- [ ] Dedicated manager email logs in and lands on `/manager`.
-- [ ] Manager dashboard "Khách hàng" ≥ 2 (not 0).
-- [ ] ≥1 `confirmed`-today and ≥1 `delivered`-today order exist for a seeded customer, each with `order_items` + `payments`.
-- [ ] Test-junk orders/prices removed or clearly not in the demo path.
-- [ ] `FE/seed_demo_accounts_and_orders.sql` committed (no secrets).
+- [ ] Dedicated manager email logs in and lands on `/manager`. (runbook: manager OTP login NOT yet performed — explicit open item.)
+- [ ] Manager dashboard "Khách hàng" ≥ 2 (not 0). (DB state; runbook claims seeded via MCP but unverifiable code-only — no DB read allowed.)
+- [ ] ≥1 `confirmed`-today and ≥1 `delivered`-today order exist for a seeded customer, each with `order_items` + `payments`. (DB state; unverifiable code-only.)
+- [ ] Test-junk orders/prices removed or clearly not in the demo path. (DB state; unverifiable code-only.)
+- [x] `FE/seed_demo_accounts_and_orders.sql` committed (no secrets). — git ls-files tracks FE/seed_demo_accounts_and_orders.sql; secret scan clean.
 
 ## Risk Assessment
 
