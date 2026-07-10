@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
@@ -129,7 +130,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       ],
                                     ),
                                   ),
-                                  Text('${item.unitPrice.toStringAsFixed(0)}đ',
+                                  Text(formatVnd(item.unitPrice),
                                       style: AppTypography.priceSmall),
                                 ],
                               ),
@@ -325,7 +326,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ? AppTypography.headlineSmall
                 : AppTypography.bodyMedium),
         Text(
-          '${amount.toStringAsFixed(0)}đ',
+          formatVnd(amount),
           style: isBold
               ? AppTypography.headlineSmall.copyWith(
                   color: AppColors.primary, fontWeight: FontWeight.w700)

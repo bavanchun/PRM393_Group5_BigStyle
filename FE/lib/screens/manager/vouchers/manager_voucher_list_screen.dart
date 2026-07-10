@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../blocs/manager_voucher/manager_voucher_bloc.dart';
 import '../../../blocs/manager_voucher/manager_voucher_event.dart';
@@ -149,17 +150,7 @@ String _discountSummary(VoucherModel voucher) {
         : voucher.value.toString();
     return 'Giảm $percent%';
   }
-  return 'Giảm ${_formatVnd(voucher.value)}đ';
-}
-
-String _formatVnd(double amount) {
-  final s = amount.toStringAsFixed(0);
-  final buffer = StringBuffer();
-  for (int i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 == 0) buffer.write('.');
-    buffer.write(s[i]);
-  }
-  return buffer.toString();
+  return 'Giảm ${formatVnd(voucher.value)}';
 }
 
 class _VoucherTile extends StatelessWidget {
@@ -198,7 +189,7 @@ class _VoucherTile extends StatelessWidget {
                   Text(voucher.code, style: AppTypography.labelLarge),
                   const SizedBox(height: 2),
                   Text(
-                    '${_discountSummary(voucher)} · Đơn tối thiểu ${_formatVnd(voucher.minOrderAmount)}đ',
+                    '${_discountSummary(voucher)} · Đơn tối thiểu ${formatVnd(voucher.minOrderAmount)}',
                     style: AppTypography.bodySmall,
                   ),
                 ],

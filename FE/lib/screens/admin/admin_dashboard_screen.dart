@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/admin/admin_bloc.dart';
 import '../../blocs/admin/admin_event.dart';
@@ -295,7 +296,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     if (value >= 1000000) {
       return '${(value / 1000000).toStringAsFixed(1)} triệuđ';
     }
-    return '${value.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}đ';
+    return formatVnd(value);
   }
 }
 

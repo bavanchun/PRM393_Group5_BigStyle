@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
+import '../../utils/currency_format.dart';
 
 class ProductCard extends StatelessWidget {
   final String imageUrl;
@@ -137,7 +138,7 @@ class ProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${price.toStringAsFixed(0)}đ',
+                formatVnd(price),
                 style: AppTypography.priceSmall,
               ),
               if (hasDiscount) ...[
@@ -145,7 +146,7 @@ class ProductCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 1),
                   child: Text(
-                    '${originalPrice!.toStringAsFixed(0)}đ',
+                    formatVnd(originalPrice!),
                     style: AppTypography.caption.copyWith(
                       fontSize: 10,
                       decoration: TextDecoration.lineThrough,

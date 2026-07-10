@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../utils/currency_format.dart';
 import '../../../blocs/manager_product/manager_product_bloc.dart';
 import '../../../blocs/manager_product/manager_product_event.dart';
 import '../../../blocs/manager_product/manager_product_state.dart';
@@ -32,11 +33,6 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  String _formatPrice(double price) {
-    final formatter = NumberFormat('#,###', 'vi_VN');
-    return '${formatter.format(price)}đ';
   }
 
   @override
@@ -452,7 +448,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            _formatPrice(product.price),
+                            formatVnd(product.price),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,

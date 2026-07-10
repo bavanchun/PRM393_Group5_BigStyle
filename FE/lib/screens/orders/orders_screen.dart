@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
@@ -132,7 +133,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             style: AppTypography.caption,
                           ),
                           Text(
-                            '${order.total.toStringAsFixed(0)}đ',
+                            formatVnd(order.total),
                             style: AppTypography.priceSmall,
                           ),
                         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -475,7 +476,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       const SizedBox(height: 32),
                       AppButton(
-                        label: 'Đặt hàng (${total.toStringAsFixed(0)}đ)',
+                        label: 'Đặt hàng (${formatVnd(total)})',
                         isLoading: checkoutState.isLoading,
                         onPressed: _placeOrder,
                       ),

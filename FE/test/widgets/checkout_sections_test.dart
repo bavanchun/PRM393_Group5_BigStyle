@@ -46,13 +46,13 @@ void main() {
     );
 
     expect(find.text('Tạm tính'), findsOneWidget);
-    expect(find.text('250000đ'), findsOneWidget);
+    expect(find.text('250.000đ'), findsOneWidget);
     expect(find.text('Phí vận chuyển'), findsOneWidget);
-    expect(find.text('30000đ'), findsOneWidget);
+    expect(find.text('30.000đ'), findsOneWidget);
     expect(find.text('Giảm giá'), findsOneWidget);
-    expect(find.text('-50000đ'), findsOneWidget);
+    expect(find.text('-50.000đ'), findsOneWidget);
     expect(find.text('Tổng cộng'), findsOneWidget);
-    expect(find.text('230000đ'), findsOneWidget);
+    expect(find.text('230.000đ'), findsOneWidget);
   });
 
   testWidgets('voucher field keeps input error loading and apply callback', (

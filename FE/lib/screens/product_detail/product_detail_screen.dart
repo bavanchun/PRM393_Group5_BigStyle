@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/theme/app_colors.dart';
+import '../../utils/currency_format.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../blocs/product_detail/product_detail_bloc.dart';
@@ -164,7 +165,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             SharePlus.instance.share(
                               ShareParams(
                                 text:
-                                    '${product.name} - ${product.price.toStringAsFixed(0)}đ\n'
+                                    '${product.name} - ${formatVnd(product.price)}\n'
                                     'Xem sản phẩm trên BigStyle!',
                               ),
                             );
@@ -366,13 +367,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '${product.price.toStringAsFixed(0)}đ',
+          formatVnd(product.price),
           style: AppTypography.price.copyWith(fontSize: 24),
         ),
         if (product.hasDiscount) ...[
           const SizedBox(width: 10),
           Text(
-            '${product.originalPrice!.toStringAsFixed(0)}đ',
+            formatVnd(product.originalPrice!),
             style: AppTypography.caption.copyWith(
               fontSize: 16,
               decoration: TextDecoration.lineThrough,

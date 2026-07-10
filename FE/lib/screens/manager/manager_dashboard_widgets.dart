@@ -3,7 +3,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/manager_dashboard_stats.dart';
-import 'manager_order_card.dart';
+import '../../utils/currency_format.dart';
 
 class ManagerStatsGrid extends StatelessWidget {
   final ManagerDashboardStats stats;
@@ -22,7 +22,7 @@ class ManagerStatsGrid extends StatelessWidget {
       children: [
         _StatCard(
           label: 'Doanh thu hôm nay',
-          value: formatOrderCurrency(stats.todayRevenue),
+          value: formatVnd(stats.todayRevenue),
           icon: Icons.trending_up,
           color: AppColors.primary,
         ),

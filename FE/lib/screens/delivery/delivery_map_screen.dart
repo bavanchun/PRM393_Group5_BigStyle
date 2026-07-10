@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../utils/currency_format.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -501,7 +502,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
                       _buildInfoItem(
                         Icons.motorcycle_outlined,
                         'Phí ship',
-                        '${shippingFee.toStringAsFixed(0)}đ',
+                        formatVnd(shippingFee),
                       ),
                     ],
                   ),

@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../config/theme/status_colors.dart';
 import '../../models/order_model.dart';
 import '../../models/order_status.dart';
+import '../../utils/currency_format.dart';
 import '../../widgets/status_badge.dart';
-
-final _currencyFormat = NumberFormat.currency(
-  locale: 'vi_VN',
-  symbol: 'đ',
-  decimalDigits: 0,
-);
-
-String formatOrderCurrency(double amount) => _currencyFormat.format(amount);
 
 /// Takes [context] (rather than reading `StatusColors` as a bare constant)
 /// since the shipping tone lives on the theme extension, resolved the same
@@ -93,7 +85,7 @@ class ManagerOrderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      formatOrderCurrency(order.total),
+                      formatVnd(order.total),
                       style: AppTypography.labelLarge.copyWith(fontSize: 13),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
