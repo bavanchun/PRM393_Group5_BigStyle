@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
@@ -46,7 +47,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isLoadingLocation = false;
   // Phí vận chuyển cố định (flat). Dùng chung cho hiển thị và khi đặt hàng để
   // số tiền trên màn khớp với total của đơn tạo ra.
-  static const double _shippingFee = 30000;
+  static const double _shippingFee = AppConfig.flatShippingFee;
 
   // Promo code preview state — validated client-side for UI feedback only;
   // the create_order RPC re-derives the discount authoritatively.
