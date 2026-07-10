@@ -40,3 +40,26 @@ flutter:
   uses-material-design: true
   assets:
     - .env
+  fonts:
+    - family: Cormorant
+      fonts:
+        - asset: assets/fonts/Cormorant-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/Cormorant-Variable.ttf
+          weight: 500
+        - asset: assets/fonts/Cormorant-Variable.ttf
+          weight: 600
+        - asset: assets/fonts/Cormorant-Variable.ttf
+          weight: 700
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Variable.ttf
+          weight: 300
+        - asset: assets/fonts/Montserrat-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/Montserrat-Variable.ttf
+          weight: 500
+        - asset: assets/fonts/Montserrat-Variable.ttf
+          weight: 600
+        - asset: assets/fonts/Montserrat-Variable.ttf
+          weight: 700

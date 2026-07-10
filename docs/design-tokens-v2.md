@@ -72,3 +72,7 @@ Every Phase 4 finding must cite `rubric-v1` and one of these types:
 ## Merge Note
 
 Direction B was approved as-is (no merge requested) — the WCAG AA re-check-on-merge step (phase-03 step 6) does not apply; all pairs above were already verified pre-approval on the unmerged B palette.
+
+## Changelog
+
+- **2026-07-10 (Phase 1, visual reskin implementation):** additive-only amendment, approved palette values above untouched. Added `AppColors.onPrimary` (`#FFFFFF`) and `AppColors.shadow` (`#000000`) as named aliases for legitimate white-on-primary/shadow usages. Added a `StatusColors` `ThemeExtension` (`success`/`warning`/`error`/`info`) since Material 3's `ColorScheme` has no success/warning/info slots; `success`/`warning`/`error` reuse the values above, `info` is a new `#2E5F8A` (muted steel-blue, ~6.76:1 on white) covering the `OrderStatus.shipping` case that 2 screens previously hardcoded as `Colors.blue`.
