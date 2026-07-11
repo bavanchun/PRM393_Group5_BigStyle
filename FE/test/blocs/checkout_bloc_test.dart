@@ -142,6 +142,77 @@ void main() {
 
       await bloc.close();
     });
+
+    test('applies server-computed voucher discount to the paid amount', () async {
+      final item = _cartItem();
+      final paymentCalls = <Map<String, Object?>>[];
+      final bloc = CheckoutBloc(
+        null,
+        null,
+        null,
+        createOrder:
+            ({
+              required items,
+              required shippingAddress,
+              required shippingFee,
+              required paymentMethod,
+              notes,
+              promoCode,
+            }) async {
+              expect(promoCode, 'SALE10');
+              // Server (create_order RPC) is the source of truth for the
+              // discount — the bloc must trust and pay the total it returns,
+              // not recompute a discount client-side.
+              return OrderModel(
+                id: 'order-2',
+                userId: 'user-1',
+                items: const [],
+                subtotal: 100000,
+                shippingFee: shippingFee,
+                discountAmount: 10000,
+                total: 105000,
+                orderNumber: 'DH000002',
+                createdAt: DateTime(2026),
+              );
+            },
+        createPayment:
+            ({
+              required orderId,
+              required userId,
+              required method,
+              required amount,
+            }) async {
+              paymentCalls.add({'orderId': orderId, 'amount': amount});
+            },
+      );
+
+      bloc.add(
+        CheckoutPlaceOrder(
+          userId: 'user-1',
+          items: [item],
+          subtotal: 100000,
+          shippingFee: 15000,
+          address: '123 Test St',
+          promoCode: 'SALE10',
+        ),
+      );
+
+      await expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<CheckoutState>().having((s) => s.isLoading, 'isLoading', true),
+          isA<CheckoutState>()
+              .having((s) => s.isLoading, 'isLoading', false)
+              .having((s) => s.isSuccess, 'isSuccess', true)
+              .having((s) => s.orderId, 'orderId', 'order-2'),
+        ]),
+      );
+      expect(paymentCalls, [
+        {'orderId': 'order-2', 'amount': 105000.0},
+      ]);
+
+      await bloc.close();
+    });
   });
 }
 
