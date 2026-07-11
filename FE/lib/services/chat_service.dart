@@ -10,7 +10,10 @@ class ChatService {
   static const String _apiUrl = 'https://api.anthropic.com/v1/messages';
   static const String _model = 'claude-sonnet-4-6';
 
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient _client;
+
+  ChatService({SupabaseClient? client})
+      : _client = client ?? Supabase.instance.client;
 
   String _getSystemPrompt() {
     return '''Bạn là BigStyle Bot, trợ lý thời trang của BigStyle — shop thời trang bigsize hàng đầu Việt Nam.
@@ -119,7 +122,11 @@ PHONG CÁCH TRẢ LỜI:
     if (!_hasSession) return;
     try {
       await _client.from('chat_messages').insert(message.toMap());
-    } catch (_) {}
+    } on PostgrestException catch (e) {
+      assert(false, 'ChatService.saveMessage: $e');
+    } catch (_) {
+      // Network/transient errors: swallow silently, chat must keep working.
+    }
   }
 
   Future<List<ChatMessageModel>> loadHistory(String userId) async {
@@ -136,6 +143,9 @@ PHONG CÁCH TRẢ LỜI:
           .toList()
           .reversed
           .toList();
+    } on PostgrestException catch (e) {
+      assert(false, 'ChatService.loadHistory: $e');
+      return [];
     } catch (_) {
       return [];
     }

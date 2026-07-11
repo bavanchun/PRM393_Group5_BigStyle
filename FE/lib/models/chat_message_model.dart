@@ -19,7 +19,7 @@ class ChatMessageModel extends Equatable {
         'id': id,
         'user_id': userId,
         'content': content,
-        'is_from_ai': isFromAi,
+        'role': isFromAi ? 'assistant' : 'user',
         'created_at': createdAt.toIso8601String(),
       };
 
@@ -28,7 +28,7 @@ class ChatMessageModel extends Equatable {
         id: map['id'] ?? '',
         userId: map['user_id'] ?? '',
         content: map['content'] ?? '',
-        isFromAi: map['is_from_ai'] ?? false,
+        isFromAi: map['role'] == 'assistant',
         createdAt:
             DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       );
