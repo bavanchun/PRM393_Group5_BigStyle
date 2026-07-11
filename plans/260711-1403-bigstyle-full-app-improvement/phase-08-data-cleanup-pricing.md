@@ -7,7 +7,7 @@ effort: ""
 
 # Phase 8: Data cleanup pricing
 
-<!-- Updated: Validation V3 — price source DECIDED: reuse prices captured in existing order_items (11k/21k/40k/380k) as the reference; derive remaining products' prices from those bands. Not a curated or user-supplied list. DB source = FE/supabase/migrations/, not schema.sql (RT-9). -->
+<!-- Updated: Validation V3 — price source DECIDED: reuse prices captured in existing order_items as the reference. Executed 2026-07-11: order_items.unit_price actually has only 2 distinct real values (10000, 350000) — the earlier "11k/21k/40k/380k" note was order TOTALS (subtotal+shipping), not per-product prices, and was corrected during implementation. 10000 is the placeholder bug's own artifact, not real data, so it was retired; 350000 (the one genuinely differentiated value) anchors the new price-band ceiling. DB source = FE/supabase/migrations/, not schema.sql (RT-9). -->
 
 ## Overview
 Group D: catalog products all display a uniform 10.000đ (test-junk pricing), while real order totals vary (11k–380k). Set realistic prices for demo credibility — derived from existing `order_items` captured prices (V3).
