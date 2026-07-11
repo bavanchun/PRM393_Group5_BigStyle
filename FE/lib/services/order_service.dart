@@ -38,20 +38,24 @@ class OrderService {
     return data.map((e) => OrderModel.fromMap(e)).toList();
   }
 
+  // Customer count comes from the get_customer_count RPC rather than a flat
+  // `profiles` select — managers have no SELECT policy on `profiles` (see
+  // the getAllOrders comment above), so a direct select always returns just
+  // the manager's own row. The RPC returns an aggregate count only.
   Future<ManagerDashboardStats> getDashboardStats() async {
     final results = await Future.wait([
       _client.from('orders').select('total,status,created_at'),
       _client.from('products').select('id'),
-      _client.from('profiles').select('id,role'),
+      _client.rpc('get_customer_count'),
     ]);
 
-    final orders = List<Map<String, dynamic>>.from(results[0]);
-    final products = List<Map<String, dynamic>>.from(results[1]);
-    final profiles = List<Map<String, dynamic>>.from(results[2]);
+    final orders = List<Map<String, dynamic>>.from(results[0] as List);
+    final products = List<Map<String, dynamic>>.from(results[1] as List);
+    final customerCount = (results[2] as num).toInt();
     return ManagerDashboardStats.fromRows(
       orders: orders,
       products: products,
-      profiles: profiles,
+      customerCount: customerCount,
     );
   }
 

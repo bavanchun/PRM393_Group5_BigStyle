@@ -17,7 +17,7 @@ class ManagerDashboardStats extends Equatable {
   factory ManagerDashboardStats.fromRows({
     required List<Map<String, dynamic>> orders,
     required List<Map<String, dynamic>> products,
-    required List<Map<String, dynamic>> profiles,
+    required int customerCount,
     DateTime? now,
   }) {
     final localNow = now ?? DateTime.now();
@@ -32,9 +32,7 @@ class ManagerDashboardStats extends Equatable {
           .where((order) => order['status'] == 'pending')
           .length,
       productCount: products.length,
-      customerCount: profiles
-          .where((profile) => profile['role'] == 'customer')
-          .length,
+      customerCount: customerCount,
     );
   }
 
