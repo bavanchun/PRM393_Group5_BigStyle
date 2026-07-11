@@ -239,7 +239,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   /// Renders the linear happy-path stepper, or a terminal badge when the
   /// order was cancelled/refunded (those statuses aren't part of the path).
   Widget _buildTimeline(OrderStatus status) {
-    if (status == OrderStatus.cancelled) {
+    if (status == OrderStatus.cancelled || status == OrderStatus.refunded) {
       return Row(
         children: [
           StatusBadge(label: status.label, status: status),

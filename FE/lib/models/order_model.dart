@@ -161,7 +161,13 @@ class OrderModel extends Equatable {
       total: (map['total'] ?? 0).toDouble(),
       status: OrderStatus.values.firstWhere(
         (e) => e.name == map['status'],
-        orElse: () => OrderStatus.pending,
+        orElse: () {
+          assert(
+            false,
+            'OrderModel.fromMap: unknown order status "${map['status']}", falling back to pending',
+          );
+          return OrderStatus.pending;
+        },
       ),
       address: shippingAddress?['address'] as String?,
       latitude: (shippingAddress?['latitude'] as num?)?.toDouble(),

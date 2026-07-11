@@ -18,12 +18,16 @@ Color managerOrderStatusColor(BuildContext context, OrderStatus status) {
       return AppColors.warning;
     case OrderStatus.confirmed:
       return AppColors.primary;
+    case OrderStatus.processing:
+      return Theme.of(context).extension<StatusColors>()!.info;
     case OrderStatus.shipping:
       return Theme.of(context).extension<StatusColors>()!.info;
     case OrderStatus.delivered:
       return AppColors.success;
     case OrderStatus.cancelled:
       return AppColors.error;
+    case OrderStatus.refunded:
+      return AppColors.warning;
   }
 }
 
