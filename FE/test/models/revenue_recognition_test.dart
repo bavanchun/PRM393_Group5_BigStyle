@@ -68,7 +68,7 @@ void main() {
         final stats = ManagerDashboardStats.fromRows(
           orders: orders,
           products: const [],
-          profiles: const [],
+          customerCount: 0,
           now: now,
         );
 
