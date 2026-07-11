@@ -38,12 +38,22 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
+  static const _maxContentLength = 1000;
+
   Future<void> _onSendMessage(
       ChatSendMessage event, Emitter<ChatState> emit) async {
+    final content = event.content.trim();
+    if (content.length > _maxContentLength) {
+      emit(state.copyWith(
+        error: 'Tin nhắn quá dài (tối đa $_maxContentLength ký tự)',
+      ));
+      return;
+    }
+
     final userMessage = ChatMessageModel(
       id: const Uuid().v4(),
       userId: event.userId,
-      content: event.content,
+      content: content,
       isFromAi: false,
       createdAt: DateTime.now(),
     );
@@ -54,11 +64,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       messages: [...state.messages, userMessage],
     ));
 
-    _chatService.saveMessage(userMessage);
+    await _chatService.saveMessage(userMessage);
 
     try {
       final aiResponse = await _chatService.getAiResponse(
-        event.content,
+        content,
         state.messages,
       );
 
@@ -76,7 +86,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         messages: [...state.messages, aiMessage],
       ));
 
-      _chatService.saveMessage(aiMessage);
+      await _chatService.saveMessage(aiMessage);
     } catch (e) {
       emit(state.copyWith(
         isSending: false,
