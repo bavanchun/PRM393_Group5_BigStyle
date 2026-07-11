@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Shipping fee server-side"
-status: pending
+status: completed
 effort: ""
 ---
 

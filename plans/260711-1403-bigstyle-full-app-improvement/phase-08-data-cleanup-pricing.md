@@ -1,7 +1,7 @@
 ---
 phase: 8
 title: "Data cleanup pricing"
-status: pending
+status: completed
 effort: ""
 ---
 
@@ -31,8 +31,8 @@ Data-only change on `products` (`base_price`, `sale_price`). Source of "realisti
 4. Merge.
 
 ## Success Criteria
-- [ ] Catalog shows realistic varied prices (no uniform 10.000đ); discount badges render where sale_price set.
-- [ ] Existing orders' totals unchanged (order_items captured prices intact).
+- [x] Catalog shows realistic varied prices (no uniform 10.000đ); discount badges render where sale_price set.
+- [x] Existing orders' totals unchanged (order_items captured prices intact).
 
 ## Risk Assessment
 - Low (data-only). Only risk = accidentally editing order_items or breaking discount logic; scope UPDATE to `products` only. Depends on open-question price-source decision.
