@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "RLS perf hygiene"
-status: pending
+status: completed
 effort: ""
 ---
 
@@ -34,8 +34,8 @@ DB migration on a Supabase branch. This is the highest-risk hygiene phase becaus
 6. `merge_branch` only after all role smoke passes.
 
 ## Success Criteria
-- [ ] `auth.uid()`-init and unindexed-FK warns cleared; multiple-permissive-policies reduced.
-- [ ] All three roles retain correct read/write access (no RLS regression).
+- [x] `auth.uid()`-init and unindexed-FK warns cleared (21→0, 7→0). Multiple-permissive-policies (120) intentionally NOT reduced — consolidation cut per RT-11 scope decision, not a miss.
+- [x] All three roles retain correct read/write access (no RLS regression).
 
 ## Risk Assessment
 - HIGHEST hygiene risk: policy consolidation can silently broaden or narrow access. Mitigate: change one table at a time, re-test each role's access on the branch before merge; keep the `auth.uid()` wrap (safe) separate from consolidation (risky) so a bad consolidation can be dropped without losing the perf win. Fully branch-gated.

@@ -1,7 +1,7 @@
 ---
 title: "BigStyle Full-App Improvement (fixes + hardening + verification)"
 description: ""
-status: pending
+status: completed
 priority: P2
 branch: "dev"
 tags: []
@@ -16,7 +16,9 @@ source: skill
 
 ## Overview
 
-Fix + harden + verify BigStyle from the 2026-07-11 test pass. Groups: A correctness/money (F1 voucher, F5 dashboard, F3 enum), B data integrity (F2 stock, F4 shipping), C security/perf DB hygiene, D data cleanup, E verification harness. TDD per phase; all DB migrations go through a **Supabase branch** (test → merge), never straight to prod (`agbnpqgxsppdrpbqoipo`, real data). Cook executed separately (Sonnet 5).
+Fix + harden + verify BigStyle from the 2026-07-11 test pass. Groups: A correctness/money (F1 voucher, F5 dashboard, F3 enum), B data integrity (F2 stock, F4 shipping), C security/perf DB hygiene, D data cleanup, E verification harness. TDD per phase. Cook executed separately (Sonnet 5).
+
+**DB strategy deviation (cook execution, 2026-07-11):** the planned "Supabase branch → test → merge" workflow was blocked — branching requires the Pro plan, unavailable on this org. User explicitly approved the fallback: apply migrations directly to prod (`agbnpqgxsppdrpbqoipo`), verify every change via `BEGIN...ROLLBACK`-wrapped transactions (money-path invariants, RLS role-smoke, cross-tenant DENY tests) before trusting it, mirroring how every prior migration in this repo's history was actually applied. All 6 active phases (01/03/04/06/07/08) were built and verified this way.
 
 Source: [brainstorm direction](../reports/brainstorm-260711-1403-bigstyle-full-app-improvement-big-plan-direction-report.md) · [test report](../reports/qa-260711-1220-bigstyle-full-app-test-automated-backend-report.md) · [scout](../reports/scout-260711-1208-bigstyle-full-app-architecture-map-report.md).
 
@@ -26,31 +28,31 @@ Source: [brainstorm direction](../reports/brainstorm-260711-1403-bigstyle-full-a
 
 | Phase (file) | Name | Group | Sev | Deps | Status |
 |-------|------|-------|-----|------|--------|
-| 01 | [create_order money-path hardening (voucher + stock + shipping)](./phase-01-voucher-discount-apply.md) | A+B | HIGH | repatriate vouchers/validate_voucher DDL first | Pending |
-| 03 | [Order-status enum alignment (Dart model bug)](./phase-03-order-status-enum-alignment.md) | A | MED | — | Pending |
-| 04 | [Manager dashboard customer count (RLS/data, not query)](./phase-04-manager-dashboard-customer-count.md) | A | MED | — | Pending |
-| 06 | [Security hygiene DB](./phase-06-security-hygiene-db.md) | C | MED | — | Pending |
-| 07 | [RLS perf hygiene — SAFE subset (wrap + FK index only)](./phase-07-rls-perf-hygiene.md) | C | LOW | — | Pending |
-| 08 | [Data cleanup pricing](./phase-08-data-cleanup-pricing.md) | D | LOW | — | Pending |
-| 09 | [Verification harness native + zero-row (non-blocking)](./phase-09-verification-harness-native-and-zero-row.md) | E | KVM enabled | Pending |
-| — | ~~phase-02 stock~~ → merged into 01 | — | — | — | Merged |
-| — | ~~phase-05 shipping~~ → merged into 01 | — | — | — | Merged |
+| 01 | [create_order money-path hardening (voucher + stock + shipping)](./phase-01-voucher-discount-apply.md) | A+B | HIGH | repatriate vouchers/validate_voucher DDL first | Completed (PR #24) |
+| 03 | [Order-status enum alignment (Dart model bug)](./phase-03-order-status-enum-alignment.md) | A | MED | — | Completed (PR #25) |
+| 04 | [Manager dashboard customer count (RLS/data, not query)](./phase-04-manager-dashboard-customer-count.md) | A | MED | — | Completed (PR #26) |
+| 06 | [Security hygiene DB](./phase-06-security-hygiene-db.md) | C | MED | — | Completed (PR #27) — leaked-password protection still manual |
+| 07 | [RLS perf hygiene — SAFE subset (wrap + FK index only)](./phase-07-rls-perf-hygiene.md) | C | LOW | — | Completed (PR #28) |
+| 08 | [Data cleanup pricing](./phase-08-data-cleanup-pricing.md) | D | LOW | — | Completed (PR #29) |
+| 09 | [Verification harness native + zero-row (non-blocking)](./phase-09-verification-harness-native-and-zero-row.md) | E | KVM enabled | Pending — blocked on user-run `sudo modprobe kvm_amd` |
+| — | ~~phase-02 stock~~ → merged into 01 | — | — | — | Merged (in PR #24) |
+| — | ~~phase-05 shipping~~ → merged into 01 | — | — | — | Merged (in PR #24) |
 
-Merged Phase 01 is one serialized migration on one Supabase branch (voucher → stock → shipping in one `create_order` body) + a paired down-migration. Phases 03/04/06/07/08 independent. Phase 09 does NOT block plan completion (plan is "done" at 01+03+04+06+07+08); it runs as a separate KVM-gated verification track and may spawn its own fix plans.
+Merged Phase 01 shipped as one serialized set of 4 migrations applied directly to prod (voucher → stock → shipping in one `create_order` body, plus a follow-up fixing a negative-quantity gap found in code review) + a standalone rollback script. Phases 03/04/06/07/08 independent, all merged. Phase 09 does NOT block plan completion (plan is "done" at 01+03+04+06+07+08, all merged 2026-07-11); it runs as a separate KVM-gated verification track and may spawn its own fix plans.
 
 ## Acceptance criteria (whole plan)
-- [ ] Valid voucher reduces `orders.total` by the exact server-validated discount (F1).
-- [ ] Oversell attempt is rejected; `stock_qty` decrements on success (F2).
-- [ ] `processing`/`refunded` orders render their true label, not "Chờ xác nhận" (F3).
-- [ ] Manager dashboard "Khách hàng" shows the real customer count (F5).
-- [ ] `shipping_fee` derived/validated server-side, not trusted from client (F4).
-- [ ] Addressed Supabase security + perf advisor warnings cleared.
-- [ ] Catalog prices realistic (no uniform 10.000đ) (D).
-- [ ] `flutter analyze` 0, full `flutter test` green incl. new regression tests.
-- [ ] (E) each of reviews/wishlist/chat/support has ≥1 real e2e row; native flows demonstrated on emulator.
+- [x] Valid voucher reduces `orders.total` by the exact server-validated discount (F1).
+- [x] Oversell attempt is rejected; `stock_qty` decrements on success (F2).
+- [x] `processing`/`refunded` orders render their true label, not "Chờ xác nhận" (F3).
+- [x] Manager dashboard "Khách hàng" shows the real customer count (F5).
+- [x] `shipping_fee` derived/validated server-side, not trusted from client (F4).
+- [x] Addressed Supabase security + perf advisor warnings cleared (except leaked-password protection — manual Auth-dashboard step, not SQL-reachable).
+- [x] Catalog prices realistic (no uniform 10.000đ) (D).
+- [x] `flutter analyze` 0, full `flutter test` green incl. new regression tests (109/109).
+- [ ] (E) each of reviews/wishlist/chat/support has ≥1 real e2e row; native flows demonstrated on emulator. — Phase 09, blocked on KVM, non-blocking per RT-12.
 
 ## Cross-cutting constraints
-- **DB via Supabase branch only.** `create_branch` → apply migration → test → `merge_branch`. Keep every migration idempotent. Snapshot/verify before merge.
+- **DB safety.** Planned as Supabase branch → test → merge; actually executed as direct-to-prod + `BEGIN...ROLLBACK`-verified testing (branching blocked, see Overview). Keep every migration idempotent. Verify before trusting.
 - **TDD.** Each phase writes failing tests first (lock current behavior / assert new), keep existing 104 tests green.
 - **Preserve server-authoritative pricing** in `create_order` (already verified working) while adding voucher/stock/shipping logic.
 - No plan-id/phase-number in code comments, commit messages, or test names (explain behavior directly).

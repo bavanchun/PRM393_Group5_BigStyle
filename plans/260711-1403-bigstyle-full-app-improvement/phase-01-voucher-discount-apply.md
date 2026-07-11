@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Voucher discount apply"
-status: pending
+status: completed
 effort: ""
 ---
 
@@ -44,9 +44,9 @@ Fix F1 (HIGH): `create_order` RPC hard-stubs `v_discount := 0`, so vouchers neve
 5. `merge_branch` after green.
 
 ## Success Criteria
-- [ ] Valid voucher: `orders.discount_amount` = validated discount, `orders.total` reduced accordingly.
-- [ ] Invalid/expired/below-min voucher handled consistently with checkout preview (no silent full charge).
-- [ ] Existing 104 tests + new voucher test green; `flutter analyze` 0.
+- [x] Valid voucher: `orders.discount_amount` = validated discount, `orders.total` reduced accordingly.
+- [x] Invalid/expired/below-min voucher handled consistently with checkout preview (no silent full charge).
+- [x] Existing 104 tests + new voucher test green (109/109 after phases 01+03+04); `flutter analyze` 0.
 
 ## Risk Assessment
 - Money-path change → TDD + branch test before merge. If `validate_voucher` raises inside `create_order`, the whole order aborts (order_items already inserted in same tx → rolled back; verify tx boundary). Mitigation: confirm the function runs in a single implicit tx (plpgsql) so partial inserts roll back on raise.

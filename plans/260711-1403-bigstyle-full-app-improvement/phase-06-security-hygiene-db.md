@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Security hygiene DB"
-status: pending
+status: completed
 effort: ""
 ---
 
@@ -35,8 +35,8 @@ DB migration on a Supabase branch: `ALTER FUNCTION … SET search_path = public`
 6. `merge_branch`.
 
 ## Success Criteria
-- [ ] `get_advisors security`: search_path (×2), trigger-func executable, public-bucket-listing warns cleared; leaked-password warn gone.
-- [ ] Triggers still fire (order notification, sold count, rating); images still load; no regression in web smoke.
+- [x] `get_advisors security`: search_path (×2), trigger-func executable, public-bucket-listing warns cleared. Leaked-password warn NOT cleared — manual Auth-dashboard step, no MCP tool access this session.
+- [x] Triggers still fire (order notification, sold count, rating); images still load; no regression in web smoke.
 
 ## Risk Assessment
 - REVOKE could break a flow if any of these funcs is actually called as RPC by the app — verify via grep of services for `.rpc('bump_support_conversation'…)` etc. (they're triggers, but confirm). Storage policy change could break image loading if mis-scoped — test URLs on branch. All reversible; branch-test first.

@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Stock decrement oversell guard"
-status: pending
+status: completed
 effort: ""
 ---
 

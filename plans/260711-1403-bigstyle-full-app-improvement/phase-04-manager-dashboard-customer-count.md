@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Manager dashboard customer count"
-status: pending
+status: completed
 effort: ""
 ---
 
@@ -31,8 +31,8 @@ Locate the count in `OrderService.getDashboardStats()` (and/or `ManagerDashboard
 4. Confirm the dashboard card renders the corrected number (was 0 → ≥1) via web manager login.
 
 ## Success Criteria
-- [ ] Dashboard "Khách hàng" shows the correct customer count (≥1 for current data).
-- [ ] Test locks the count logic; suite green.
+- [x] Dashboard "Khách hàng" shows the correct customer count (≥1 for current data).
+- [x] Test locks the count logic; suite green.
 
 ## Risk Assessment
 - Low. Read-only stat fix. Main risk = choosing the wrong definition; resolve by matching the card's intent (all customers vs customers-who-ordered) — document the chosen definition.

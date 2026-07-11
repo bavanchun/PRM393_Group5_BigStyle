@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Order-status enum alignment"
-status: pending
+status: completed
 effort: ""
 ---
 
@@ -31,9 +31,9 @@ Add `processing` (after confirmed) and `refunded` to `OrderStatus` enum. Extend 
 4. Run full suite; ensure no exhaustive-switch breakage (Dart switch on enum must handle new values — analyze will catch).
 
 ## Success Criteria
-- [ ] `processing`/`refunded` render true label + color (not pending).
-- [ ] `fromMap` maps all 7 DB values explicitly; `flutter analyze` 0 (all switches exhaustive).
-- [ ] Cancellable gate + state machine tests green.
+- [x] `processing`/`refunded` render true label + color (not pending).
+- [x] `fromMap` maps all 7 DB values explicitly; `flutter analyze` 0 (all switches exhaustive).
+- [x] Cancellable gate + state machine tests green.
 
 ## Risk Assessment
 - Adding enum values makes existing exhaustive `switch` statements incomplete → `flutter analyze` flags them; fix each. No DB migration needed (enum already has the values). Manager transition semantics depend on open question — default to read-only for processing/refunded until confirmed.
