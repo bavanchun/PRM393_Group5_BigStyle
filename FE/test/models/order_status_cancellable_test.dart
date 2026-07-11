@@ -8,10 +8,25 @@ void main() {
       expect(OrderStatus.confirmed.isCancellable, isTrue);
     });
 
-    test('shipping, delivered, cancelled are not cancellable', () {
-      expect(OrderStatus.shipping.isCancellable, isFalse);
-      expect(OrderStatus.delivered.isCancellable, isFalse);
-      expect(OrderStatus.cancelled.isCancellable, isFalse);
+    test(
+      'shipping, delivered, cancelled, processing, refunded are not cancellable',
+      () {
+        expect(OrderStatus.shipping.isCancellable, isFalse);
+        expect(OrderStatus.delivered.isCancellable, isFalse);
+        expect(OrderStatus.cancelled.isCancellable, isFalse);
+        expect(OrderStatus.processing.isCancellable, isFalse);
+        expect(OrderStatus.refunded.isCancellable, isFalse);
+      },
+    );
+
+    test('processing and refunded offer no manager next-status actions', () {
+      expect(OrderStatus.processing.nextStatuses, isEmpty);
+      expect(OrderStatus.refunded.nextStatuses, isEmpty);
+    });
+
+    test('refunded is not active; processing is', () {
+      expect(OrderStatus.refunded.isActive, isFalse);
+      expect(OrderStatus.processing.isActive, isTrue);
     });
 
     test('matches the state machine: cancellable iff nextStatuses has cancelled',
