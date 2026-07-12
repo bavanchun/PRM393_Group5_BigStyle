@@ -11,6 +11,7 @@ import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_state.dart';
 import '../../models/category_model.dart';
 import '../../widgets/product_card.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/app_error_state.dart';
 
@@ -202,7 +203,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             itemBuilder: (context, index) {
               final label = _filters[index];
               final isSelected = _selectedFilter == label;
-              return GestureDetector(
+              return PressableScale(
                 onTap: () {
                   setState(() => _selectedFilter = label);
                   _onFilterSelected(label);
@@ -286,18 +287,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
             itemCount: products.length,
             itemBuilder: (context, index) {
               final product = products[index];
+              final imageUrl = product.images.isNotEmpty
+                  ? product.images.first
+                  : '';
+              final heroTag = 'product-${product.id}-product_list-grid-$index';
               return ProductCard(
-                imageUrl: product.images.isNotEmpty ? product.images.first : '',
+                imageUrl: imageUrl,
                 name: product.name,
                 price: product.price,
                 originalPrice: product.originalPrice,
                 sizes: product.sizes,
                 soldCount: product.soldCount,
                 brandName: product.brandName,
+                heroTag: heroTag,
                 onTap: () => Navigator.pushNamed(
                   context,
                   '/product-detail',
-                  arguments: product.id,
+                  arguments: {
+                    'productId': product.id,
+                    'heroTag': heroTag,
+                    'imageUrl': imageUrl,
+                  },
                 ),
               );
             },

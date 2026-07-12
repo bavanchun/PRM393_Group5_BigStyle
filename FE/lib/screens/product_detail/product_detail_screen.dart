@@ -18,7 +18,12 @@ import '../../blocs/review/review_bloc.dart';
 import '../../blocs/review/review_event.dart';
 import '../../blocs/review/review_state.dart';
 import '../../models/variant_model.dart';
+import '../../config/theme/app_motion.dart';
+import '../../utils/haptics.dart';
 import '../../widgets/expandable_text.dart';
+import '../../widgets/staggered_entrance.dart';
+import 'product_detail_args.dart';
+import 'product_detail_skeleton.dart';
 import 'product_review_section.dart';
 import 'review_editor_sheet.dart';
 import 'size_guide_sheet.dart';
@@ -32,13 +37,22 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String? _loadedProductId;
+  // Hero context from the tapped card (list/home) — null when navigated
+  // without one (favorites, deep link), which just disables the Hero wrap.
+  String? _heroTag;
+  String? _heroImageUrl;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final productId = ModalRoute.of(context)?.settings.arguments as String?;
+    final args = ProductDetailArgs.fromRouteArguments(
+      ModalRoute.of(context)?.settings.arguments,
+    );
+    final productId = args?.productId;
     if (productId != null && productId != _loadedProductId) {
       _loadedProductId = productId;
+      _heroTag = args?.heroTag;
+      _heroImageUrl = args?.imageUrl;
       context.read<ProductDetailBloc>().add(LoadProductDetail(productId));
       final user = context.read<AuthBloc>().state.user;
       context.read<ReviewBloc>().add(
@@ -70,7 +84,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         body: BlocBuilder<ProductDetailBloc, ProductDetailState>(
           builder: (context, state) {
             if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
+              // The destination Hero must exist during the whole async load
+              // — otherwise the flight from the card silently no-ops, since
+              // the real carousel isn't in the tree yet.
+              if (_heroTag != null &&
+                  _heroImageUrl != null &&
+                  _heroImageUrl!.isNotEmpty) {
+                return Stack(
+                  children: [
+                    ProductDetailSkeleton(carouselHeight: carouselHeight),
+                    SizedBox(
+                      height: carouselHeight,
+                      width: double.infinity,
+                      child: Hero(
+                        tag: _heroTag!,
+                        child: Image.network(
+                          _heroImageUrl!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return ProductDetailSkeleton(carouselHeight: carouselHeight);
             }
             if (state.error != null) {
               return Center(
@@ -81,9 +120,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        final productId =
-                            ModalRoute.of(context)?.settings.arguments
-                                as String?;
+                        final productId = _loadedProductId;
                         if (productId != null) {
                           context.read<ProductDetailBloc>().add(
                             LoadProductDetail(productId),
@@ -176,76 +213,80 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ],
                   ),
                 ),
-                DraggableScrollableSheet(
-                  initialChildSize:
-                      (screenHeight - carouselHeight + 20) / screenHeight,
-                  minChildSize: 0.35,
-                  maxChildSize: 0.85,
-                  builder: (context, scrollController) {
-                    return Container(
-                      decoration: const BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(24),
+                StaggeredEntrance(
+                  trigger: true,
+                  index: 0,
+                  child: DraggableScrollableSheet(
+                    initialChildSize:
+                        (screenHeight - carouselHeight + 20) / screenHeight,
+                    minChildSize: 0.35,
+                    maxChildSize: 0.85,
+                    builder: (context, scrollController) {
+                      return Container(
+                        decoration: const BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 12),
-                            width: 40,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: AppColors.border,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                          Expanded(
-                            child: ListView(
-                              controller: scrollController,
-                              padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.md,
-                                0,
-                                AppSpacing.md,
-                                100,
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.symmetric(vertical: 12),
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: AppColors.border,
+                                borderRadius: BorderRadius.circular(2),
                               ),
-                              children: [
-                                _buildProductName(state),
-                                const SizedBox(height: 8),
-                                _buildRating(state),
-                                const SizedBox(height: 12),
-                                _buildPrice(state),
-                                const SizedBox(height: 20),
-                                _buildSizeGuideButton(),
-                                const SizedBox(height: 24),
-                                _buildColorSelector(state),
-                                const SizedBox(height: 24),
-                                _buildSizeSelector(state),
-                                const SizedBox(height: 24),
-                                _buildDescription(state),
-                                const SizedBox(height: 24),
-                                BlocBuilder<ReviewBloc, ReviewState>(
-                                  builder: (context, reviewState) {
-                                    return ProductReviewSection(
-                                      isLoading: reviewState.isLoading,
-                                    reviews: reviewState.reviews,
-                                    myReview: reviewState.myReview,
-                                    canReview: reviewState.canReview,
-                                    error: reviewState.error,
-                                    onWrite: () =>
-                                        _openReviewEditor(product.id),
-                                    onReload: () =>
-                                        _reloadReviews(product.id),
-                                    );
-                                  },
-                                ),
-                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                            Expanded(
+                              child: ListView(
+                                controller: scrollController,
+                                padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.md,
+                                  0,
+                                  AppSpacing.md,
+                                  100,
+                                ),
+                                children: [
+                                  _buildProductName(state),
+                                  const SizedBox(height: 8),
+                                  _buildRating(state),
+                                  const SizedBox(height: 12),
+                                  _buildPrice(state),
+                                  const SizedBox(height: 20),
+                                  _buildSizeGuideButton(),
+                                  const SizedBox(height: 24),
+                                  _buildColorSelector(state),
+                                  const SizedBox(height: 24),
+                                  _buildSizeSelector(state),
+                                  const SizedBox(height: 24),
+                                  _buildDescription(state),
+                                  const SizedBox(height: 24),
+                                  BlocBuilder<ReviewBloc, ReviewState>(
+                                    builder: (context, reviewState) {
+                                      return ProductReviewSection(
+                                        isLoading: reviewState.isLoading,
+                                        reviews: reviewState.reviews,
+                                        myReview: reviewState.myReview,
+                                        canReview: reviewState.canReview,
+                                        error: reviewState.error,
+                                        onWrite: () =>
+                                            _openReviewEditor(product.id),
+                                        onReload: () =>
+                                            _reloadReviews(product.id),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
             );
@@ -279,7 +320,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               );
             }
-            return Image.network(
+            final image = Image.network(
               displayImages[index],
               fit: BoxFit.cover,
               width: double.infinity,
@@ -294,6 +335,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             );
+            // Only page 0 matches the card's imageUrl (images.first) — the
+            // tag the tapped card actually flew from.
+            if (index == 0 && _heroTag != null) {
+              return Hero(tag: _heroTag!, child: image);
+            }
+            return image;
           },
         ),
         if (displayImages.length > 1)
@@ -305,7 +352,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(displayImages.length, (i) {
                 return AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: AppMotion.fast,
+                  curve: AppMotion.standard,
                   width: state.currentImageIndex == i ? 24 : 8,
                   height: 8,
                   margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -457,8 +505,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             final color = _parseHexColor(hex);
             final isSelected = state.selectedColor == hex;
             return GestureDetector(
-              onTap: () =>
-                  context.read<ProductDetailBloc>().add(SelectColor(hex)),
+              onTap: () {
+                Haptics.selection();
+                context.read<ProductDetailBloc>().add(SelectColor(hex));
+              },
               child: Container(
                 width: 40,
                 height: 40,
@@ -508,10 +558,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           children: product.sizes.map((size) {
             final isSelected = state.selectedSize == size;
             return GestureDetector(
-              onTap: () =>
-                  context.read<ProductDetailBloc>().add(SelectSize(size)),
+              onTap: () {
+                Haptics.selection();
+                context.read<ProductDetailBloc>().add(SelectSize(size));
+              },
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: AppMotion.fast,
+                curve: AppMotion.standard,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 10,
@@ -529,7 +582,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: Text(
                   size,
                   style: AppTypography.labelLarge.copyWith(
-                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -758,9 +813,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final beforeCount = cartBloc.state.items.length;
     try {
       await cartBloc.stream
-          .firstWhere(
-            (s) => s.items.length > beforeCount || s.error != null,
-          )
+          .firstWhere((s) => s.items.length > beforeCount || s.error != null)
           .timeout(const Duration(seconds: 5));
     } catch (_) {}
 
@@ -827,11 +880,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _reloadReviews(String productId) {
     final user = context.read<AuthBloc>().state.user;
     context.read<ReviewBloc>().add(
-          ReviewLoad(
-            productId,
-            userId: _isRealUserId(user?.id) ? user!.id : null,
-          ),
-        );
+      ReviewLoad(productId, userId: _isRealUserId(user?.id) ? user!.id : null),
+    );
   }
 
   bool _isRealUserId(String? userId) {

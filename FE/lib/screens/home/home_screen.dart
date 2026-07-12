@@ -7,10 +7,14 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/product/product_bloc.dart';
 import '../../blocs/product/product_event.dart';
 import '../../blocs/product/product_state.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../widgets/product_card.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/app_error_state.dart';
+import '../../widgets/staggered_entrance.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,15 +49,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       AppSpacing.md,
                       0,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(),
-                        const SizedBox(height: AppSpacing.lg),
-                        _buildSearchBar(),
-                        const SizedBox(height: AppSpacing.lg),
-                        _buildHeroBanner(),
-                      ],
+                    child: StaggeredEntrance(
+                      trigger: true,
+                      index: 0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeader(),
+                          const SizedBox(height: AppSpacing.lg),
+                          _buildSearchBar(),
+                          const SizedBox(height: AppSpacing.lg),
+                          _buildHeroBanner(),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -65,7 +73,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         top: AppSpacing.lg,
                         bottom: AppSpacing.sm,
                       ),
-                      child: _buildCategories(state),
+                      child: StaggeredEntrance(
+                        trigger: state.categories.isNotEmpty,
+                        index: 1,
+                        child: _buildCategories(state),
+                      ),
                     ),
                   ),
                 SliverToBoxAdapter(
@@ -109,20 +121,34 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final product = state.featuredProducts[index];
-                        return ProductCard(
-                          imageUrl: product.images.isNotEmpty
-                              ? product.images.first
-                              : '',
-                          name: product.name,
-                          price: product.price,
-                          originalPrice: product.originalPrice,
-                          sizes: product.sizes,
-                          soldCount: product.soldCount,
-                          brandName: product.brandName,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/product-detail',
-                            arguments: product.id,
+                        final imageUrl = product.images.isNotEmpty
+                            ? product.images.first
+                            : '';
+                        final heroTag =
+                            'product-${product.id}-home-featured-$index';
+                        return StaggeredEntrance(
+                          trigger:
+                              !state.isLoading &&
+                              state.featuredProducts.isNotEmpty,
+                          index: 2,
+                          child: ProductCard(
+                            imageUrl: imageUrl,
+                            name: product.name,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            sizes: product.sizes,
+                            soldCount: product.soldCount,
+                            brandName: product.brandName,
+                            heroTag: heroTag,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '/product-detail',
+                              arguments: {
+                                'productId': product.id,
+                                'heroTag': heroTag,
+                                'imageUrl': imageUrl,
+                              },
+                            ),
                           ),
                         );
                       }, childCount: state.featuredProducts.length.clamp(0, 4)),
@@ -169,20 +195,33 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final product = state.products[index];
-                        return ProductCard(
-                          imageUrl: product.images.isNotEmpty
-                              ? product.images.first
-                              : '',
-                          name: product.name,
-                          price: product.price,
-                          originalPrice: product.originalPrice,
-                          sizes: product.sizes,
-                          soldCount: product.soldCount,
-                          brandName: product.brandName,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/product-detail',
-                            arguments: product.id,
+                        final imageUrl = product.images.isNotEmpty
+                            ? product.images.first
+                            : '';
+                        final heroTag =
+                            'product-${product.id}-home-new_arrivals-$index';
+                        return StaggeredEntrance(
+                          trigger:
+                              !state.isLoading && state.products.isNotEmpty,
+                          index: 3,
+                          child: ProductCard(
+                            imageUrl: imageUrl,
+                            name: product.name,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            sizes: product.sizes,
+                            soldCount: product.soldCount,
+                            brandName: product.brandName,
+                            heroTag: heroTag,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '/product-detail',
+                              arguments: {
+                                'productId': product.id,
+                                'heroTag': heroTag,
+                                'imageUrl': imageUrl,
+                              },
+                            ),
                           ),
                         );
                       }, childCount: state.products.length),
@@ -216,43 +255,71 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final name = authState.user?.fullName.trim() ?? '';
+        final greeting = name.isEmpty
+            ? 'Xin chào!'
+            : 'Xin chào, ${name.split(' ').last}';
+        final avatarUrl = authState.user?.avatarUrl;
+        final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
+        final initial = name.isNotEmpty
+            ? name.substring(0, 1).toUpperCase()
+            : '';
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Xin chào!',
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  'BigStyle',
+                  style: AppTypography.displaySmall.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              'BigStyle',
-              style: AppTypography.displaySmall.copyWith(
-                color: AppColors.primary,
-              ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.notifications_outlined,
+                    color: AppColors.textPrimary,
+                  ),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/notifications'),
+                ),
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColors.secondary,
+                  backgroundImage: hasAvatar ? NetworkImage(avatarUrl) : null,
+                  child: hasAvatar
+                      ? null
+                      : (initial.isNotEmpty
+                            ? Text(
+                                initial,
+                                style: AppTypography.labelLarge.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person,
+                                color: AppColors.primary,
+                              )),
+                ),
+              ],
             ),
           ],
-        ),
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(
-                Icons.notifications_outlined,
-                color: AppColors.textPrimary,
-              ),
-              onPressed: () => Navigator.pushNamed(context, '/notifications'),
-            ),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: AppColors.secondary,
-              child: const Icon(Icons.person, color: AppColors.primary),
-            ),
-          ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -350,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
         separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final category = state.categories[index];
-          return GestureDetector(
+          return PressableScale(
             onTap: () => Navigator.pushNamed(
               context,
               '/products',
