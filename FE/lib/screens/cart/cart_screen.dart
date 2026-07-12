@@ -9,6 +9,7 @@ import '../../blocs/cart/cart_event.dart';
 import '../../blocs/cart/cart_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../models/cart_item_model.dart';
+import '../../utils/haptics.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_bottom_nav.dart';
@@ -234,6 +235,7 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     _miniButton(Icons.remove, () {
                       if (item.quantity > 1) {
+                        Haptics.tap();
                         context.read<CartBloc>().add(
                           CartUpdateQuantity(item.id, item.quantity - 1),
                         );
@@ -247,6 +249,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     _miniButton(Icons.add, () {
+                      Haptics.tap();
                       context.read<CartBloc>().add(
                         CartUpdateQuantity(item.id, item.quantity + 1),
                       );
@@ -255,7 +258,9 @@ class _CartScreenState extends State<CartScreen> {
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () {
+                    Haptics.selection();
                     context.read<CartBloc>().add(CartRemoveItem(item.id));
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -264,10 +269,14 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     );
                   },
-                  child: const Icon(
-                    Icons.delete_outline,
-                    color: AppColors.error,
-                    size: 20,
+                  child: const SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(
+                      Icons.delete_outline,
+                      color: AppColors.error,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -281,14 +290,20 @@ class _CartScreenState extends State<CartScreen> {
   Widget _miniButton(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.border),
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Center(
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Icon(icon, size: 14, color: AppColors.textPrimary),
+          ),
         ),
-        child: Icon(icon, size: 14, color: AppColors.textPrimary),
       ),
     );
   }
