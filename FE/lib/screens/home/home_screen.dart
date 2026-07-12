@@ -469,14 +469,46 @@ class _HomeScreenState extends State<HomeScreen> {
           childAspectRatio: 0.58,
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
+          // Same card shape as ProductGridSkeleton (product_list/search) —
+          // CustomScrollView needs a Sliver here, so the shimmer item is
+          // inlined rather than sharing that (box-based) widget directly.
           return Shimmer.fromColors(
             baseColor: AppColors.skeletonBase,
             highlightColor: AppColors.skeletonHighlight,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  height: 14,
+                  width: 140,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 12,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
             ),
           );
         }, childCount: 4),

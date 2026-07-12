@@ -45,15 +45,16 @@ Add a shared-element (Hero) transition so a product's image flies from the list/
 
 ## Success Criteria
 
-- [ ] Card image visibly flies into the detail image on tap and back on pop.
-- [ ] No "multiple heroes share tag" assertion; no image flicker/decoder swap mid-flight.
-- [ ] Draggable sheet does not clip the hero during transition.
-- [ ] `flutter analyze` clean.
+- [x] Card image visibly flies into the detail image on tap and back on pop.
+- [x] No "multiple heroes share tag" assertion; no image flicker/decoder swap mid-flight.
+- [ ] Draggable sheet does not clip the hero during transition. **ACCEPTED RISK (H3) — see below.**
+- [x] `flutter analyze` clean.
 
 ## Risk Assessment
 
 - **Duplicate Hero tag** (same product in featured + new-arrivals on home) → RESOLVED by the validated context-unique tag (`…-${screen}-${section}-${index}`) + passing the tapped tag through route args so detail matches exactly. No two live Heroes ever share a tag.
 - **CachedNetworkImage flight flicker** → identical provider + fade placeholder both ends.
-- **Sheet clipping (H3)** → sheet z-orders above carousel; keep hero final rect above the sheet top edge or use `flightShuttleBuilder` drawing above the sheet.
+<!-- Updated: post-implementation code review 2026-07-12 -->
+- **Sheet clipping (H3) — ACCEPTED RISK, not fixed:** the `DraggableScrollableSheet` still z-orders above the carousel and overlaps the Hero's bottom ~20px (`initialChildSize` unchanged, same `(screenHeight - carouselHeight + 20) / screenHeight` overlap by original design). Flutter's default Hero flight renders the flying widget in the navigator's overlay (above the sheet) for the whole animation, so the visible artifact is limited to a one-frame landing "pop" as the Hero returns to its in-place position and the sheet's rounded top begins covering that same ~20px it always covers post-load. A rect-trim or `flightShuttleBuilder` fix was scoped out — both add real layout/geometry risk (dot-indicator clipping, sheet-position math) for a sub-300ms cosmetic artifact, not a correctness issue. Revisit only if it reads as jarring on-device; not blocking for the demo.
 - **Async-load no-op (C1)** → destination hero image rendered from route-arg `imageUrl` during load; never rely on the carousel being present mid-transition.
 - **Shared `ProductCard` w/ favorites (C2)** → `heroTag` nullable + conditional wrap; favorites passes none.

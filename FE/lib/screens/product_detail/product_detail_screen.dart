@@ -10,6 +10,7 @@ import '../../blocs/product_detail/product_detail_event.dart';
 import '../../blocs/product_detail/product_detail_state.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
+import '../../blocs/cart/cart_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/wishlist/wishlist_bloc.dart';
 import '../../blocs/wishlist/wishlist_state.dart';
@@ -766,16 +767,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     // Fire success feedback (haptic + snackbar) only once the cart bloc
     // confirms the add — never on the tap itself, so an aborted/failed add
     // (guards above, or a failed/timed-out request) never plays "success".
+    //
+    // Gated on this variant's own quantity, not items.length: the server
+    // merges into the existing row when the variant is already in the cart
+    // (cart_service.dart addToCart), so a repeat add of the same variant
+    // leaves items.length unchanged even though it succeeded.
     final cartBloc = context.read<CartBloc>();
-    final beforeCount = cartBloc.state.items.length;
+    int quantityOf(CartState s) => s.items
+        .where((i) => i.variantId == variant.id)
+        .fold(0, (sum, i) => sum + i.quantity);
+    final beforeQty = quantityOf(cartBloc.state);
     cartBloc.add(CartAddItem(user.id, variant.id, 1));
 
     bool added = false;
     try {
       final result = await cartBloc.stream
-          .firstWhere((s) => s.items.length > beforeCount || s.error != null)
+          .firstWhere((s) => quantityOf(s) > beforeQty || s.error != null)
           .timeout(const Duration(seconds: 5));
-      added = result.items.length > beforeCount;
+      added = result.error == null;
     } catch (_) {
       added = false;
     }

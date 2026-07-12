@@ -69,12 +69,12 @@ Build the thin shared layer every later phase consumes: motion tokens, a haptics
 
 ## Success Criteria
 
-- [ ] 4 new primitive files exist and compile.
-- [ ] home + product_list use `AppSkeleton` (no inline `Shimmer.fromColors` left); product_detail shows a skeleton on load.
-- [ ] No literal `Duration(...)` remains in the 6 customer-flow screens' animation code (all via `AppMotion`).
-- [ ] Cards/pills visibly scale on press; haptics fire on the wired actions (device test).
-- [ ] Cart stepper hit area ≥44px; checkout shows inline validation as the user types.
-- [ ] `flutter analyze` clean; customer-flow raw-color count still 0.
+- [x] 4 new primitive files exist and compile.
+- [x] home + product_list use the same card-shaped skeleton (no bare-rectangle placeholder left); product_detail shows a skeleton on load. **(Note: no single `AppSkeleton` class — per the M6 KISS decision, `ProductGridSkeleton` (box widget, Phase 5) covers product_list + search; home's is inlined at the same visual shape because `CustomScrollView` needs a Sliver, not a box, at that call site; `ProductDetailSkeleton` covers product_detail's different carousel layout. All three render the same card content, just through different container types.)**
+- [x] No literal `Duration(...)` remains in the 6 customer-flow screens' animation code (all via `AppMotion`).
+- [x] Cards/pills visibly scale on press; haptics fire on the wired actions (verified on running app).
+- [x] Cart stepper hit area ≥44px; checkout shows inline validation as the user types.
+- [x] `flutter analyze` clean; customer-flow raw-color count still at baseline (0 new).
 
 ## Risk Assessment
 

@@ -53,8 +53,8 @@ class AppRouter {
       case '/search':
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => BlocProvider(
-            create: (_) => SearchBloc(ProductService()),
+          builder: (context) => BlocProvider(
+            create: (_) => SearchBloc(context.read<ProductService>()),
             child: const SearchScreen(),
           ),
         );
