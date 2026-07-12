@@ -763,8 +763,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return false;
     }
 
-    context.read<CartBloc>().add(CartAddItem(user.id, variant.id, 1));
+    // Fire success feedback (haptic + snackbar) only once the cart bloc
+    // confirms the add — never on the tap itself, so an aborted/failed add
+    // (guards above, or a failed/timed-out request) never plays "success".
+    final cartBloc = context.read<CartBloc>();
+    final beforeCount = cartBloc.state.items.length;
+    cartBloc.add(CartAddItem(user.id, variant.id, 1));
 
+    bool added = false;
+    try {
+      final result = await cartBloc.stream
+          .firstWhere((s) => s.items.length > beforeCount || s.error != null)
+          .timeout(const Duration(seconds: 5));
+      added = result.items.length > beforeCount;
+    } catch (_) {
+      added = false;
+    }
+    if (!mounted) return added;
+
+    if (!added) {
+      if (showSnackbar) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thêm vào giỏ hàng thất bại'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return false;
+    }
+
+    Haptics.success();
     if (showSnackbar) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -804,20 +833,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
+    // _addToCart already waits for the CartBloc to confirm before resolving.
     final added = await _addToCart(showSnackbar: false);
-    if (!added) return;
-    if (!mounted) return;
-
-    // Wait until cart state reflects the new item before navigating
-    final cartBloc = context.read<CartBloc>();
-    final beforeCount = cartBloc.state.items.length;
-    try {
-      await cartBloc.stream
-          .firstWhere((s) => s.items.length > beforeCount || s.error != null)
-          .timeout(const Duration(seconds: 5));
-    } catch (_) {}
-
-    if (!mounted) return;
+    if (!added || !mounted) return;
     Navigator.pushNamed(context, '/cart');
   }
 
