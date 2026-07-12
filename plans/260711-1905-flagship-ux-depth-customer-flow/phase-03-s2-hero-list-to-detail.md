@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "S2: Hero List-to-Detail"
-status: pending
+status: completed
 priority: P1
 dependencies: [1]
 effort: "M"

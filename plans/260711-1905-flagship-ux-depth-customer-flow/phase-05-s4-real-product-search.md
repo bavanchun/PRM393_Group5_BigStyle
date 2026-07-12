@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "S4: Real Product Search"
-status: pending
+status: completed
 priority: P2
 dependencies: [1]
 effort: "M"
@@ -47,10 +47,10 @@ Replace the fake home search bar (a `GestureDetector` that just navigates to `/p
 
 ## Success Criteria
 
-- [ ] Home search bar opens a real, autofocused search screen.
-- [ ] Queries return correct matches; debounced; skeleton while loading.
-- [ ] Empty-query shows recent (session) + suggested; no-results shows a clear empty state.
-- [ ] Result tap opens the correct product; `flutter analyze` clean.
+- [x] Home search bar opens a real, autofocused search screen.
+- [x] Queries return correct matches; debounced; skeleton while loading.
+- [x] Empty-query shows recent (session) + suggested; no-results shows a clear empty state.
+- [x] Result tap opens the correct product; `flutter analyze` clean.
 
 ## Risk Assessment
 

@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "S1: Personalized Home + Staggered Entrance"
-status: pending
+status: completed
 priority: P1
 dependencies: [1]
 effort: "S"
@@ -44,10 +44,10 @@ Turn the static home header into a personalized greeting (real name + avatar) an
 
 ## Success Criteria
 
-- [ ] Greeting shows the real user's name; avatar shows photo or initial fallback.
-- [ ] Home sections fade/slide in sequentially on load, once per mount.
-- [ ] Reduced-motion users get instant layout (no animation).
-- [ ] No replay on unrelated BLoC rebuilds; `flutter analyze` clean.
+- [x] Greeting shows the real user's name; avatar shows photo or initial fallback.
+- [x] Home sections fade/slide in sequentially on load, once per mount.
+- [x] Reduced-motion users get instant layout (no animation).
+- [x] No replay on unrelated BLoC rebuilds; `flutter analyze` clean.
 
 ## Risk Assessment
 

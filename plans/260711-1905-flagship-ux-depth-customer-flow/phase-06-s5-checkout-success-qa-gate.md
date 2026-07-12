@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "S5: Checkout Success + QA Gate"
-status: pending
+status: completed
 priority: P1
 dependencies: [1, 2, 3, 4, 5]
 effort: "M"
@@ -51,11 +51,11 @@ Two jobs: (a) replace the flat COD success `AlertDialog` with an animated succes
 
 ## Success Criteria
 
-- [ ] COD success shows the animated checkmark + scale + success haptic, then continues to **`/order-detail`** (unchanged destination).
-- [ ] Order/money path behavior unchanged (only the success visual changed); `:316–338` byte-identical; SePay branch untouched.
-- [ ] `flutter analyze` = 0 new issues; `flutter test` passes.
-- [ ] No NEW raw `Colors.*`/`0xFF` (Colors.transparent allowlisted); animation `Duration`s use `AppMotion` (non-animation Durations exempt).
-- [ ] Per-screen interaction checklist all-pass; S1–S5 demoed end-to-end.
+- [x] COD success shows the animated checkmark + scale + success haptic, then continues to **`/order-detail`** (unchanged destination).
+- [x] Order/money path behavior unchanged (only the success visual changed); `:316–338` byte-identical; SePay branch untouched.
+- [x] `flutter analyze` = 0 new issues; `flutter test` passes.
+- [x] No NEW raw `Colors.*`/`0xFF` (Colors.transparent allowlisted); animation `Duration`s use `AppMotion` (non-animation Durations exempt).
+- [x] Per-screen interaction checklist all-pass; S1–S5 demoed end-to-end.
 
 ## Risk Assessment
 

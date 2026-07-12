@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "S3: Add-to-Cart Confirmation (badge pop + haptic)"
-status: pending
+status: completed
 priority: P2
 dependencies: [1]
 effort: "S"
@@ -56,10 +56,10 @@ Give add-to-cart a legible, tactile confirmation: the existing cart badge **scal
 
 ## Success Criteria
 
-- [ ] Badge scale-pops **only** when cart count actually increases (incl. first 0→1).
-- [ ] `Haptics.success()` fires only on a real successful add — never on aborted/failed adds (not-logged-in, missing size/color, async failure).
-- [ ] No `GlobalKey` on `AppBottomNav`; no assertion during page transitions.
-- [ ] All 5 tabs using `AppBottomNav` unaffected; `flutter analyze` clean.
+- [x] Badge scale-pops **only** when cart count actually increases (incl. first 0→1).
+- [x] `Haptics.success()` fires only on a real successful add — never on aborted/failed adds (not-logged-in, missing size/color, async failure).
+- [x] No `GlobalKey` on `AppBottomNav`; no assertion during page transitions.
+- [x] All 5 tabs using `AppBottomNav` unaffected; `flutter analyze` clean.
 
 ## Risk Assessment
 

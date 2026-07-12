@@ -1,7 +1,7 @@
 ---
 title: "BigStyle Flagship UX-Depth — Customer Shopping Flow"
 description: "Flagship interaction/motion/state upgrade for the customer shopping flow (home→list→detail→cart→checkout→orders) on top of the frozen Warm Terracotta v2 reskin. Hybrid approach: thin shared motion/haptics/feedback foundation + 5 choreographed signature moments (S1 personalized home, S2 Hero list→detail, S3 add-to-cart confirmation, S4 real search, S5 checkout success). Flutter/BLoC, built-in animation APIs, no Lottie."
-status: pending
+status: completed
 priority: P1
 branch: "dev"
 tags: [ui-ux, motion, interaction, flutter, customer-flow, flagship]
@@ -13,6 +13,10 @@ source: skill
 ---
 
 # BigStyle Flagship UX-Depth — Customer Shopping Flow
+
+## Implementation Complete — 2026-07-12
+
+All 6 phases shipped on branch `feat/flagship-ux-depth-customer-flow` (5 commits: one per implementation phase + one review-fixes; not yet pushed). Gates green: `flutter analyze` 0 issues, `flutter test` 116/116. End-to-end verified live (login → home greeting → Hero list→detail → add-to-cart real Supabase round-trip → cart badge pop → live `/search` → full COD checkout placing a real order → `/order-detail`). Post-implementation code-review: one Critical (add-to-cart success detection broke on repeat-add of an already-in-cart variant) fixed + re-verified live; 2 Medium + 2 Low also fixed + re-verified. H3 (draggable sheet clips Hero bottom ~20px on land) accepted as a documented risk — see phase-03 Risk Assessment. Not fixed by design; not blocking.
 
 ## Overview
 
@@ -42,12 +46,12 @@ Upgrade the **interaction/UX layer** of the customer shopping flow to a flagship
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | [Foundation: Motion, Haptics & Feedback](./phase-01-foundation-motion-haptics-feedback.md) | Pending |
-| 2 | [S1: Personalized Home + Staggered Entrance](./phase-02-s1-personalized-home-staggered-entrance.md) | Pending |
-| 3 | [S2: Hero List-to-Detail](./phase-03-s2-hero-list-to-detail.md) | Pending |
-| 4 | [S3: Add-to-Cart Confirmation (badge pop + haptic)](./phase-04-s3-fly-to-cart.md) | Pending |
-| 5 | [S4: Real Product Search](./phase-05-s4-real-product-search.md) | Pending |
-| 6 | [S5: Checkout Success + QA Regression Gate](./phase-06-s5-checkout-success-qa-gate.md) | Pending |
+| 1 | [Foundation: Motion, Haptics & Feedback](./phase-01-foundation-motion-haptics-feedback.md) | Completed |
+| 2 | [S1: Personalized Home + Staggered Entrance](./phase-02-s1-personalized-home-staggered-entrance.md) | Completed |
+| 3 | [S2: Hero List-to-Detail](./phase-03-s2-hero-list-to-detail.md) | Completed |
+| 4 | [S3: Add-to-Cart Confirmation (badge pop + haptic)](./phase-04-s3-fly-to-cart.md) | Completed |
+| 5 | [S4: Real Product Search](./phase-05-s4-real-product-search.md) | Completed |
+| 6 | [S5: Checkout Success + QA Regression Gate](./phase-06-s5-checkout-success-qa-gate.md) | Completed |
 
 ## Dependency Chain
 
@@ -61,13 +65,13 @@ Phases 2–5 are independent of each other once Phase 1 lands (could parallelize
 
 ## Acceptance Criteria (whole plan)
 
-- [ ] Every interactive element in the 6 screens has press feedback and uses `AppMotion` tokens — no literal `Duration(...)` **in animation code** (snackbar/`.timeout`/`Future.delayed` durations are exempt — red-team M5).
-- [ ] product_detail shows a skeleton at parity with list (no blank spinner).
-- [ ] Haptics fire on add-to-cart, size/color select, checkout confirm, item delete.
-- [ ] All cart tap targets ≥ 44×44.
-- [ ] Checkout has inline field validation (`autovalidateMode.onUserInteraction`).
-- [ ] S1, S2, S3(reduced), S4, S5 all demoable on device.
-- [ ] `flutter analyze` = 0 new issues; `flutter test` passes; customer-flow raw `Colors.*`/`0xFF` count stays at **baseline** — `Colors.transparent` allowlisted (2 known: `product_detail_screen.dart:625`, `size_guide_sheet.dart:15`); no *new* hardcodes (red-team M3).
+- [x] Every interactive element in the 6 screens has press feedback and uses `AppMotion` tokens — no literal `Duration(...)` **in animation code** (snackbar/`.timeout`/`Future.delayed` durations are exempt — red-team M5).
+- [x] product_detail shows a skeleton at parity with list (no blank spinner).
+- [x] Haptics fire on add-to-cart, size/color select, checkout confirm, item delete.
+- [x] All cart tap targets ≥ 44×44.
+- [x] Checkout has inline field validation (`autovalidateMode.onUserInteraction`).
+- [x] S1, S2, S3(reduced), S4, S5 all demoable on device.
+- [x] `flutter analyze` = 0 new issues; `flutter test` passes; customer-flow raw `Colors.*`/`0xFF` count stays at **baseline** — `Colors.transparent` allowlisted (2 known: `product_detail_screen.dart:625`, `size_guide_sheet.dart:15`); no *new* hardcodes (red-team M3).
 
 ## Related Plans (cross-links, non-blocking)
 

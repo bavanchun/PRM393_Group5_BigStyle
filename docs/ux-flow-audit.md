@@ -69,9 +69,9 @@ States: loading(shimmer)/loaded/empty-section. Không error.
 | # | Type | Sev | Hiện trạng | Đề xuất | Evidence |
 |---|------|-----|-----------|---------|----------|
 | C1 | ux | P2 | Không error state; `ProductState.error` bị bỏ → lỗi tải hiện "Chưa có sản phẩm" (hiểu nhầm). | Thêm nhánh error + retry. | home_screen.dart:84-92,141-149 |
-| C2 | ux | P2 ✅ | Chào "Xin chào!" tĩnh + avatar tĩnh, không dùng tên/avatar user dù có AuthBloc. | Đọc `AuthBloc.state.user` → tên + avatar. | home_screen.dart:206-220 |
+| C2 | ux | P2 ✅ | ~~Chào "Xin chào!" tĩnh + avatar tĩnh, không dùng tên/avatar user dù có AuthBloc.~~ **RESOLVED** — Phase 2 S1 implements personalized greeting with user.fullName + avatar. | Đọc `AuthBloc.state.user` → tên + avatar. | home_screen.dart:257-319 |
 | C3 | ui | P3 ✅ | Banner "Giảm đến 30% đơn đầu tiên" hardcode. | Lấy từ config hoặc gỡ %. | home_screen.dart:296-300 |
-| C4 | ux | P3 ✅ | Search bar là nút giả (→ /products), không nhập được. | Điều hướng kèm focus ô tìm, hoặc search thật. | home_screen.dart:227-229 |
+| C4 | ux | P3 ✅ | ~~Search bar là nút giả (→ /products), không nhập được.~~ **RESOLVED** — Phase 5 S4 implements real `/search` route with SearchBloc + server-side query. | Điều hướng kèm focus ô tìm, hoặc search thật. | search_screen.dart |
 | C5 | ux | P3 | Chuông thông báo không badge số chưa đọc. | Badge từ `NotificationBloc.unreadCount`. | home_screen.dart:212-215 |
 
 ### product_list (tab1)
