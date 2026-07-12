@@ -5,9 +5,12 @@ import '../../services/support_chat_service.dart';
 import '../../screens/chat/support_chat_screen.dart';
 import '../../screens/splash/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
+import '../../blocs/search/search_bloc.dart';
+import '../../services/product_service.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/product_list/product_list_screen.dart';
 import '../../screens/product_detail/product_detail_screen.dart';
+import '../../screens/search/search_screen.dart';
 import '../../screens/cart/cart_screen.dart';
 import '../../screens/cart/cart_item_edit_screen.dart';
 import '../../screens/checkout/checkout_screen.dart';
@@ -28,33 +31,83 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(settings: settings, builder: (_) => const SplashScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const SplashScreen(),
+        );
       case '/login':
-        return MaterialPageRoute(settings: settings, builder: (_) => const LoginScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const LoginScreen(),
+        );
       case '/home':
-        return MaterialPageRoute(settings: settings, builder: (_) => const HomeScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const HomeScreen(),
+        );
       case '/products':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ProductListScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ProductListScreen(),
+        );
+      case '/search':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => BlocProvider(
+            create: (_) => SearchBloc(ProductService()),
+            child: const SearchScreen(),
+          ),
+        );
       case '/product-detail':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ProductDetailScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ProductDetailScreen(),
+        );
       case '/cart':
-        return MaterialPageRoute(settings: settings, builder: (_) => const CartScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CartScreen(),
+        );
       case '/cart-item-edit':
-        return MaterialPageRoute(settings: settings, builder: (_) => const CartItemEditScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CartItemEditScreen(),
+        );
       case '/checkout':
-        return MaterialPageRoute(settings: settings, builder: (_) => const CheckoutScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CheckoutScreen(),
+        );
       case '/payment-qr':
-        return MaterialPageRoute(settings: settings, builder: (_) => const PaymentQrScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const PaymentQrScreen(),
+        );
       case '/orders':
-        return MaterialPageRoute(settings: settings, builder: (_) => const OrdersScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const OrdersScreen(),
+        );
       case '/order-detail':
-        return MaterialPageRoute(settings: settings, builder: (_) => const OrderDetailScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const OrderDetailScreen(),
+        );
       case '/profile':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ProfileScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ProfileScreen(),
+        );
       case '/edit-profile':
-        return MaterialPageRoute(settings: settings, builder: (_) => const EditProfileScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const EditProfileScreen(),
+        );
       case '/chat':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ChatScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ChatScreen(),
+        );
       case '/support-chat':
         return MaterialPageRoute(
           settings: settings,
@@ -64,10 +117,14 @@ class AppRouter {
           ),
         );
       case '/notifications':
-        return MaterialPageRoute(settings: settings, builder: (_) => const NotificationsScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const NotificationsScreen(),
+        );
       case '/delivery-map':
-        final deliveryArgs =
-            DeliveryMapArgs.fromRouteArguments(settings.arguments);
+        final deliveryArgs = DeliveryMapArgs.fromRouteArguments(
+          settings.arguments,
+        );
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => DeliveryMapScreen(
@@ -77,11 +134,20 @@ class AppRouter {
           ),
         );
       case '/manager':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ManagerShell());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ManagerShell(),
+        );
       case '/admin':
-        return MaterialPageRoute(settings: settings, builder: (_) => const AdminShell());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const AdminShell(),
+        );
       case '/favorites':
-        return MaterialPageRoute(settings: settings, builder: (_) => const FavoritesScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const FavoritesScreen(),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

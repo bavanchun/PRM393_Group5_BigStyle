@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shimmer/shimmer.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
@@ -12,6 +11,7 @@ import '../../blocs/cart/cart_state.dart';
 import '../../models/category_model.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/pressable_scale.dart';
+import '../../widgets/product_grid_skeleton.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/app_error_state.dart';
 
@@ -318,60 +318,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Widget _buildShimmerGrid() {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        8,
-        AppSpacing.md,
-        AppSpacing.xxl,
-      ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.58,
-      ),
-      itemCount: 6,
-      itemBuilder: (_, _) => Shimmer.fromColors(
-        baseColor: AppColors.skeletonBase,
-        highlightColor: AppColors.skeletonHighlight,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              height: 14,
-              width: 140,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              height: 12,
-              width: 80,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const ProductGridSkeleton();
   }
 
   Widget _buildEmptyState() {

@@ -325,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSearchBar() {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/products'),
+      onTap: () => Navigator.pushNamed(context, '/search'),
       child: Container(
         height: 48,
         decoration: BoxDecoration(
