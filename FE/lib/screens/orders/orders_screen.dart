@@ -95,12 +95,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Đơn #${order.orderNumber ?? order.id.substring(0, 8)}',
-                            style: AppTypography.labelLarge,
+                          Flexible(
+                            child: Text(
+                              'Đơn #${order.orderNumber ?? order.id.substring(0, 8)}',
+                              style: AppTypography.labelLarge,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           StatusBadge(
                             label: order.status.label,
                             status: order.status,

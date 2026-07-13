@@ -78,10 +78,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Đơn hàng',
-                                    style: AppTypography.headlineSmall),
+                                Flexible(
+                                  child: Text('Đơn hàng',
+                                      style: AppTypography.headlineSmall),
+                                ),
+                                const SizedBox(width: 8),
                                 StatusBadge(
                                   label: order.status.label,
                                   status: order.status,
