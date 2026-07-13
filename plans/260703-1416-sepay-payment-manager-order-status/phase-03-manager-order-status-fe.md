@@ -65,10 +65,10 @@ ManagerOrdersScreen
 
 ## Success Criteria
 
-- [ ] Sheet chỉ hiện trạng thái kế hợp lệ; delivered/cancelled/refunded không hiện nút (terminal/chỉ refund).
-- [ ] Đổi status → list reload đúng filter; DB notifications có row mới cho user của đơn.
-- [ ] Manager detail screen hiển thị khách + items + payment method/status.
-- [ ] Không sửa file thuộc phase 2. `flutter analyze` 0 lỗi. ≥1 commit.
+- [x] Sheet chỉ hiện trạng thái kế hợp lệ; delivered/cancelled/refunded không hiện nút (terminal/chỉ refund). <!-- evidence: commit c731beb — "order_status: nextStatuses helper enforcing valid transitions"; code-review 0 blocker -->
+- [ ] Đổi status → list reload đúng filter; DB notifications có row mới cho user của đơn. <!-- partial: notification-row creation qua on_order_status_change trigger là cơ chế đã có từ trước (không phải rủi ro mới); "list reload đúng filter" là hành vi UI live chưa có bằng chứng quan sát trực tiếp -->
+- [x] Manager detail screen hiển thị khách + items + payment method/status. <!-- evidence: commit c731beb — "manager_order_detail_screen: customer/items/address/payment info + update action" (301 dòng mới) -->
+- [x] Không sửa file thuộc phase 2. `flutter analyze` 0 lỗi. ≥1 commit. <!-- evidence: git show --stat c731beb — chỉ đụng blocs/manager/*, models/order_status.dart, screens/manager/* — không đụng payment_qr_screen/checkout_payment_method_selector/payment_service -->
 
 ## Risk Assessment
 

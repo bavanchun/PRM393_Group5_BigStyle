@@ -12,7 +12,8 @@ tags:
   - security
   - feature
   - verification
-blockedBy: []
+blockedBy:
+  - 260712-1644-bigstyle-product-completeness
 blocks:
   - 260703-1750-bigstyle-demo-fix-roadmap
 created: '2026-07-10T15:36:31.767Z'

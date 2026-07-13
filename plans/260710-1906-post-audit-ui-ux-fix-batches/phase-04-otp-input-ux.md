@@ -56,9 +56,9 @@ Rework `FE/lib/screens/auth/otp_input.dart` (6-box OTP widget on the primary log
 6. Commit.
 
 ## Success Criteria
-- [ ] 7 widget tests green; existing tests untouched
-- [ ] analyze clean; hardcode-guard 0; 1 commit
-- [ ] Manual smoke: paste + backspace + in-flight disable observable on emulator
+- [x] 7 widget tests green; existing tests untouched <!-- test/screens/auth/otp_input_test.dart (7 tests) passing in current 116-test suite -->
+- [x] analyze clean; hardcode-guard 0; 1 commit <!-- 2d9c334 (+ review nit follow-up 41cfb1a) -->
+- [ ] Manual smoke: paste + backspace + in-flight disable observable on emulator <!-- not device-verified (journal documents widget tests + code review only); deferred to device pass (plans/260712-1644 Phase 1) -->
 
 ## Risk Assessment
 - Highest-risk phase (auth path) — mitigated: submit contract unchanged; the identical-code-retry and noisy-paste traps have dedicated regression tests; debug test-login (password path) unaffected as fallback.

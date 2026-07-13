@@ -71,14 +71,14 @@ util — product create must keep working after the move.
 
 ## Acceptance Criteria (whole plan)
 
-- [ ] Manager taps "Danh mục" on dashboard → category list (no coming-soon).
-- [ ] Create category (name + optional image/sort) → row appears, slug auto-set,
+- [x] Manager taps "Danh mục" on dashboard → category list (no coming-soon).
+- [x] Create category (name + optional image/sort) → row appears, slug auto-set,
       no 23502 slug error.
-- [ ] Edit category (name/image/sort/active) persists and reflects in list.
-- [ ] Soft-delete hides a category with products **without** FK error.
-- [ ] Product create still works (shared slug util refactor intact).
-- [ ] Customer home shows only active categories.
-- [ ] `flutter analyze` clean.
+- [ ] Edit category (name/image/sort/active) persists and reflects in list. <!-- updateCategory verified by code review only per docs/journals/260703-manager-category-management.md; save-path not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Soft-delete hides a category with products **without** FK error.
+- [x] Product create still works (shared slug util refactor intact).
+- [x] Customer home shows only active categories.
+- [x] `flutter analyze` clean. <!-- re-verified 2026-07-12: No issues found -->
 
 ## Out of Scope
 - Drag-to-reorder UI (sort_order editable via number field only).

@@ -45,6 +45,11 @@ Giải pháp đã chốt (brainstorm report: `plans/reports/brainstorm-260703-14
 
 ## Acceptance Criteria (toàn plan)
 
+<!-- Trạng thái thật (2026-07-12, đối chiếu plans/reports/sepay-payment-manager-order-status-implementation-260703-1416-completion-report.md):
+     code + migration + edge function đã deploy; DB-level và HTTP curl E2E đã verify live (webhook success path, idempotency, RLS, wrong-key 401).
+     Còn thiếu: (1) đăng ký webhook URL trong SePay dashboard — chỉ user làm được; (2) device/emulator pass cho COD+bank-transfer+manager-status —
+     sẽ đóng qua plans/260712-1644-bigstyle-product-completeness Phase 1. Do đó status giữ `pending`, KHÔNG flip completed. -->
+
 - [ ] COD flow cũ nguyên vẹn + lưu `payment_method=cod` + tạo `payments` row.
 - [ ] SePay flow: order pending → màn QR (ảnh + khối nhập tay copy) → test-webhook → app tự chuyển màn thành công ≤5s → order=confirmed, payments=success → khách nhận notification.
 - [ ] Bỏ ngang màn QR: cart nguyên, order pending tồn tại, manager huỷ được.

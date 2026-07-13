@@ -79,17 +79,17 @@ Webhook dùng `SUPABASE_SERVICE_ROLE_KEY` (tự có trong Edge Function env) →
 
 ## User Setup Checklist (ngoài code)
 
-- [ ] Tạo tài khoản sepay.vn, link tài khoản ngân hàng.
-- [ ] SePay dashboard → Webhooks → thêm URL `https://agbnpqgxsppdrpbqoipo.supabase.co/functions/v1/sepay-webhook`, auth kiểu Apikey, key = `SEPAY_WEBHOOK_KEY` đã set.
-- [ ] Điền `SEPAY_BANK` (tên bank theo qr.sepay.vn, vd `Vietcombank`), `SEPAY_ACC` (số TK) vào `FE/.env`.
+- [x] Tạo tài khoản sepay.vn, link tài khoản ngân hàng. <!-- evidence: completion-report — SEPAY_BANK/SEPAY_ACC lấy trực tiếp từ SePay bankaccounts API, nghĩa là account + link bank đã tồn tại -->
+- [ ] SePay dashboard → Webhooks → thêm URL `https://agbnpqgxsppdrpbqoipo.supabase.co/functions/v1/sepay-webhook`, auth kiểu Apikey, key = `SEPAY_WEBHOOK_KEY` đã set. <!-- completion-report liệt kê rõ đây là việc "chỉ user làm được", SePay userapi không tạo webhook qua API — chưa có bằng chứng đã đăng ký -->
+- [x] Điền `SEPAY_BANK` (tên bank theo qr.sepay.vn, vd `Vietcombank`), `SEPAY_ACC` (số TK) vào `FE/.env`. <!-- evidence: completion-report — "Đã tự setup giúp user": SEPAY_BANK=TPBank / SEPAY_ACC=03010216099 -->
 
 ## Success Criteria
 
-- [ ] Insert `payment_method='bank_transfer'` không lỗi constraint.
-- [ ] curl webhook đúng key + content chứa order_number → payments=success, orders=confirmed, notification row xuất hiện (trigger).
-- [ ] curl sai key → 401; content không match → 200 success (không retry).
-- [ ] Gửi lại cùng payload → không đổi gì (idempotent).
-- [ ] ≥1 commit.
+- [x] Insert `payment_method='bank_transfer'` không lỗi constraint. <!-- evidence: completion-report DB-level webhook sim + HTTP E2E success-path both required a successful bank_transfer payments insert -->
+- [x] curl webhook đúng key + content chứa order_number → payments=success, orders=confirmed, notification row xuất hiện (trigger). <!-- evidence: completion-report "HTTP E2E success-path (LIVE, secret đã set)" — verified line-by-line incl. trigger notification -->
+- [ ] curl sai key → 401; content không match → 200 success (không retry). <!-- partial: completion-report verifies wrong-key→401 ("Webhook auth (HTTP curl): no-auth + wrong-key → 401 ✓") nhưng không có bằng chứng riêng cho nhánh "content không match → 200 no-retry" -->
+- [x] Gửi lại cùng payload → không đổi gì (idempotent). <!-- evidence: completion-report verifies twice — DB-level sim ("notif vẫn 1") và HTTP E2E ("gửi lặp → idempotent") -->
+- [x] ≥1 commit. <!-- evidence: 8c040c1 "Backend: migration + Edge Function sepay-webhook" -->
 
 ## Risk Assessment
 

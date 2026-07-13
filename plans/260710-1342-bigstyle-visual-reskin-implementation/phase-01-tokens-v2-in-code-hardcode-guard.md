@@ -107,13 +107,14 @@ Wire into whatever pre-commit/CI mechanism this repo already uses (check `.githu
 
 ## Success Criteria
 
-- [ ] All 14 color constants + 2 font families + 5 radius constants updated to v2 values; additive tokens (`onPrimary`, `shadow`, `StatusColors` extension) in place; `docs/design-tokens-v2.md` changelog line appended. <!-- Updated: Red Team Session 1 -->
-- [ ] Fonts bundled as local assets; app renders Cormorant/Montserrat with network disabled. <!-- Updated: Red Team Session 1 -->
-- [ ] `chipTheme` selected state is tonal. <!-- Updated: Red Team Session 1 -->
-- [ ] The 13 alias-level `Colors.*` lines in the 4 shared widgets cleaned — the 8 shared widgets are now genuinely token-only. <!-- Updated: Red Team Session 1 -->
-- [ ] `flutter analyze` clean.
-- [ ] Hardcode-guard script exists, is CWD-safe and occurrence-level; first-run baseline count recorded in the completion note — not required to pass yet. <!-- Updated: Red Team Session 1 -->
-- [ ] Smoke-tested: at least one screen using each of the 8 shared widgets visually confirms the new palette without further code changes.
+- [x] All 14 color constants + 2 font families + 5 radius constants updated to v2 values; additive tokens (`onPrimary`, `shadow`, `StatusColors` extension) in place; `docs/design-tokens-v2.md` changelog line appended. <!-- Updated: Red Team Session 1 --> <!-- evidence: direct read of FE/lib/config/theme/app_colors.dart + app_spacing.dart (all 14 colors/5 radii match table exactly, onPrimary/shadow present) and docs/design-tokens-v2.md's "## Changelog" section (dated 2026-07-10 entry) -->
+- [x] Fonts bundled as local assets; app renders Cormorant/Montserrat with network disabled. <!-- Updated: Red Team Session 1 --> <!-- evidence: FE/assets/fonts/{Cormorant,Montserrat}-Variable.ttf + pubspec.yaml fonts: block confirmed on disk; mechanism is plain fontFamily: (no network path, completion note); Montserrat device-verified in-phase, Cormorant+diacritics device-verified post-merge (plans/reports/qa-260710-1827-post-reskin-full-app-emulator-audit-report.md: "Cormorant serif renders correctly with full Vietnamese diacritics... closes a gap the reskin journal had flagged as visually unverified") -->
+- [x] `chipTheme` selected state is tonal. <!-- Updated: Red Team Session 1 --> <!-- evidence: FE/lib/config/theme/app_theme.dart chipTheme — selectedColor: AppColors.primary.withValues(alpha:0.12) + WidgetStateColor.resolveWith selecting primary/textSecondary (read directly this session); test/config/theme/app_theme_tokens_v2_test.dart:100 asserts this -->
+- [x] The 13 alias-level `Colors.*` lines in the 4 shared widgets cleaned — the 8 shared widgets are now genuinely token-only. <!-- Updated: Red Team Session 1 --> <!-- evidence: grep of app_bottom_nav.dart/manager_bottom_nav.dart/app_card.dart/app_button.dart this session — zero non-transparent Colors.* remain, all AppColors.*/Colors.transparent -->
+- [x] `flutter analyze` clean. <!-- evidence: completion note (2 runs); re-ran `flutter analyze` this session — "No issues found!" -->
+- [x] Hardcode-guard script exists, is CWD-safe and occurrence-level; first-run baseline count recorded in the completion note — not required to pass yet. <!-- Updated: Red Team Session 1 --> <!-- evidence: FE/scripts/check_hardcoded_colors.sh read directly this session (CWD-anchored `cd "$(dirname "$0")/.."`, occurrence-level `grep -rnoE`); completion note records baseline 206 -->
+- [ ] Smoke-tested: at least one screen using each of the 8 shared widgets visually confirms the new palette without further code changes. <!-- partial: token-level proof exists (all 8 widgets reference AppColors/AppTypography directly, regression-tested); live coverage widened by the post-merge QA sweep (Home/Cart/ProductDetail/Manager/Admin all reached), but app_error_state and expandable_text have no confirmed live trigger and no per-widget checklist was walked device-side — deferred to plans/260712-1644-bigstyle-product-completeness Phase 1 -->
+
 
 ## Risk Assessment
 

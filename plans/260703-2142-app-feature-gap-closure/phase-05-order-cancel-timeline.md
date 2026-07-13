@@ -93,11 +93,12 @@ processing, shipping, delivered]` and the order's current status index —
 
 ## Success Criteria
 - [ ] Customer cancels a pending order → DB status `cancelled`, notification row
-      created, UI shows cancelled.
-- [ ] Cancel button hidden for processing/shipping/delivered/cancelled/refunded.
-- [ ] RPC rejects a cancel on someone else's order or a non-cancellable status.
-- [ ] Timeline highlights the correct current step; cancelled shows terminal state.
-- [ ] `flutter analyze` clean; manager order flow unaffected.
+      created, UI shows cancelled. <!-- RPC + trigger + gated UI shipped (repatriated in PR #18); only the reject-path was live-tested per journal — positive cancel not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Cancel button hidden for processing/shipping/delivered/cancelled/refunded.
+      <!-- unit-tested: order_status_cancellable_test.dart -->
+- [x] RPC rejects a cancel on someone else's order or a non-cancellable status. <!-- evidence: FE/supabase/migrations/20260710234500_cancel_my_order.sql — single UPDATE WHERE user_id=auth.uid() AND status in (pending,confirmed), raise on not found; docs/journals/260703-app-feature-gap-closure-batch1.md "auth/ownership guard verified (generic error, no info leak)" -->
+- [x] Timeline highlights the correct current step; cancelled shows terminal state. <!-- evidence: FE/lib/screens/orders/order_detail_screen.dart _buildTimeline() — dot/label coloring by currentIndex; cancelled/refunded branch renders a terminal badge -->
+- [x] `flutter analyze` clean; manager order flow unaffected. <!-- analyze re-verified 2026-07-12; manager order flow live-verified later (commit 6e77ccf) -->
 
 ## Risk Assessment
 - **RLS/authorization**: broad UPDATE policy would let customers set any status.

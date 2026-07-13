@@ -58,10 +58,10 @@ handlers, and rewire the two chip branches. Note chip labels say `Size XL` but
    active chip.
 
 ## Success Criteria
-- [ ] "Size 2XL" lists only products having a 2XL variant.
-- [ ] "Sale" lists only products with `sale_price` set (use `hasDiscount`).
-- [ ] Switching from "Sale" to "Áo" clears the sale facet (no stale filter).
-- [ ] `flutter analyze` clean.
+- [x] "Size 2XL" lists only products having a 2XL variant. <!-- evidence: FE/lib/blocs/product/product_state.dart filteredProducts — result.where((p) => p.sizes.contains(selectedSize)) -->
+- [x] "Sale" lists only products with `sale_price` set (use `hasDiscount`). <!-- evidence: FE/lib/blocs/product/product_state.dart filteredProducts — if (saleOnly) result.where((p) => p.hasDiscount) -->
+- [x] Switching from "Sale" to "Áo" clears the sale facet (no stale filter). <!-- evidence: FE/lib/screens/product_list/product_list_screen.dart _onFilterSelected — every category branch also dispatches FilterBySize(null) + ToggleSaleOnly(false) -->
+- [x] `flutter analyze` clean. <!-- evidence: docs/journals/260703-app-feature-gap-closure-batch1.md "Verification" section -->
 
 ## Risk Assessment
 - Stale facet when switching chips (single-select UI, multi-field state).

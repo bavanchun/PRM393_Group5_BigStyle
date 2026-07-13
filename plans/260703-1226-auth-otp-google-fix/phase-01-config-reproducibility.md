@@ -37,11 +37,11 @@ Chốt 1 vị trí duy nhất cho env = `FE/.env` (gốc project Flutter), khớ
 6. Kiểm tra `.gitignore` vẫn ignore `.env` (đúng, dòng 47), và `.env.example` được track.
 
 ## Success Criteria
-- [ ] `.env.example` đủ 5 key + comment vị trí đúng (`.env`)
-- [ ] `scripts/setup.sh` chạy được, tạo `.env` từ example nếu thiếu
-- [ ] `assets/.env` đã xoá; `flutter run` vẫn chạy (env load từ `FE/.env`)
-- [ ] README có mục setup rõ ràng
-- [ ] `.env` vẫn gitignore, `.env.example` được commit
+- [x] `.env.example` đủ 5 key + comment vị trí đúng (`.env`) <!-- evidence: FE/.env.example hiện có 7 key (SUPABASE_URL/ANON_KEY, GOOGLE_MAPS_API_KEY, CLAUDE_API_KEY, GOOGLE_WEB_CLIENT_ID, SEPAY_BANK/ACC), comment "Copy this file to .env (project root...)" -->
+- [x] `scripts/setup.sh` chạy được, tạo `.env` từ example nếu thiếu <!-- evidence: FE/scripts/setup.sh — cp .env.example .env nếu chưa có + flutter pub get -->
+- [x] `assets/.env` đã xoá; `flutter run` vẫn chạy (env load từ `FE/.env`) <!-- evidence: FE/assets/.env không tồn tại; FE/.env (gốc) tồn tại và được dùng -->
+- [x] README có mục setup rõ ràng <!-- evidence: FE/README.md có mục "## Setup / Run" (scripts/setup.sh, .env, flutter run) -->
+- [x] `.env` vẫn gitignore, `.env.example` được commit <!-- evidence: FE/.gitignore:47 ".env"; git ls-files xác nhận FE/.env.example được track -->
 
 ## Risk Assessment
 - Xoá nhầm `.env` thật thay vì `assets/.env` → mất value. Mitigation: xác nhận `FE/.env` đủ value trước, chỉ xoá `assets/.env`.

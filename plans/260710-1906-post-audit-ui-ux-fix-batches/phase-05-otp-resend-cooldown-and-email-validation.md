@@ -57,10 +57,10 @@ Improves G10 (no cooldown on OTP sends — spamming hits Supabase rate limits wi
 7. Commit.
 
 ## Success Criteria
-- [ ] Validator unit tests green (accept/reject matrix, incl. +alias)
-- [ ] Countdown ticks at 1x after ≥2 resends (stacked-timer regression); per-email bypass works; no timer leak on screen exit
-- [ ] Resend path provably validator-gated (same `_sendOtp`), verify uses `_otpEmail`
-- [ ] analyze/tests green; 1 commit
+- [x] Validator unit tests green (accept/reject matrix, incl. +alias) <!-- test/utils/validators_test.dart: accepts +alias, rejects a@ / @b -->
+- [x] Countdown ticks at 1x after ≥2 resends (stacked-timer regression); per-email bypass works; no timer leak on screen exit <!-- verified by the code-review audit recorded in journal 260710-2141: _startCooldown cancel-before-create (single timer by construction) + dispose cancel + mounted guard -->
+- [x] Resend path provably validator-gated (same `_sendOtp`), verify uses `_otpEmail` <!-- journal 260710-2141: code review confirmed single dispatch + wrong-email verify fixed via _otpEmail -->
+- [x] analyze/tests green; 1 commit <!-- 696dbd1 -->
 
 ## Risk Assessment
 - Regex too strict is the real risk → the accept-list test pins the team's actual +alias accounts.

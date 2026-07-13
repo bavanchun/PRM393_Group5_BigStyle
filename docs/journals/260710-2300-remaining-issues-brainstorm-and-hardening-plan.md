@@ -25,7 +25,7 @@ Seed reviews: backfill-or-delete (strict gate). Manager chat entry: **bottom-nav
 ## Lessons
 - Red-team on RLS-heavy plans pays for itself: the original chat RLS design (mine) had a happy-path-fatal flaw all 3 reviewers caught independently.
 - Live-DB drift is real here (`cancel_my_order`, prior `fix_rls_profiles_recursion.sql`): Phase 5 now starts with `supabase migration list` drift inventory.
-- `CODEBASE.md` badly stale (says 14 screens; actual 47) — refresh scheduled in Phase 5 wrap-up.
+- `CODEBASE.md` badly stale (says 14 screens; actual 47) — ✅ refreshed in Phase 2 (2026-07-12 Repo Documentation: rewrote CODEBASE.md with accurate screen/service/state count + new `docs/system-architecture.md` for system design).
 
 ## Next
 Cook `plans/260710-2235-review-gate-map-chat-hardening/plan.md` on `feat/review-gate-map-chat` (user deferred — review first). 5 Claude Tasks hydrated with dependency chain (2←1; 5←1-4).

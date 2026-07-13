@@ -38,11 +38,11 @@ via Supabase MCP `execute_sql` on project `agbnpqgxsppdrpbqoipo`.
 7. Cleanup: delete the QA test category row; revert the role flip to `customer`.
 
 ## Success Criteria
-- [ ] `flutter analyze` clean.
-- [ ] Create/edit/soft-delete verified in UI + DB.
-- [ ] Soft-delete of an in-use category does not raise a FK violation.
-- [ ] Product create regression passes.
-- [ ] Test data removed; roles restored (customer/customer/manager).
+- [x] `flutter analyze` clean. <!-- re-verified 2026-07-12: No issues found -->
+- [ ] Create/edit/soft-delete verified in UI + DB. <!-- create + soft-delete verified in UI+DB per journal (slug qa-danh-muc-test-5o3b, is_active=false); edit path code-review only — not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Soft-delete of an in-use category does not raise a FK violation.
+- [x] Product create regression passes.
+- [x] Test data removed; roles restored (customer/customer/manager).
 
 ## Risk Assessment
 - Forgetting to revert the role flip → checklist step 7 is mandatory.

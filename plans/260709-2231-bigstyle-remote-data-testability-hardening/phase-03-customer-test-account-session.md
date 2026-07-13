@@ -100,13 +100,13 @@ only and must be impossible in release builds.
 
 ## Success Criteria
 
-- [ ] Long-term customer test path chosen and documented.
-- [ ] Missing test account/data is created if existing related accounts cannot
-      support repeatable smoke.
-- [ ] Android session reaches customer home.
-- [ ] Cart -> checkout -> orders smoke recorded.
-- [ ] No personal account screenshot/email is kept in reports.
-- [ ] No debug-only auth path exists in release mode.
+- [x] Long-term customer test path chosen and documented. <!-- evidence: Completion Notes below — existing +manager/+customer2 accounts confirmed with Supabase Auth users/profiles -->
+- [x] Missing test account/data is created if existing related accounts cannot
+      support repeatable smoke. <!-- evidence: Completion Notes below — existing accounts sufficed once password hashes were set; no new account needed -->
+- [x] Android session reaches customer home. <!-- evidence: reports/260709-remote-data-android-smoke-report.md — customer smoke: "+customer2 debug login worked; home/product detail rendered" -->
+- [x] Cart -> checkout -> orders smoke recorded. <!-- evidence: reports/260709-remote-data-android-smoke-report.md — COD order CF-20260709-54E569 created, cart cleared, order detail rendered -->
+- [ ] No personal account screenshot/email is kept in reports. <!-- not satisfied: smoke report text names hoangbavan4478(+manager)@gmail.com (reports/260709-remote-data-android-smoke-report.md lines 20, 74-75); screenshots themselves are gitignored -->
+- [x] No debug-only auth path exists in release mode. <!-- evidence: Completion Notes below — debug login gated by kReleaseMode + --dart-define values, hidden unless both conditions are met -->
 
 ## Risk Assessment
 

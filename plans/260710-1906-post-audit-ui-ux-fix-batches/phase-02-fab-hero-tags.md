@@ -32,9 +32,9 @@ Modify (add one `heroTag:` line each):
 4. Commit.
 
 ## Success Criteria
-- [ ] Repo-wide census closed: `grep -rn "FloatingActionButton" FE/lib --include="*.dart" | wc -l` equals `grep -rn "heroTag:" FE/lib --include="*.dart" | wc -l` construction-site count (every FAB constructor has a tag; grep covers ALL of FE/lib, not just admin/manager)
-- [ ] Admin login + manager voucher/category push produce no hero exception in log
-- [ ] analyze/tests green; 1 commit
+- [x] Repo-wide census closed: `grep -rn "FloatingActionButton" FE/lib --include="*.dart" | wc -l` equals `grep -rn "heroTag:" FE/lib --include="*.dart" | wc -l` construction-site count (every FAB constructor has a tag; grep covers ALL of FE/lib, not just admin/manager) <!-- re-verified 2026-07-12: all 6 FAB constructor sites tagged; raw heroTag: count is now higher only because PR #33 added Hero-transition tags on non-FAB widgets -->
+- [ ] Admin login + manager voucher/category push produce no hero exception in log <!-- fix shipped (cf5d616) but a post-fix flutter-run log check was never documented — not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] analyze/tests green; 1 commit <!-- cf5d616 -->
 
 ## Risk Assessment
 Trivial. String tags are only compared for uniqueness within a route subtree.

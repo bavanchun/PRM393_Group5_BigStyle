@@ -49,18 +49,18 @@ ManagerCreateProduct was never visually captured (blocked by the FAB tap-target 
 
 ## Regression Checklist
 
-- [ ] ManagerProductList/Detail/Create: full CRUD flow (create, view detail, edit) unchanged; the `ManagerProductDetailScreen` dirty-form-on-open quirk (noted during Phase 2 capture, not a token issue) is NOT this plan's job to fix — don't accidentally fix or worsen it while touching the form code, note if you observe it.
-- [ ] ManagerDashboard: revenue/order-count stats, pending-order navigation shortcut all function identically.
-- [ ] ManagerOrders/OrderDetail: status filter, status-update flow (verified live in a prior session per `stability-hardening` phase 4) — do NOT regress this, it was recently proven working end-to-end.
-- [ ] ManagerProfile: edit-profile link, logout unchanged.
-- [ ] ManagerCategoryList/VoucherList: create/edit sheet open-close, list refresh unchanged.
+- [ ] ManagerProductList/Detail/Create: full CRUD flow (create, view detail, edit) unchanged; the `ManagerProductDetailScreen` dirty-form-on-open quirk (noted during Phase 2 capture, not a token issue) is NOT this plan's job to fix — don't accidentally fix or worsen it while touching the form code, note if you observe it. <!-- product list rendered post-merge (qa-260710-1827) but create/edit not re-walked — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] ManagerDashboard: revenue/order-count stats, pending-order navigation shortcut all function identically. <!-- dashboard + stat cards rendered on device post-merge (qa-260710-1827); pending-order shortcut not re-walked — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] ManagerOrders/OrderDetail: status filter, status-update flow (verified live in a prior session per `stability-hardening` phase 4) — do NOT regress this, it was recently proven working end-to-end. <!-- post-merge device check saw orders list with correct names + badge tones (qa-260710-1827) and zero business-logic lines were touched (completion note); the status-UPDATE flow itself was not re-walked — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] ManagerProfile: edit-profile link, logout unchanged. <!-- Manager logout device-verified post-merge (qa-260710-1827); edit-profile link not re-walked — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] ManagerCategoryList/VoucherList: create/edit sheet open-close, list refresh unchanged. <!-- lists loaded on device pre-reskin (260710-0135 QA); post-merge only a code-level Hero-collision risk assessment — deferred to device pass (plans/260712-1644 Phase 1) -->
 
 ## Success Criteria
 
-- [ ] All 9 screens migrated (ManagerCreateProduct verified live if Phase 0 unblocked it, otherwise clearly flagged inherited/unverified).
-- [ ] `M6`, `M19` (both file instances), `M20` (including the mixed-line `:457` hardcode) closed — verify against `docs/ux-flow-audit.md`'s original descriptions, not just "token swapped." `M2` re-dispositioned per Phase 0's verdict (overtaken-by-events, gradient-contrast measurement recorded). <!-- Updated: Red Team Session 1 -->
-- [ ] Manager cluster's guard-script count (baseline recorded at Phase 1; audit's "~78" is context) drops to 0 non-allowlisted occurrences, companion widget files included. <!-- Updated: Red Team Session 1 -->
-- [ ] `flutter analyze` + `flutter test` clean; no regression to the recently-verified manager order-status-update flow.
+- [x] All 9 screens migrated (ManagerCreateProduct verified live if Phase 0 unblocked it, otherwise clearly flagged inherited/unverified). <!-- evidence: completion note (M34 diff: 165/1935 lines ≈91.5% identical, replay-verified; ManagerCreateProduct explicitly flagged "unverified" despite the tap-bug resolving as artifact, per its own fallback clause) -->
+- [x] `M6`, `M19` (both file instances), `M20` (including the mixed-line `:457` hardcode) closed — verify against `docs/ux-flow-audit.md`'s original descriptions, not just "token swapped." `M2` re-dispositioned per Phase 0's verdict (overtaken-by-events, gradient-contrast measurement recorded). <!-- Updated: Red Team Session 1 --> <!-- evidence: completion note itemizes M19 (AppBar title/icon/button flip in both files), M20 (isHidden ternary fixed), M6 (confirmed already-resolved via token propagation), M2 (re-confirmed stale) -->
+- [x] Manager cluster's guard-script count (baseline recorded at Phase 1; audit's "~78" is context) drops to 0 non-allowlisted occurrences, companion widget files included. <!-- Updated: Red Team Session 1 --> <!-- evidence: `grep` of FE/lib/screens/manager/ this session — zero non-allowlisted hits; completion note "zero stragglers anywhere else [beyond admin/auth]" -->
+- [x] `flutter analyze` + `flutter test` clean; no regression to the recently-verified manager order-status-update flow. <!-- evidence: `git diff 463fe20~1..463fe20 -- manager_order_card.dart manager_order_detail_screen.dart order_status_update_sheet.dart` run this session — confirms only a BuildContext-threading signature change + inline badge → StatusBadge component swap + one Colors.blue→StatusColors.info substitution; zero event/bloc/onPressed logic touched; flutter analyze/test re-run this session, clean/116 passing -->
 
 ## Risk Assessment
 

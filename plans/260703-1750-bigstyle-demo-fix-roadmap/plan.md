@@ -5,7 +5,7 @@ status: partial
 priority: P1
 branch: "dev"
 tags: [demo, bugfix, ux-audit, flutter, supabase]
-blockedBy: []
+blockedBy: [260712-1644-bigstyle-product-completeness]
 blocks: []
 created: "2026-07-03T10:54:35.105Z"
 createdBy: "ck:plan"

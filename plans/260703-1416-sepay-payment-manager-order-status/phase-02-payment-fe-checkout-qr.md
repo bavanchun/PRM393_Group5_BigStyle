@@ -75,11 +75,13 @@ order_number: DB tự sinh → `createOrder` phải trả về row (`insert().se
 
 ## Success Criteria
 
-- [ ] COD: đặt hàng như cũ, orders.payment_method='cod', payments row (cod,pending), cart clear ngay.
-- [ ] SePay: order pending + payments pending, màn QR đúng amount + des=order_number, cart CHƯA clear.
-- [ ] curl webhook → app chuyển màn thành công ≤5s (cả khi tắt Realtime chỉ còn polling), cart clear.
-- [ ] Quay lại từ màn QR: cart nguyên.
-- [ ] `flutter analyze` 0 lỗi. ≥1 commit.
+- [ ] COD: đặt hàng như cũ, orders.payment_method='cod', payments row (cod,pending), cart clear ngay. <!-- completion-report liệt kê rõ "Test trên emulator: COD regression" là việc còn lại chỉ user làm được — chưa chạy device pass -->
+- [ ] SePay: order pending + payments pending, màn QR đúng amount + des=order_number, cart CHƯA clear. <!-- chưa chạy emulator E2E trong session cook (completion-report: "Chưa chạy emulator E2E trong session này") -->
+- [ ] curl webhook → app chuyển màn thành công ≤5s (cả khi tắt Realtime chỉ còn polling), cart clear. <!-- yêu cầu quan sát live trên device — chưa có bằng chứng -->
+- [ ] Quay lại từ màn QR: cart nguyên. <!-- yêu cầu quan sát live trên device — chưa có bằng chứng -->
+- [x] `flutter analyze` 0 lỗi. ≥1 commit. <!-- evidence: completion-report "40 issues, tất cả pre-existing, 0 mới ở file đụng tới"; commit 0769094 -->
+
+4 mục trên đều cần device pass (emulator/thiết bị thật) — sẽ đóng qua `plans/260712-1644-bigstyle-product-completeness` Phase 1 (mục "Full customer purchase smoke: COD + bank-transfer pay-again").
 
 ## Risk Assessment
 

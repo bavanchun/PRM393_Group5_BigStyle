@@ -42,20 +42,20 @@ Checkout and PaymentQr were **never visually captured** (blocked by the cart-CTA
 
 ## Regression Checklist (flow/behavior must be identical pre/post)
 
-- [ ] Home: search bar, category chips, product-card taps all navigate identically.
-- [ ] ProductList: filter sheet (inline, not a separate screen) opens/closes/filters identically.
-- [ ] ProductDetail: size selector (inline block, now tonal per step 3), add-to-cart, review section, size-guide sheet all function identically. <!-- Updated: Red Team Session 1 -->
-- [ ] Cart: item selection, quantity edit, checkout navigation (bug-fixed or not) all function identically to pre-migration behavior minus the bug itself.
-- [ ] CartItemEdit: save/cancel behavior unchanged.
-- [ ] Checkout/PaymentQr: address/payment-method/voucher sections, QR display — unchanged (verify once reachable).
-- [ ] Favorites: empty state + populated state (add a favorite in a demo account to verify populated state, since Phase 2 audit only captured empty).
+- [ ] Home: search bar, category chips, product-card taps all navigate identically. <!-- Home rendered post-merge (qa-260710-1827) but chip/search interactions not re-walked — not device-verified; deferred to device pass (plans/260712-1644 Phase 1); search bar since replaced by real /search (PR #33) -->
+- [ ] ProductList: filter sheet (inline, not a separate screen) opens/closes/filters identically. <!-- not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] ProductDetail: size selector (inline block, now tonal per step 3), add-to-cart, review section, size-guide sheet all function identically. <!-- Updated: Red Team Session 1 --> <!-- add-to-cart implicitly exercised post-merge (qa-260710-1827 cart had items); review/size-guide not re-walked — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] Cart: item selection, quantity edit, checkout navigation (bug-fixed or not) all function identically to pre-migration behavior minus the bug itself. <!-- item selection device-verified post-merge (qa-260710-1827: subtotal excludes unchecked); quantity edit + checkout nav not re-walked — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] CartItemEdit: save/cancel behavior unchanged. <!-- not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] Checkout/PaymentQr: address/payment-method/voucher sections, QR display — unchanged (verify once reachable). <!-- not device-verified post-reskin (QA pass didn't reach checkout); checkout flow since reworked by PR #33 — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] Favorites: empty state + populated state (add a favorite in a demo account to verify populated state, since Phase 2 audit only captured empty). <!-- not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
 
 ## Success Criteria
 
-- [ ] All 8 screens migrated (or Checkout/PaymentQr explicitly flagged `unverified` with reason, not silently done).
-- [ ] Hardcode-guard script (Phase 1) passes for this cluster's files.
-- [ ] Regression checklist above signed off.
-- [ ] `flutter analyze` + `flutter test` clean.
+- [x] All 8 screens migrated (or Checkout/PaymentQr explicitly flagged `unverified` with reason, not silently done). <!-- evidence: completion note per-screen hit counts (Home 8, ProductList 8, ProductDetail 11, Cart 1, CartItemEdit 2, Checkout 3, PaymentQr 0, Favorites 0 = 33) match guard delta 199→166 exactly; Checkout/PaymentQr explicitly flagged unverified -->
+- [x] Hardcode-guard script (Phase 1) passes for this cluster's files. <!-- evidence: `grep` of lib/screens/{home,product_list,product_detail,cart,checkout,favorites} this session — zero non-allowlisted hits; repo-wide guard also confirmed exit 0 -->
+- [ ] Regression checklist above signed off. <!-- explicitly not walked per completion note (no customer credentials that session); see per-item notes above -->
+- [x] `flutter analyze` + `flutter test` clean. <!-- evidence: completion note (43/43); re-ran this session, clean / 116 passing -->
 
 ## Risk Assessment
 

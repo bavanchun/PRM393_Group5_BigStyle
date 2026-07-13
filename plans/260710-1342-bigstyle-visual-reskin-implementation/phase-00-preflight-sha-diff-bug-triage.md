@@ -37,11 +37,11 @@ The audit pipeline (`plans/260710-1158-ui-ux-overhaul-audit-pipeline/`) graded t
 
 ## Success Criteria
 
-- [ ] Work branch `feat/visual-reskin` created; branch-point SHA recorded. <!-- Updated: Red Team Session 1 -->
-- [ ] Changed-file diff against the pinned SHA reviewed and recorded (empty or non-empty, either is fine — silence is not).
-- [ ] Both tap-target findings resolved to exactly one of: capture-tool artifact (with delta-captures done), trivial bug (diagnosis noted in cluster phase), or non-trivial (split to separate plan + blind-migration notes). <!-- Updated: Red Team Session 1 -->
-- [ ] Every inherited `closes {ID}` citation (M2, M6, M19, M20, C30, M34) re-verified against current code; stale ones re-dispositioned and cluster phases updated. <!-- Updated: Red Team Session 1 -->
-- [ ] Cluster phases for Cart (Phase 3) and ManagerProductList (Phase 5) know whether to include a bug-fix step or a blind-migration note.
+- [x] Work branch `feat/visual-reskin` created; branch-point SHA recorded. <!-- Updated: Red Team Session 1 --> <!-- evidence: completion note Step 0 (SHA 6e77ccf, verified via git rev-parse); commit c83f287 + merge commit d5bd510 "Merge feat/visual-reskin: Warm Terracotta visual reskin" -->
+- [x] Changed-file diff against the pinned SHA reviewed and recorded (empty or non-empty, either is fine — silence is not). <!-- evidence: completion note Step 1 — "git diff 6e77ccf...HEAD --stat -- FE/lib → empty output, exit 0" -->
+- [ ] Both tap-target findings resolved to exactly one of: capture-tool artifact (with delta-captures done), trivial bug (diagnosis noted in cluster phase), or non-trivial (split to separate plan + blind-migration notes). <!-- Updated: Red Team Session 1 --> <!-- partial: both resolved as capture-tool artifacts via user hand-taps (see completion note), but the parenthetical delta-captures of Checkout/PaymentQr/ManagerCreateProduct were never done (no role credentials) — those screens were migrated blind and flagged unverified instead -->
+- [x] Every inherited `closes {ID}` citation (M2, M6, M19, M20, C30, M34) re-verified against current code; stale ones re-dispositioned and cluster phases updated. <!-- Updated: Red Team Session 1 --> <!-- evidence: completion note Step 5 table, all 6 IDs with grep citations -->
+- [x] Cluster phases for Cart (Phase 3) and ManagerProductList (Phase 5) know whether to include a bug-fix step or a blind-migration note. <!-- evidence: "Disposition for Cluster Phases" section below; Phase 3/5 completion notes confirm receipt ("no bug-fix step needed") -->
 
 ## Risk Assessment
 

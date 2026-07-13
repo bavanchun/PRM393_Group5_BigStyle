@@ -36,10 +36,10 @@ Sau khi phase 2 ∥ 3 xong: hợp nhất điểm giao, verify end-to-end cả 2 
 
 ## Success Criteria
 
-- [ ] Toàn bộ Acceptance Criteria trong plan.md pass.
-- [ ] `flutter analyze` 0 lỗi.
-- [ ] code-reviewer không còn finding blocking.
-- [ ] ≥1 commit.
+- [ ] Toàn bộ Acceptance Criteria trong plan.md pass. <!-- chưa — xem plan.md, còn thiếu device-pass + đăng ký webhook dashboard -->
+- [x] `flutter analyze` 0 lỗi. <!-- evidence: completion-report "0 mới ở file đụng tới" -->
+- [x] code-reviewer không còn finding blocking. <!-- evidence: completion-report "code review: 0 BLOCKER"; 12 red-team findings vá trước code, 6 fix trọng yếu verified landed đúng -->
+- [ ] ≥1 commit. <!-- không tìm thấy commit "integration verify" riêng cho phase này (git log không match); phase 4 có thể chỉ là verify+report, không sinh code diff mới -->
 
 ## Risk Assessment
 

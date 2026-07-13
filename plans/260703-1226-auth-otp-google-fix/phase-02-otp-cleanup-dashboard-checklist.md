@@ -36,10 +36,10 @@ Google login (native `google_sign_in` + `serverClientId` + `signInWithIdToken`) 
 3. Test thủ công sau khi user cấu hình: gửi OTP → nhận mã số → gõ → login; bấm Google → login.
 
 ## Success Criteria
-- [ ] `auth_service.sendOtp` không còn `emailRedirectTo`
-- [ ] Checklist dashboard đầy đủ, cụ thể (có sẵn SHA-1 + package + tên template)
-- [ ] (User verify) email OTP hiện mã 6 số, gõ vào login được
-- [ ] (User verify) Google login chạy trên máy khác dùng shared keystore
+- [x] `auth_service.sendOtp` không còn `emailRedirectTo` <!-- evidence: FE/lib/services/auth_service.dart:41-42 — comment "emailRedirectTo is intentionally omitted." + chỉ còn signInWithOtp(email: email) -->
+- [x] Checklist dashboard đầy đủ, cụ thể (có sẵn SHA-1 + package + tên template) <!-- evidence: dashboard-setup-checklist.md — có SHA-1, package com.bigstyle.bigstyle_app, tên template Confirm signup/Magic Link -->
+- [ ] (User verify) email OTP hiện mã 6 số, gõ vào login được <!-- unverified: không có bằng chứng trực tiếp phiên này; gián tiếp — 3 tác giả khác nhau (bavanchun/VChun, Lữ Anh Bảo Khang, Tri) đều có commit sau khi fix này apply, ngụ ý auth hoạt động cho nhiều máy, nhưng OTP cụ thể chưa được quan sát trực tiếp -->
+- [ ] (User verify) Google login chạy trên máy khác dùng shared keystore <!-- unverified: tương tự — không có quan sát trực tiếp; ngoài phạm vi Phase 1 của plans/260712-1644-bigstyle-product-completeness (phase đó test password-auth, không riêng OTP/Google) -->
 
 ## Risk Assessment
 - **verifyOtp type cho user mới**: Supabase có thể phân biệt `OtpType.email` (đăng nhập) vs `OtpType.signup` (đăng ký mới). Nếu user mới verify fail → thêm nhánh thử `OtpType.signup`. Verify khi test thật, không over-engineer trước.

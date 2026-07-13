@@ -34,8 +34,8 @@ Manager dashboard `_StatCard` renders values in serif Cormorant (`AppTypography.
 5. Commit.
 
 ## Success Criteria
-- [ ] No `displaySmall`/`caption` in `_StatCard`; no `success` accent on pending; no duplicate accents across the 4 cards
-- [ ] New widget test green; analyze/tests green; 1 commit
+- [x] No `displaySmall`/`caption` in `_StatCard`; no `success` accent on pending; no duplicate accents across the 4 cards <!-- code re-verified 2026-07-12: _StatCard uses headlineLarge w700; accents primary/warning/info/accent; remaining caption use is in _ActionCard, not _StatCard -->
+- [x] New widget test green; analyze/tests green; 1 commit <!-- test/widgets/manager_stats_grid_test.dart; commit 55bc5ca -->
 
 ## Risk Assessment
 Purely presentational. Value color no longer varies per card — that's the point (matches Admin); icons keep differentiation. Shares `manager_dashboard_widgets.dart` with phase 1 (different hunks); sequential execution only.

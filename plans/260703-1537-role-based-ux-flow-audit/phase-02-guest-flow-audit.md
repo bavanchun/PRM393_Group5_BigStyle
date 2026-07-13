@@ -54,10 +54,11 @@ Mock quick-login (`!kReleaseMode`).
 
 ## Success Criteria
 
-- [ ] 3 screen guest (splash/login/otp) đủ States + bảng findings.
-- [ ] Mỗi seed finding được đánh giá giữ/loại + gắn severity + evidence file:line.
-- [ ] Mỗi screen kiểm visual bằng emulator (ảnh local, không commit) hoặc "N/A — lý do".
-- [ ] Kết luận rõ: mock-login có nên giữ cho demo không (đường browse vs chặn mua).
+- [x] 3 screen guest (splash/login/otp) đủ States + bảng findings.
+- [x] Mỗi seed finding được đánh giá giữ/loại + gắn severity + evidence file:line.
+- [x] Mỗi screen kiểm visual bằng emulator (ảnh local, không commit) hoặc "N/A — lý do".
+      <!-- splash chụp (m01); login/otp code-review-only với lý do ghi rõ trong doc (cần trạng thái đăng-xuất, mất session) — đúng nhánh "N/A — lý do" -->
+- [x] Kết luận rõ: mock-login có nên giữ cho demo không (đường browse vs chặn mua).
 
 ## Risk Assessment
 

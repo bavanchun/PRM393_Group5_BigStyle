@@ -49,11 +49,11 @@ dashboard "Danh mục" quick action to open it (removing the coming-soon path).
 5. `flutter analyze` clean.
 
 ## Success Criteria
-- [ ] "Danh mục" opens the list (no "Tính năng đang phát triển").
-- [ ] FAB opens create sheet; save adds a category to the list.
-- [ ] Row tap opens edit sheet; save updates the row.
-- [ ] Soft-delete (with confirm) removes it from the active list.
-- [ ] "Thêm sản phẩm" + "Khuyến mãi" quick actions unchanged.
+- [x] "Danh mục" opens the list (no "Tính năng đang phát triển").
+- [x] FAB opens create sheet; save adds a category to the list.
+- [ ] Row tap opens edit sheet; save updates the row. <!-- row-tap wiring exists (manager_category_list_screen.dart:153); edit-save runtime verified by code review only per journal — not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Soft-delete (with confirm) removes it from the active list.
+- [x] "Thêm sản phẩm" + "Khuyến mãi" quick actions unchanged.
 
 ## Risk Assessment
 - Layout pitfalls like the M7b `SizedBox`+button collapse — use `styleFrom`

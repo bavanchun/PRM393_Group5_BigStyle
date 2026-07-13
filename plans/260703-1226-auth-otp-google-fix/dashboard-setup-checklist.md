@@ -68,6 +68,7 @@ Dashboard → **Authentication → Providers → Google**:
 
 ## E. Verify (test thật)
 
+<!-- unverified (2026-07-12): không có bằng chứng trực tiếp cho 3 mục dưới trong phiên này. Gián tiếp: 3 tác giả khác nhau (bavanchun/VChun, Lữ Anh Bảo Khang, Tri) đều có commit sau khi fix apply — ngụ ý máy khác đã setup + chạy được, nhưng không xác nhận cụ thể qua OTP/Google (có thể qua nhánh mock/password-auth thêm sau này). Không thuộc phạm vi Phase 1 của plans/260712-1644-bigstyle-product-completeness (phase đó test password-auth, không riêng OTP/Google). -->
 - [ ] Gửi OTP → email hiện **mã 6 số** (không phải link) → gõ mã → login thành công.
 - [ ] Bấm "Đăng nhập với Google" → chọn account → vào app.
 - [ ] Máy khác (dùng shared keystore) pull code → `bash scripts/setup.sh` → điền `.env` → cả OTP + Google đều chạy.

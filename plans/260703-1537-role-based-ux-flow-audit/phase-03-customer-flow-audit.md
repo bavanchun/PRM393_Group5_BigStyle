@@ -74,10 +74,10 @@ guide) · cart (tab2) · checkout · payment_qr · orders · order_detail · fav
 
 ## Success Criteria
 
-- [ ] Tất cả 14 screen customer có States + bảng findings.
-- [ ] Happy-path mua (COD + bank_transfer) đi trọn, kiểm visual từng bước (ảnh local).
-- [ ] Mọi seed finding đánh giá giữ/loại + severity + evidence.
-- [ ] Xác nhận rõ 3 vấn đề nghi P1: CartLoad/CartClear, edit_profile false-success,
+- [ ] Tất cả 14 screen customer có States + bảng findings. <!-- partial: bảng findings đủ 14 screen, nhưng dòng "States:" thiếu ở 2 section gộp (favorites/profile/edit_profile, notifications/chat/delivery_map) trong docs/ux-flow-audit.md -->
+- [ ] Happy-path mua (COD + bank_transfer) đi trọn, kiểm visual từng bước (ảnh local). <!-- bank_transfer đi trọn kèm webhook SePay mô phỏng (doc: "TEST PASS", ảnh c10–c12); nhánh COD không được walk trong audit này (COD được device-verify sau đó ở smoke 260709, order CF-20260709-54E569, ngoài phạm vi audit) -->
+- [x] Mọi seed finding đánh giá giữ/loại + severity + evidence.
+- [x] Xác nhận rõ 3 vấn đề nghi P1: CartLoad/CartClear, edit_profile false-success,
       pending-order không recovery.
 
 ## Risk Assessment

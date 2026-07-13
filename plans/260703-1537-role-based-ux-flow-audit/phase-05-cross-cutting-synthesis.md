@@ -57,11 +57,11 @@ Chốt `docs/ux-flow-audit.md`.
 
 ## Success Criteria
 
-- [ ] `## Cross-cutting` đủ 8 nhóm; không lặp lại chi tiết đã ở section actor.
-- [ ] `## Top Priorities` xếp P0→P3, có effort ước lượng, quick-wins nổi bật.
-- [ ] Không finding trùng giữa các section (đã dedupe).
-- [ ] Doc chốt, trong ngưỡng maxLoc (hoặc đã tách phụ lục).
-- [ ] Toàn plan: 0 thay đổi code; chỉ docs + ảnh.
+- [ ] `## Cross-cutting` đủ 8 nhóm; không lặp lại chi tiết đã ở section actor. <!-- partial: doc có đúng 8 dòng X1–X8 nhưng thành phần lệch 8 nhóm seed (shared-widgets, navigation-stack, feature-naming gộp vào section actor hoặc bỏ; thêm RLS/orderNumber/data-test) -->
+- [ ] `## Top Priorities` xếp P0→P3, có effort ước lượng, quick-wins nổi bật. <!-- partial: bảng có, xếp đúng P0→P3, nhưng không có cột effort S/M/L và không đánh dấu quick-wins riêng -->
+- [x] Không finding trùng giữa các section (đã dedupe).
+- [x] Doc chốt, trong ngưỡng maxLoc (hoặc đã tách phụ lục).
+- [x] Toàn plan: 0 thay đổi code; chỉ docs + ảnh.
 
 ## Risk Assessment
 

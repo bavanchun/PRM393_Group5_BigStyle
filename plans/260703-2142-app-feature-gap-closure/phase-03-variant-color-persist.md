@@ -48,9 +48,9 @@ it where variants are constructed. Product-global swatch (per locked decision).
 
 ## Success Criteria
 - [ ] Creating a product with "Xanh ngọc" selected persists `color_hex='#2A6767'`
-      on its variants (verify in DB).
-- [ ] Product detail color dot renders the chosen color, not always terra-cotta.
-- [ ] `flutter analyze` clean.
+      on its variants (verify in DB). <!-- swatch map ('Xanh ngọc' → #2A6767 in product_swatch_colors.dart) + threading + color_hex mapping unit test verified; the explicit create-then-check-DB run is not documented — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Product detail color dot renders the chosen color, not always terra-cotta. <!-- evidence: FE/lib/screens/product_detail/product_detail_screen.dart:491-505 derives color dots from product.variants.map((v) => v.colorHex) — no hardcoded value -->
+- [x] `flutter analyze` clean. <!-- evidence: docs/journals/260703-app-feature-gap-closure-batch1.md "Verification" section -->
 
 ## Risk Assessment
 - Ambiguity: UI has both a global swatch and per-row color text. Mitigation:
