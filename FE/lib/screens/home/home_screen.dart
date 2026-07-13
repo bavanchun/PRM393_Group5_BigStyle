@@ -9,6 +9,8 @@ import '../../blocs/product/product_event.dart';
 import '../../blocs/product/product_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../blocs/notification/notification_bloc.dart';
+import '../../blocs/notification/notification_state.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/pressable_scale.dart';
 import '../../widgets/section_header.dart';
@@ -289,13 +291,28 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications_outlined,
-                    color: AppColors.textPrimary,
-                  ),
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/notifications'),
+                BlocBuilder<NotificationBloc, NotificationState>(
+                  builder: (context, state) {
+                    const icon = Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.textPrimary,
+                    );
+                    return IconButton(
+                      icon: state.unreadCount > 0
+                          ? Badge(
+                              label: Text(
+                                state.unreadCount > 99
+                                    ? '99+'
+                                    : '${state.unreadCount}',
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                              child: icon,
+                            )
+                          : icon,
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/notifications'),
+                    );
+                  },
                 ),
                 CircleAvatar(
                   radius: 20,

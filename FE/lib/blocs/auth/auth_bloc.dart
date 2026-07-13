@@ -24,6 +24,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<GoogleSignInEvent>(_onGoogleSignIn);
     on<SignOutEvent>(_onSignOut);
     on<UpdateProfileEvent>(_onUpdateProfile);
+    on<PasswordResetRequestEvent>(_onPasswordResetRequest);
+    on<UpdatePasswordEvent>(_onUpdatePassword);
   }
 
   Future<void> _onCheckSession(
@@ -179,6 +181,45 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthSuccess(event.user));
     } catch (_) {
       emit(const AuthError('Cập nhật thất bại'));
+    }
+  }
+
+  Future<void> _onPasswordResetRequest(
+    PasswordResetRequestEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (_passwordAuthInFlight) return;
+    _passwordAuthInFlight = true;
+    emit(const AuthLoading());
+    try {
+      await _authService.sendPasswordReset(event.email);
+      emit(const AuthPasswordResetEmailSent());
+    } catch (_) {
+      emit(const AuthError('Gửi email đặt lại mật khẩu thất bại'));
+    } finally {
+      _passwordAuthInFlight = false;
+    }
+  }
+
+  Future<void> _onUpdatePassword(
+    UpdatePasswordEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (_passwordAuthInFlight) return;
+    _passwordAuthInFlight = true;
+    emit(const AuthLoading());
+    try {
+      await _authService.updatePassword(event.password);
+      final user = await _authService.getCurrentUser();
+      if (user != null) {
+        emit(AuthSuccess(user));
+      } else {
+        emit(const AuthError('Không thể cập nhật mật khẩu. Vui lòng thử lại.'));
+      }
+    } catch (_) {
+      emit(const AuthError('Đổi mật khẩu thất bại'));
+    } finally {
+      _passwordAuthInFlight = false;
     }
   }
 }

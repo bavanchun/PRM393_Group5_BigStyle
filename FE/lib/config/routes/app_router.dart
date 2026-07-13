@@ -5,6 +5,7 @@ import '../../services/support_chat_service.dart';
 import '../../screens/chat/support_chat_screen.dart';
 import '../../screens/splash/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
+import '../../screens/auth/reset_password_screen.dart';
 import '../../blocs/search/search_bloc.dart';
 import '../../services/product_service.dart';
 import '../../screens/home/home_screen.dart';
@@ -39,6 +40,11 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const LoginScreen(),
+        );
+      case '/reset-password':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ResetPasswordScreen(),
         );
       case '/home':
         return MaterialPageRoute(

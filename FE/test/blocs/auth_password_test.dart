@@ -21,6 +21,12 @@ class FakeAuthService extends AuthService {
   Completer<void>? signUpGate; // if set, first call awaits it (droppable test)
   int signUpCallCount = 0;
 
+  Object? sendPasswordResetError;
+  int sendPasswordResetCallCount = 0;
+
+  UserModel? updatePasswordUser;
+  Object? updatePasswordError;
+
   @override
   Future<UserModel?> signInWithPassword({
     required String email,
@@ -43,6 +49,22 @@ class FakeAuthService extends AuthService {
     if (error != null) throw error;
     return signUpResult ?? const SignUpResult(SignUpOutcome.confirmationPending);
   }
+
+  @override
+  Future<void> sendPasswordReset(String email) async {
+    sendPasswordResetCallCount++;
+    final error = sendPasswordResetError;
+    if (error != null) throw error;
+  }
+
+  @override
+  Future<void> updatePassword(String password) async {
+    final error = updatePasswordError;
+    if (error != null) throw error;
+  }
+
+  @override
+  Future<UserModel?> getCurrentUser() async => updatePasswordUser;
 }
 
 class FakeGoogleAuthService extends GoogleAuthService {
@@ -142,6 +164,47 @@ void main() {
       await bloc.stream.firstWhere((s) => s is AuthSuccess);
 
       expect(auth.signUpCallCount, 1);
+    });
+  });
+
+  group('Password reset request', () {
+    test('success emits AuthPasswordResetEmailSent', () async {
+      bloc.add(const PasswordResetRequestEvent('a@b.com'));
+      final state = await bloc.stream
+          .firstWhere((s) => s is AuthPasswordResetEmailSent);
+      expect(state, isA<AuthPasswordResetEmailSent>());
+      expect(auth.sendPasswordResetCallCount, 1);
+    });
+
+    test('failure emits AuthError', () async {
+      auth.sendPasswordResetError = Exception('boom');
+      bloc.add(const PasswordResetRequestEvent('a@b.com'));
+      final state = await bloc.stream.firstWhere((s) => s is AuthError);
+      expect((state as AuthError).message.isNotEmpty, isTrue);
+    });
+  });
+
+  group('Update password', () {
+    test('success refetches the user and emits AuthSuccess', () async {
+      auth.updatePasswordUser = _user();
+      bloc.add(const UpdatePasswordEvent('newSecret1'));
+      final state = await bloc.stream.firstWhere((s) => s is AuthSuccess);
+      expect((state as AuthSuccess).user?.id, 'u1');
+    });
+
+    test('failure emits AuthError', () async {
+      auth.updatePasswordError = Exception('boom');
+      bloc.add(const UpdatePasswordEvent('newSecret1'));
+      final state = await bloc.stream.firstWhere((s) => s is AuthError);
+      expect((state as AuthError).message.isNotEmpty, isTrue);
+    });
+
+    test('no session after update emits AuthError, not a null-user success',
+        () async {
+      auth.updatePasswordUser = null;
+      bloc.add(const UpdatePasswordEvent('newSecret1'));
+      final state = await bloc.stream.firstWhere((s) => s is AuthError);
+      expect(state, isA<AuthError>());
     });
   });
 }

@@ -58,18 +58,57 @@ class _PasswordAuthFormState extends State<PasswordAuthForm> {
     }
   }
 
+  Future<void> _forgotPassword() async {
+    final controller = TextEditingController(
+      text: _emailController.text.trim(),
+    );
+    final formKey = GlobalKey<FormState>();
+    final email = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Đặt lại mật khẩu'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            keyboardType: TextInputType.emailAddress,
+            autofocus: true,
+            decoration: const InputDecoration(hintText: 'Email của bạn'),
+            validator: validateEmail,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Huỷ'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(dialogContext, controller.text.trim());
+            },
+            child: const Text('Gửi'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (email == null || !mounted) return;
+    context.read<AuthBloc>().add(PasswordResetRequestEvent(email));
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listenWhen: (prev, curr) => curr is AuthSignUpConfirmationPending,
+      listenWhen: (prev, curr) =>
+          curr is AuthSignUpConfirmationPending ||
+          curr is AuthPasswordResetEmailSent,
       listener: (context, state) {
+        final message = state is AuthPasswordResetEmailSent
+            ? 'Đã gửi email đặt lại mật khẩu. Vui lòng kiểm tra hộp thư.'
+            : 'Đã gửi email xác nhận. Vui lòng kiểm tra hộp thư để kích hoạt tài khoản.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Đã gửi email xác nhận. Vui lòng kiểm tra hộp thư để kích hoạt tài khoản.',
-            ),
-            behavior: SnackBarBehavior.floating,
-          ),
+          SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
         );
       },
       child: BlocBuilder<AuthBloc, AuthState>(
@@ -112,6 +151,21 @@ class _PasswordAuthFormState extends State<PasswordAuthForm> {
                   ),
                   validator: validatePassword,
                 ),
+                if (!_isSignUp) ...[
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: isLoading ? null : () => _forgotPassword(),
+                      child: Text(
+                        'Quên mật khẩu?',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
                 if (_isSignUp) ...[
                   const SizedBox(height: 12),
                   _field(

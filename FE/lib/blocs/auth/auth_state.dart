@@ -60,3 +60,9 @@ class AuthError extends AuthState {
 class AuthSignUpConfirmationPending extends AuthState {
   const AuthSignUpConfirmationPending();
 }
+
+/// A password-reset email was sent. Distinct from [AuthInitial] so it's
+/// never deduped away (same reasoning as [AuthUnauthenticated]).
+class AuthPasswordResetEmailSent extends AuthState {
+  const AuthPasswordResetEmailSent();
+}

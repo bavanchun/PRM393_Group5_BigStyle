@@ -111,6 +111,21 @@ class AuthService {
     await _client.auth.signOut();
   }
 
+  /// Sends a password-reset email whose link opens `bigstyle://reset-password`
+  /// (a temporary "recovery" session — see main.dart's onAuthStateChange
+  /// listener for the AuthChangeEvent.passwordRecovery handling).
+  Future<void> sendPasswordReset(String email) async {
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'bigstyle://reset-password',
+    );
+  }
+
+  /// Sets a new password on the active (recovery) session.
+  Future<void> updatePassword(String password) async {
+    await _client.auth.updateUser(UserAttributes(password: password));
+  }
+
   Future<UserModel?> getCurrentUser() async {
     final user = _client.auth.currentUser;
     if (user == null) return null;

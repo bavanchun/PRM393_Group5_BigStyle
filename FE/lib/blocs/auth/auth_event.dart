@@ -68,3 +68,19 @@ class UpdateProfileEvent extends AuthEvent {
   @override
   List<Object?> get props => [user];
 }
+
+class PasswordResetRequestEvent extends AuthEvent {
+  final String email;
+  const PasswordResetRequestEvent(this.email);
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class UpdatePasswordEvent extends AuthEvent {
+  final String password;
+  const UpdatePasswordEvent(this.password);
+
+  @override
+  List<Object?> get props => [password];
+}
