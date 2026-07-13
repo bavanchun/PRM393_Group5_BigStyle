@@ -36,6 +36,7 @@ class ManagerOrderCard extends StatelessWidget {
   final VoidCallback onDetail;
   final VoidCallback? onUpdateStatus;
   final bool compact;
+  final bool hasPendingRefundRequest;
 
   const ManagerOrderCard({
     super.key,
@@ -43,6 +44,7 @@ class ManagerOrderCard extends StatelessWidget {
     required this.onDetail,
     this.onUpdateStatus,
     this.compact = false,
+    this.hasPendingRefundRequest = false,
   });
 
   @override
@@ -93,7 +95,31 @@ class ManagerOrderCard extends StatelessWidget {
                       style: AppTypography.labelLarge.copyWith(fontSize: 13),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
-                    StatusBadge(label: order.status.label, status: order.status),
+                    StatusBadge(
+                      label: order.status.label,
+                      status: order.status,
+                    ),
+                    if (hasPendingRefundRequest) ...[
+                      const SizedBox(height: AppSpacing.xxs),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 14,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            'Yêu cầu hoàn tiền',
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.warning,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ],

@@ -3,10 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_event.dart';
 import '../../blocs/manager/manager_state.dart';
+import '../../blocs/refund_request/refund_request_bloc.dart';
+import '../../blocs/refund_request/refund_request_event.dart';
+import '../../blocs/refund_request/refund_request_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_status.dart';
+import '../../widgets/app_error_state.dart';
 import 'manager_order_card.dart';
 import 'manager_order_detail_screen.dart';
 import 'order_status_update_sheet.dart';
@@ -23,6 +27,9 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
   void initState() {
     super.initState();
     context.read<ManagerBloc>().add(const ManagerLoadOrders());
+    context.read<RefundRequestBloc>().add(
+      const RefundRequestLoadPendingOrderIds(),
+    );
   }
 
   @override
@@ -35,16 +42,20 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         elevation: 0,
       ),
       body: BlocListener<ManagerBloc, ManagerState>(
-        listenWhen: (previous, current) => previous.error != current.error,
+        // Surface transient failures (e.g. a background reload) that keep the
+        // list intact; the empty-list case is handled by the full-screen
+        // error state in _buildOrdersContent below.
+        listenWhen: (previous, current) =>
+            current.error != null &&
+            current.error != previous.error &&
+            current.orders.isNotEmpty,
         listener: (context, state) {
-          if (state.error != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error!),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              backgroundColor: AppColors.error,
+            ),
+          );
         },
         child: BlocBuilder<ManagerBloc, ManagerState>(
           builder: (context, state) {
@@ -95,45 +106,54 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
     }
     if (state.error != null && state.orders.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(state.error!, style: AppTypography.bodyMedium),
-            const SizedBox(height: AppSpacing.sm),
-            FilledButton(
-              onPressed: () => context.read<ManagerBloc>().add(
-                ManagerLoadOrders(status: state.selectedStatus),
-              ),
-              child: const Text('Thử lại'),
-            ),
-          ],
+        child: AppErrorState(
+          message: state.error!,
+          onRetry: () => context.read<ManagerBloc>().add(
+            ManagerLoadOrders(status: state.selectedStatus),
+          ),
         ),
       );
     }
     if (state.orders.isEmpty) {
       return Center(
-        child: Text('Không có đơn hàng', style: AppTypography.bodyMedium),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 64,
+              color: AppColors.textHint,
+            ),
+            const SizedBox(height: 16),
+            Text('Không có đơn hàng', style: AppTypography.bodyMedium),
+          ],
+        ),
       );
     }
 
     return RefreshIndicator(
       onRefresh: () => _reload(state.selectedStatus),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: state.orders.length,
-        itemBuilder: (context, index) {
-          final order = state.orders[index];
-          return ManagerOrderCard(
-            order: order,
-            onDetail: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ManagerOrderDetailScreen(order: order),
+      child: BlocBuilder<RefundRequestBloc, RefundRequestState>(
+        builder: (context, refundState) => ListView.builder(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          itemCount: state.orders.length,
+          itemBuilder: (context, index) {
+            final order = state.orders[index];
+            return ManagerOrderCard(
+              order: order,
+              hasPendingRefundRequest: refundState.pendingOrderIds.contains(
+                order.id,
               ),
-            ),
-            onUpdateStatus: () => showOrderStatusUpdateSheet(context, order),
-          );
-        },
+              onDetail: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ManagerOrderDetailScreen(order: order),
+                ),
+              ),
+              onUpdateStatus: () => showOrderStatusUpdateSheet(context, order),
+            );
+          },
+        ),
       ),
     );
   }

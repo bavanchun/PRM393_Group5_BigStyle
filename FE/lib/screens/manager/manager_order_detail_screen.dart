@@ -3,14 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_state.dart';
+import '../../blocs/refund_request/refund_request_bloc.dart';
+import '../../blocs/refund_request/refund_request_event.dart';
+import '../../blocs/refund_request/refund_request_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
+import '../../models/refund_request_model.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/status_badge.dart';
 import '../../utils/currency_format.dart';
 import 'order_status_update_sheet.dart';
+import 'refund_decision_sheet.dart';
 
 /// Manager-only order detail screen. Unlike the customer-facing
 /// OrderDetailScreen, this one is instantiated with an [OrderModel] snapshot,
@@ -30,14 +35,29 @@ class ManagerOrderDetailScreen extends StatefulWidget {
 class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
   Map<String, dynamic>? _payment;
   bool _isLoadingPayment = true;
+  String? _paymentError;
 
   @override
   void initState() {
     super.initState();
     _loadPayment();
+    context.read<RefundRequestBloc>().add(
+      RefundRequestLoadForOrder(widget.order.id),
+    );
   }
 
+  // Guards against a double-tap on the retry button starting two overlapping
+  // fetches — without this, an out-of-order resolution could leave the error
+  // card showing even after a later call already succeeded.
+  bool _paymentLoadInFlight = false;
+
   Future<void> _loadPayment() async {
+    if (_paymentLoadInFlight) return;
+    _paymentLoadInFlight = true;
+    setState(() {
+      _isLoadingPayment = true;
+      _paymentError = null;
+    });
     try {
       final rows = await Supabase.instance.client
           .from('payments')
@@ -52,7 +72,12 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _isLoadingPayment = false);
+      setState(() {
+        _isLoadingPayment = false;
+        _paymentError = 'Không tải được thông tin thanh toán';
+      });
+    } finally {
+      _paymentLoadInFlight = false;
     }
   }
 
@@ -160,6 +185,8 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
             AppCard(
               child: _isLoadingPayment
                   ? const Center(child: CircularProgressIndicator())
+                  : _paymentError != null
+                  ? _buildPaymentError()
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -263,6 +290,10 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
                 ),
               ),
             ],
+            BlocBuilder<RefundRequestBloc, RefundRequestState>(
+              builder: (context, refundState) =>
+                  _buildRefundRequestSection(refundState),
+            ),
             if (order.status.nextStatuses.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
               SizedBox(
@@ -276,6 +307,34 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaymentError() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.error_outline, color: AppColors.error, size: 18),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: Text(
+                _paymentError!,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        TextButton.icon(
+          onPressed: _loadPayment,
+          icon: const Icon(Icons.refresh, size: 16),
+          label: const Text('Thử lại'),
+        ),
+      ],
     );
   }
 
@@ -299,6 +358,54 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
               : AppTypography.bodyMedium,
         ),
       ],
+    );
+  }
+
+  /// Only pending requests get a decision affordance — approved/rejected
+  /// requests just show their outcome (the order's own StatusBadge already
+  /// reflects an approval as `refunded`).
+  Widget _buildRefundRequestSection(RefundRequestState refundState) {
+    final request = refundState.currentRequest;
+    if (request == null) return const SizedBox.shrink();
+
+    if (request.status != RefundRequestStatus.pending) {
+      return Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.md),
+        child: AppCard(
+          child: Text(
+            'Yêu cầu hoàn tiền: ${request.status.label}',
+            style: AppTypography.bodyMedium,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Yêu cầu hoàn tiền', style: AppTypography.headlineSmall),
+                Icon(Icons.warning_amber_rounded, color: AppColors.warning),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('Lý do: ${request.reason}', style: AppTypography.bodyMedium),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => showRefundDecisionSheet(context, request),
+                child: const Text('Xử lý yêu cầu hoàn tiền'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
