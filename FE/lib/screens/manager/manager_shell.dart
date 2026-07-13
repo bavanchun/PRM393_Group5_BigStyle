@@ -8,6 +8,7 @@ import '../../blocs/manager/manager_event.dart';
 import '../../blocs/support_inbox/support_inbox_bloc.dart';
 import '../../blocs/support_inbox/support_inbox_event.dart';
 import '../../config/theme/app_colors.dart';
+import '../../config/theme/app_typography.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
 import 'manager_orders_screen.dart';
@@ -89,19 +90,27 @@ class _ManagerProfileScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
+                      backgroundColor: AppColors.onPrimary.withValues(
+                        alpha: 0.2,
+                      ),
                       child: user?.avatarUrl != null
                           ? ClipOval(
-                              child: Image.network(user!.avatarUrl!,
-                                  width: 56, height: 56, fit: BoxFit.cover))
+                              child: Image.network(
+                                user!.avatarUrl!,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                              ),
+                            )
                           : Text(
                               (user?.fullName.isNotEmpty == true
                                   ? user!.fullName[0]
                                   : 'M'),
-                              style: const TextStyle(
-                                  color: AppColors.onPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700),
+                              style: AppTypography.headlineLarge.copyWith(
+                                color: AppColors.onPrimary,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                     ),
                     const SizedBox(width: 14),
@@ -111,18 +120,16 @@ class _ManagerProfileScreen extends StatelessWidget {
                         children: [
                           Text(
                             user?.fullName ?? 'Quản lý',
-                            style: const TextStyle(
+                            style: AppTypography.headlineMedium.copyWith(
                               color: AppColors.onPrimary,
-                              fontSize: 18,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             user?.email ?? '',
-                            style: TextStyle(
+                            style: AppTypography.bodySmall.copyWith(
                               color: AppColors.onPrimary.withValues(alpha: 0.8),
-                              fontSize: 13,
                             ),
                           ),
                           if (user?.brandName != null &&
@@ -130,15 +137,20 @@ class _ManagerProfileScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                Icon(Icons.store,
-                                    size: 12,
-                                    color: AppColors.onPrimary.withValues(alpha: 0.8)),
+                                Icon(
+                                  Icons.store,
+                                  size: 12,
+                                  color: AppColors.onPrimary.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   user.brandName!,
-                                  style: TextStyle(
-                                    color: AppColors.onPrimary.withValues(alpha: 0.8),
-                                    fontSize: 12,
+                                  style: AppTypography.caption.copyWith(
+                                    color: AppColors.onPrimary.withValues(
+                                      alpha: 0.8,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -148,8 +160,11 @@ class _ManagerProfileScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.edit_outlined,
-                          color: AppColors.onPrimary, size: 20),
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: AppColors.onPrimary,
+                        size: 20,
+                      ),
                       onPressed: () =>
                           Navigator.pushNamed(context, '/edit-profile'),
                     ),
@@ -208,11 +223,13 @@ class _ProfileMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: color ?? AppColors.textSecondary),
-      title: Text(title,
-          style: TextStyle(
-              fontSize: 14, color: color ?? AppColors.textPrimary)),
-      trailing:
-          Icon(Icons.chevron_right, color: AppColors.textHint, size: 20),
+      title: Text(
+        title,
+        style: AppTypography.bodyMedium.copyWith(
+          color: color ?? AppColors.textPrimary,
+        ),
+      ),
+      trailing: Icon(Icons.chevron_right, color: AppColors.textHint, size: 20),
       onTap: onTap,
     );
   }

@@ -8,8 +8,10 @@ import '../../../blocs/manager_product/manager_product_bloc.dart';
 import '../../../blocs/manager_product/manager_product_event.dart';
 import '../../../blocs/manager_product/manager_product_state.dart';
 import '../../../config/theme/app_colors.dart';
+import '../../../config/theme/app_typography.dart';
 import '../../../models/product_model.dart';
 import '../../../models/user_model.dart';
+import '../../../widgets/app_error_state.dart';
 import 'manager_create_product_screen.dart';
 import 'manager_product_detail_screen.dart';
 
@@ -25,6 +27,13 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedStatus = 'all';
+  // Last successfully loaded list. The bloc auto-dispatches a reload after
+  // every create/update/delete (see ManagerProductBloc); without this cache
+  // a transient failure of that background reload would destroy an
+  // already-successfully-shown list and replace it with a full-screen error
+  // right after the user's own edit succeeded. Mirrors
+  // manager_category_list_screen.dart's _categories pattern.
+  List<ProductModel>? _lastLoadedProducts;
 
   @override
   void initState() {
@@ -69,24 +78,25 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                     title,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                    style: AppTypography.headlineLarge.copyWith(
                       fontSize: 20,
-                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     _roleBadgeLabel(user?.role),
-                    style: const TextStyle(
+                    style: AppTypography.labelSmall.copyWith(
                       fontSize: 10,
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -100,14 +110,20 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
       ),
       body: BlocConsumer<ManagerProductBloc, ManagerProductState>(
         listener: (context, state) {
-          if (state is ManagerProductOperationSuccess) {
+          if (state is ManagerProductLoaded) {
+            setState(() => _lastLoadedProducts = state.products);
+          } else if (state is ManagerProductOperationSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: AppColors.primary,
               ),
             );
-          } else if (state is ManagerProductError) {
+          } else if (state is ManagerProductError &&
+              _lastLoadedProducts != null) {
+            // Background refresh failed but a list is already on screen —
+            // toast only; the builder keeps rendering the cached products
+            // (see _lastLoadedProducts) instead of the full AppErrorState.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.error),
@@ -115,15 +131,23 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
               ),
             );
           }
+          // ManagerProductError with no prior cache: no SnackBar here — the
+          // builder renders the full AppErrorState instead, and a SnackBar
+          // on top of that would double up the same message.
         },
         builder: (context, state) {
-          List<ProductModel> products = [];
-          bool isLoading = state is ManagerProductLoading;
+          List<ProductModel> products = _lastLoadedProducts ?? [];
+          bool isLoading =
+              _lastLoadedProducts == null &&
+              (state is ManagerProductLoading ||
+                  state is ManagerProductOperationSuccess);
+          String? errorMessage;
 
           if (state is ManagerProductLoaded) {
             products = state.products;
-          } else if (state is ManagerProductOperationSuccess) {
-            isLoading = true;
+          } else if (state is ManagerProductError &&
+              _lastLoadedProducts == null) {
+            errorMessage = state.error;
           }
 
           if (_searchQuery.isNotEmpty) {
@@ -153,20 +177,17 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Danh mục sản phẩm',
-                            style: TextStyle(
-                              fontSize: 18,
+                            style: AppTypography.headlineMedium.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'Quản lý kho hàng, giá bán và trạng thái hiển thị.',
-                            style: TextStyle(
+                            style: AppTypography.bodySmall.copyWith(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -183,10 +204,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                       ),
                       child: Text(
                         'Tổng: ${products.length}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                        style: AppTypography.labelSmall.copyWith(
                           color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -201,6 +221,13 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                     ? Center(
                         child: CircularProgressIndicator(
                           color: AppColors.primary,
+                        ),
+                      )
+                    : (errorMessage != null && products.isEmpty)
+                    ? AppErrorState(
+                        message: errorMessage,
+                        onRetry: () => context.read<ManagerProductBloc>().add(
+                          LoadManagerProductsEvent(),
                         ),
                       )
                     : _buildAdminProductList(products),
@@ -227,9 +254,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         },
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add, color: AppColors.onPrimary),
-        label: const Text(
+        label: Text(
           'THÊM SẢN PHẨM MỚI',
-          style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.bold),
+          style: AppTypography.button.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -255,7 +282,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             },
             decoration: InputDecoration(
               hintText: 'Tìm kiếm sản phẩm...',
-              hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+              hintStyle: AppTypography.bodySmall.copyWith(
+                color: AppColors.textHint,
+              ),
               prefixIcon: Icon(
                 Icons.search,
                 size: 20,
@@ -288,7 +317,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                 borderSide: BorderSide(color: AppColors.primary),
               ),
             ),
-            style: const TextStyle(fontSize: 13),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -299,7 +330,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                   initialValue: _selectedStatus,
                   decoration: InputDecoration(
                     labelText: 'Trạng thái',
-                    labelStyle: TextStyle(
+                    labelStyle: AppTypography.labelSmall.copyWith(
                       fontSize: 11,
                       color: AppColors.primary,
                     ),
@@ -311,22 +342,36 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
-                  items: const [
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                  items: [
                     DropdownMenuItem<String>(
                       value: 'all',
                       child: Text(
                         'Tất cả trạng thái',
-                        style: TextStyle(fontSize: 12),
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                     DropdownMenuItem<String>(
                       value: 'active',
-                      child: Text('Đang bán', style: TextStyle(fontSize: 12)),
+                      child: Text(
+                        'Đang bán',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
                     ),
                     DropdownMenuItem<String>(
                       value: 'hidden',
-                      child: Text('Tạm ẩn', style: TextStyle(fontSize: 12)),
+                      child: Text(
+                        'Tạm ẩn',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ],
                   onChanged: (val) {
@@ -359,7 +404,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             const SizedBox(height: 12),
             Text(
               'Không tìm thấy sản phẩm nào.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -465,8 +512,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                         children: [
                           Text(
                             product.name,
-                            style: TextStyle(
-                              fontSize: 14,
+                            style: AppTypography.bodyMedium.copyWith(
                               fontWeight: FontWeight.bold,
                               color: isHidden
                                   ? AppColors.textSecondary
@@ -479,9 +525,8 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                           const SizedBox(height: 2),
                           Text(
                             formatVnd(product.price),
-                            style: TextStyle(
+                            style: AppTypography.priceSmall.copyWith(
                               fontSize: 13,
-                              fontWeight: FontWeight.bold,
                               color: isHidden
                                   ? AppColors.textSecondary
                                   : AppColors.primary,
@@ -498,7 +543,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                 decoration: BoxDecoration(
                                   color: isHidden
                                       ? AppColors.divider
-                                      : AppColors.success.withValues(alpha: 0.15),
+                                      : AppColors.success.withValues(
+                                          alpha: 0.15,
+                                        ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
@@ -515,7 +562,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                     const SizedBox(width: 3),
                                     Text(
                                       isHidden ? 'Tạm ẩn' : 'Đang bán',
-                                      style: TextStyle(
+                                      style: AppTypography.labelSmall.copyWith(
                                         fontSize: 8,
                                         fontWeight: FontWeight.bold,
                                         color: isHidden
@@ -529,10 +576,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                               const SizedBox(width: 12),
                               Text(
                                 'Tồn kho: $totalStock',
-                                style: const TextStyle(
+                                style: AppTypography.labelSmall.copyWith(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
@@ -544,7 +590,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                               Expanded(
                                 child: Text(
                                   'Danh mục: ${product.category?.name ?? "Chưa phân loại"}',
-                                  style: TextStyle(
+                                  style: AppTypography.caption.copyWith(
                                     fontSize: 11,
                                     color: AppColors.textSecondary,
                                   ),
@@ -554,9 +600,8 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 'Ngày tạo: ${DateFormat('dd/MM/yyyy').format(product.createdAt)}',
-                                style: TextStyle(
+                                style: AppTypography.caption.copyWith(
                                   fontSize: 10,
-                                  color: AppColors.textHint,
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -587,7 +632,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
       ),
       child: Text(
         'Hiển thị $count trên $count sản phẩm',
-        style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+        style: AppTypography.caption.copyWith(fontSize: 11),
       ),
     );
   }

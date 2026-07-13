@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../blocs/support_chat/support_chat_bloc.dart';
 import '../../../blocs/support_inbox/support_inbox_bloc.dart';
+import '../../../blocs/support_inbox/support_inbox_event.dart';
 import '../../../blocs/support_inbox/support_inbox_state.dart';
 import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/app_typography.dart';
 import '../../../models/support_conversation_model.dart';
 import '../../../services/support_chat_service.dart';
+import '../../../widgets/app_error_state.dart';
 import '../../chat/support_chat_screen.dart';
 
 /// Staff inbox: live list of support conversations sorted by last activity,
@@ -30,23 +32,60 @@ class ManagerSupportInboxScreen extends StatelessWidget {
     );
   }
 
+  void _retry(BuildContext context) {
+    context.read<SupportInboxBloc>().add(const SupportInboxSubscribe());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Tin nhắn')),
-      body: BlocBuilder<SupportInboxBloc, SupportInboxState>(
+      body: BlocConsumer<SupportInboxBloc, SupportInboxState>(
+        // Surface transient stream failures that keep the list intact; the
+        // empty-list case is handled by the full-screen error state below.
+        listenWhen: (previous, current) =>
+            current.error != null &&
+            current.error != previous.error &&
+            current.conversations.isNotEmpty,
+        listener: (context, state) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
         builder: (context, state) {
           if (state.isLoading && state.conversations.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (state.error != null && state.conversations.isEmpty) {
+            return Center(
+              child: AppErrorState(
+                message: state.error!,
+                onRetry: () => _retry(context),
+              ),
+            );
+          }
           if (state.conversations.isEmpty) {
             return Center(
-              child: Text(
-                'Chưa có cuộc trò chuyện nào',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textHint,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    size: 64,
+                    color: AppColors.textHint,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Chưa có cuộc trò chuyện nào',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textHint,
+                    ),
+                  ),
+                ],
               ),
             );
           }

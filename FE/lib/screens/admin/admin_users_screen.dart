@@ -4,7 +4,9 @@ import '../../blocs/admin/admin_bloc.dart';
 import '../../blocs/admin/admin_event.dart';
 import '../../blocs/admin/admin_state.dart';
 import '../../config/theme/app_colors.dart';
+import '../../config/theme/app_typography.dart';
 import '../../models/user_model.dart';
+import '../../widgets/app_error_state.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -32,10 +34,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         backgroundColor: AppColors.primary,
         onPressed: () => _showAddUserDialog(context),
         icon: const Icon(Icons.person_add, color: AppColors.onPrimary),
-        label: const Text(
-          'Thêm người dùng',
-          style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.w600),
-        ),
+        label: Text('Thêm người dùng', style: AppTypography.button),
       ),
       body: Column(
         children: [
@@ -58,15 +57,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           end: Alignment.bottomRight,
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.people, color: AppColors.onPrimary, size: 22),
-          SizedBox(width: 10),
+          const Icon(Icons.people, color: AppColors.onPrimary, size: 22),
+          const SizedBox(width: 10),
           Text(
             'Quản lý người dùng',
-            style: TextStyle(
+            style: AppTypography.headlineMedium.copyWith(
               color: AppColors.onPrimary,
-              fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -81,7 +79,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Tìm theo tên, email...',
-          hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14),
+          hintStyle: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textHint,
+          ),
           prefixIcon: Icon(Icons.search, color: AppColors.textHint, size: 20),
           filled: true,
           fillColor: AppColors.surface,
@@ -134,8 +134,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
+          style: AppTypography.labelSmall.copyWith(
             color: isSelected ? AppColors.onPrimary : AppColors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
@@ -146,6 +145,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
   Widget _buildUserList() {
     return BlocConsumer<AdminBloc, AdminState>(
+      // Success toasts always surface (unchanged); a failed background
+      // refresh only toasts when there's still a list on screen — an empty
+      // list gets the full-screen AppErrorState below instead.
+      listenWhen: (previous, current) =>
+          current.successMessage != null ||
+          (current.error != null &&
+              current.error != previous.error &&
+              current.users.isNotEmpty),
       listener: (context, state) {
         if (state.successMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -177,6 +184,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           return const Center(child: CircularProgressIndicator());
         }
 
+        if (state.error != null && state.users.isEmpty) {
+          return Center(
+            child: AppErrorState(
+              message: state.error!,
+              onRetry: () =>
+                  context.read<AdminBloc>().add(const AdminLoadUsers()),
+            ),
+          );
+        }
+
         var users = state.users;
 
         if (_searchQuery.isNotEmpty) {
@@ -206,7 +223,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'Không tìm thấy người dùng',
-                  style: TextStyle(color: AppColors.textHint),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textHint,
+                  ),
                 ),
               ],
             ),
@@ -247,10 +266,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             backgroundColor: roleColor.withValues(alpha: 0.12),
             child: Text(
               user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
-              style: TextStyle(
+              style: AppTypography.bodyLarge.copyWith(
                 color: roleColor,
                 fontWeight: FontWeight.w700,
-                fontSize: 16,
               ),
             ),
           ),
@@ -259,17 +277,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user.fullName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
+                Text(user.fullName, style: AppTypography.labelLarge),
                 const SizedBox(height: 2),
                 Text(
                   user.email,
-                  style: TextStyle(fontSize: 12, color: AppColors.textHint),
+                  style: AppTypography.caption,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (user.brandName != null && user.brandName!.isNotEmpty) ...[
@@ -280,10 +292,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       const SizedBox(width: 4),
                       Text(
                         user.brandName!,
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: AppTypography.labelSmall.copyWith(
                           color: AppColors.primary,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -302,8 +312,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 ),
                 child: Text(
                   roleLabel,
-                  style: TextStyle(
-                    fontSize: 11,
+                  style: AppTypography.labelSmall.copyWith(
                     color: roleColor,
                     fontWeight: FontWeight.w600,
                   ),
@@ -362,7 +371,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         children: [
           Icon(icon, size: 18, color: AppColors.textSecondary),
           const SizedBox(width: 10),
-          Text(label, style: const TextStyle(fontSize: 13)),
+          Text(label, style: AppTypography.bodySmall),
         ],
       ),
     );
@@ -493,9 +502,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     size: 36,
                   ),
                   const SizedBox(height: 10),
-                  const Text(
+                  Text(
                     'Thêm người dùng',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    style: AppTypography.headlineMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   TextField(
@@ -551,10 +562,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             child: DropdownButton<String>(
                               value: selectedRole,
                               isExpanded: true,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textPrimary,
-                              ),
+                              style: AppTypography.bodyMedium,
                               items: const [
                                 DropdownMenuItem(
                                   value: 'manager',
@@ -606,9 +614,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Hủy',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: AppTypography.button.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
@@ -653,9 +663,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Tạo',
-                            style: TextStyle(color: AppColors.primary),
+                            style: AppTypography.button.copyWith(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                       ),

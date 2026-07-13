@@ -24,7 +24,9 @@ Future<void> showOrderStatusUpdateSheet(
     isScrollControlled: true,
     backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.bottomSheetRadius),
+      ),
     ),
     builder: (sheetContext) {
       return BlocProvider.value(
@@ -278,7 +280,10 @@ class _OrderStatusUpdateSheetContentState
                       width: double.infinity,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: managerOrderStatusColor(context, status),
+                          foregroundColor: managerOrderStatusColor(
+                            context,
+                            status,
+                          ),
                           side: BorderSide(
                             color: managerOrderStatusColor(context, status),
                           ),

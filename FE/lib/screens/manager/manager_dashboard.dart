@@ -8,6 +8,7 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
 import '../../blocs/manager_product/manager_product_bloc.dart';
+import '../../widgets/app_error_state.dart';
 import 'categories/manager_category_list_screen.dart';
 import 'manager_dashboard_widgets.dart';
 import 'products/manager_create_product_screen.dart';
@@ -49,7 +50,22 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           ),
         ],
       ),
-      body: BlocBuilder<ManagerBloc, ManagerState>(
+      body: BlocConsumer<ManagerBloc, ManagerState>(
+        // Stats are already on screen at this point, so a background refresh
+        // failure only needs a toast — the full-screen AppErrorState below
+        // handles the no-data-yet case instead.
+        listenWhen: (previous, current) =>
+            current.error != null &&
+            current.error != previous.error &&
+            current.dashboardStats != null,
+        listener: (context, state) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        },
         builder: (context, state) {
           if (state.isDashboardLoading && state.dashboardStats == null) {
             return const Center(child: CircularProgressIndicator());
@@ -94,14 +110,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
   Widget _buildError(String message) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(message, style: AppTypography.bodyMedium),
-          const SizedBox(height: AppSpacing.sm),
-          FilledButton(onPressed: _reload, child: const Text('Thử lại')),
-        ],
-      ),
+      child: AppErrorState(message: message, onRetry: _reload),
     );
   }
 
@@ -177,7 +186,18 @@ class _EmptyRecentOrders extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       child: Center(
-        child: Text('Chưa có đơn hàng', style: AppTypography.bodyMedium),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 48,
+              color: AppColors.textHint,
+            ),
+            const SizedBox(height: 12),
+            Text('Chưa có đơn hàng', style: AppTypography.bodyMedium),
+          ],
+        ),
       ),
     );
   }

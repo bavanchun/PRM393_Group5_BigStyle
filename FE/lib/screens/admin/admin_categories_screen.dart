@@ -4,6 +4,8 @@ import '../../blocs/admin/admin_bloc.dart';
 import '../../blocs/admin/admin_event.dart';
 import '../../blocs/admin/admin_state.dart';
 import '../../config/theme/app_colors.dart';
+import '../../config/theme/app_typography.dart';
+import '../../widgets/app_error_state.dart';
 
 class AdminCategoriesScreen extends StatefulWidget {
   const AdminCategoriesScreen({super.key});
@@ -28,8 +30,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
         backgroundColor: AppColors.primary,
         onPressed: () => _showAddCategoryDialog(context),
         icon: const Icon(Icons.add, color: AppColors.onPrimary),
-        label: const Text('Thêm danh mục',
-            style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.w600)),
+        label: Text('Thêm danh mục', style: AppTypography.button),
       ),
       body: Column(
         children: [
@@ -50,15 +51,14 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
           end: Alignment.bottomRight,
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.category, color: AppColors.onPrimary, size: 22),
-          SizedBox(width: 10),
+          const Icon(Icons.category, color: AppColors.onPrimary, size: 22),
+          const SizedBox(width: 10),
           Text(
             'Quản lý danh mục',
-            style: TextStyle(
+            style: AppTypography.headlineMedium.copyWith(
               color: AppColors.onPrimary,
-              fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -69,27 +69,53 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
 
   Widget _buildCategoryList() {
     return BlocConsumer<AdminBloc, AdminState>(
+      // Success toasts always surface (unchanged); a failed background
+      // refresh only toasts when there's still a list on screen — an empty
+      // list gets the full-screen AppErrorState below instead.
+      listenWhen: (previous, current) =>
+          current.successMessage != null ||
+          (current.error != null &&
+              current.error != previous.error &&
+              current.categories.isNotEmpty),
       listener: (context, state) {
         if (state.successMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.successMessage!),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.successMessage!),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
         }
         if (state.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.error!),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
         }
       },
       builder: (context, state) {
         if (state.isLoading) {
           return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state.error != null && state.categories.isEmpty) {
+          return Center(
+            child: AppErrorState(
+              message: state.error!,
+              onRetry: () =>
+                  context.read<AdminBloc>().add(const AdminLoadCategories()),
+            ),
+          );
         }
 
         final categories = state.categories;
@@ -99,14 +125,23 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.category_outlined,
-                    size: 56, color: AppColors.textHint.withValues(alpha: 0.4)),
+                Icon(
+                  Icons.category_outlined,
+                  size: 56,
+                  color: AppColors.textHint.withValues(alpha: 0.4),
+                ),
                 const SizedBox(height: 12),
-                Text('Chưa có danh mục nào',
-                    style: TextStyle(color: AppColors.textHint)),
+                Text(
+                  'Chưa có danh mục nào',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textHint,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text('Nhấn + để thêm danh mục mới',
-                    style: TextStyle(fontSize: 12, color: AppColors.textHint)),
+                Text(
+                  'Nhấn + để thêm danh mục mới',
+                  style: AppTypography.caption,
+                ),
               ],
             ),
           );
@@ -133,8 +168,10 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                 ],
               ),
               child: ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 leading: Container(
                   width: 40,
                   height: 40,
@@ -142,14 +179,17 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.category,
-                      color: AppColors.primary, size: 20),
+                  child: const Icon(
+                    Icons.category,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
-                title: Text(cat['name'] ?? '',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: Text('Slug: ${cat['slug'] ?? ''}',
-                    style: TextStyle(fontSize: 12, color: AppColors.textHint)),
+                title: Text(cat['name'] ?? '', style: AppTypography.labelLarge),
+                subtitle: Text(
+                  'Slug: ${cat['slug'] ?? ''}',
+                  style: AppTypography.caption,
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -158,16 +198,22 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                       activeThumbColor: AppColors.primary,
                       onChanged: (value) {
                         context.read<AdminBloc>().add(
-                            AdminUpdateCategory(cat['id'], {'is_active': value}));
+                          AdminUpdateCategory(cat['id'], {'is_active': value}),
+                        );
                       },
                     ),
                     PopupMenuButton<String>(
-                      icon: Icon(Icons.more_vert,
-                          color: AppColors.textHint, size: 18),
+                      icon: Icon(
+                        Icons.more_vert,
+                        color: AppColors.textHint,
+                        size: 18,
+                      ),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       onSelected: (value) {
-                        if (value == 'edit') _showEditCategoryDialog(context, cat);
+                        if (value == 'edit')
+                          _showEditCategoryDialog(context, cat);
                         if (value == 'delete') _showDeleteConfirm(context, cat);
                       },
                       itemBuilder: (context) => [
@@ -175,10 +221,13 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                           value: 'edit',
                           child: Row(
                             children: [
-                              Icon(Icons.edit_outlined,
-                                  size: 18, color: AppColors.textSecondary),
+                              Icon(
+                                Icons.edit_outlined,
+                                size: 18,
+                                color: AppColors.textSecondary,
+                              ),
                               const SizedBox(width: 10),
-                              const Text('Sửa', style: TextStyle(fontSize: 13)),
+                              Text('Sửa', style: AppTypography.bodySmall),
                             ],
                           ),
                         ),
@@ -186,12 +235,18 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                           value: 'delete',
                           child: Row(
                             children: [
-                              Icon(Icons.delete_outline,
-                                  size: 18, color: AppColors.error),
+                              Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                                color: AppColors.error,
+                              ),
                               const SizedBox(width: 10),
-                              Text('Xóa',
-                                  style: TextStyle(
-                                      fontSize: 13, color: AppColors.error)),
+                              Text(
+                                'Xóa',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.error,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -224,7 +279,8 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
               decoration: InputDecoration(
                 hintText: 'Tên danh mục',
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -233,7 +289,8 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
               decoration: InputDecoration(
                 hintText: 'Slug (vd: dam, ao)',
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ],
@@ -248,10 +305,12 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
               if (nameController.text.trim().isNotEmpty &&
                   slugController.text.trim().isNotEmpty) {
                 Navigator.pop(ctx);
-                context.read<AdminBloc>().add(AdminCreateCategory(
-                      name: nameController.text.trim(),
-                      slug: slugController.text.trim(),
-                    ));
+                context.read<AdminBloc>().add(
+                  AdminCreateCategory(
+                    name: nameController.text.trim(),
+                    slug: slugController.text.trim(),
+                  ),
+                );
               }
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
@@ -262,8 +321,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     );
   }
 
-  void _showEditCategoryDialog(
-      BuildContext context, Map<String, dynamic> cat) {
+  void _showEditCategoryDialog(BuildContext context, Map<String, dynamic> cat) {
     final nameController = TextEditingController(text: cat['name'] ?? '');
 
     showDialog(
@@ -275,8 +333,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
           controller: nameController,
           decoration: InputDecoration(
             hintText: 'Tên danh mục',
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
         actions: [
@@ -288,10 +345,11 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
             onPressed: () {
               if (nameController.text.trim().isNotEmpty) {
                 Navigator.pop(ctx);
-                context.read<AdminBloc>().add(AdminUpdateCategory(
-                      cat['id'],
-                      {'name': nameController.text.trim()},
-                    ));
+                context.read<AdminBloc>().add(
+                  AdminUpdateCategory(cat['id'], {
+                    'name': nameController.text.trim(),
+                  }),
+                );
               }
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
@@ -308,7 +366,9 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Xóa danh mục'),
-        content: Text('Xóa "${cat['name']}"? Hành động này không thể hoàn tác.'),
+        content: Text(
+          'Xóa "${cat['name']}"? Hành động này không thể hoàn tác.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
