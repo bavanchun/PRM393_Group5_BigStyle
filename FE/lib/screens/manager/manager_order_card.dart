@@ -59,75 +59,74 @@ class ManagerOrderCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
           border: Border.all(color: AppColors.divider),
         ),
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'DH-$reference',
+                    style: AppTypography.labelLarge.copyWith(fontSize: 13),
+                  ),
+                  Text(
+                    order.customerName?.trim().isNotEmpty == true
+                        ? order.customerName!
+                        : order.customerEmail?.trim().isNotEmpty == true
+                            ? order.customerEmail!
+                            : 'Khách hàng',
+                    style: AppTypography.bodySmall.copyWith(fontSize: 11),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
                     children: [
                       Text(
-                        'DH-$reference',
-                        style: AppTypography.labelLarge.copyWith(fontSize: 13),
+                        formatVnd(order.total),
+                        style: AppTypography.labelLarge.copyWith(fontSize: 12),
                       ),
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        order.customerName?.trim().isNotEmpty == true
-                            ? order.customerName!
-                            : 'Khách hàng',
-                        style: AppTypography.bodySmall.copyWith(fontSize: 11),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: StatusBadge(
+                          label: order.status.label,
+                          status: order.status,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      formatVnd(order.total),
-                      style: AppTypography.labelLarge.copyWith(fontSize: 13),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    StatusBadge(label: order.status.label, status: order.status),
-                  ],
-                ),
-              ],
-            ),
-            if (!compact) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (onUpdateStatus != null &&
-                      order.status.nextStatuses.isNotEmpty) ...[
-                    FilledButton(
-                      onPressed: onUpdateStatus,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 36),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                        ),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text('Đổi trạng thái'),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                  ],
-                  OutlinedButton(
-                    onPressed: onDetail,
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 36),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                      ),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text('Chi tiết'),
-                  ),
                 ],
               ),
-            ],
+            ),
+            if (!compact &&
+                onUpdateStatus != null &&
+                order.status.nextStatuses.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: FilledButton(
+                  onPressed: onUpdateStatus,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 32),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(fontSize: 12),
+                  ),
+                  child: const Text('Đổi'),
+                ),
+              ),
+            if (!compact)
+              OutlinedButton(
+                onPressed: onDetail,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  textStyle: const TextStyle(fontSize: 12),
+                ),
+                child: const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('Chi tiết'),
+                ),
+              ),
           ],
         ),
       ),

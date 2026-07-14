@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
@@ -152,6 +153,16 @@ class _BigStyleAppState extends State<BigStyleApp> {
             initialRoute: '/',
             onGenerateRoute: AppRouter.generateRoute,
             navigatorKey: navigatorKey,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('vi', 'VN'),
+              Locale('en', 'US'),
+            ],
+            locale: const Locale('vi', 'VN'),
           ),
         ),
       ),

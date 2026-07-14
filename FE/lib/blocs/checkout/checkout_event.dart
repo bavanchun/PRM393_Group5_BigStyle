@@ -17,6 +17,7 @@ class CheckoutPlaceOrder extends CheckoutEvent {
   final double? latitude;
   final double? longitude;
   final String? note;
+  final String? customerEmail;
   // 'cod' | 'bank_transfer'
   final String paymentMethod;
   // Voucher code applied at checkout (already preview-validated client-side
@@ -32,6 +33,7 @@ class CheckoutPlaceOrder extends CheckoutEvent {
     this.latitude,
     this.longitude,
     this.note,
+    this.customerEmail,
     this.paymentMethod = 'cod',
     this.promoCode,
   });
@@ -46,6 +48,7 @@ class CheckoutPlaceOrder extends CheckoutEvent {
         latitude,
         longitude,
         note,
+        customerEmail,
         paymentMethod,
         promoCode,
       ];

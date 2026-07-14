@@ -28,7 +28,8 @@ class ManagerOrderDetailScreen extends StatefulWidget {
 }
 
 class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
-  Map<String, dynamic>? _payment;
+  String? _paymentStatus;
+  DateTime? _paidAt;
   bool _isLoadingPayment = true;
 
   @override
@@ -41,33 +42,21 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
     try {
       final rows = await Supabase.instance.client
           .from('payments')
-          .select('method, status, amount, paid_at')
+          .select('status, paid_at')
           .eq('order_id', widget.order.id)
           .order('created_at', ascending: false)
           .limit(1);
       if (!mounted) return;
-      setState(() {
-        _payment = rows.isNotEmpty ? rows.first : null;
-        _isLoadingPayment = false;
-      });
+      if (rows.isNotEmpty) {
+        _paymentStatus = rows.first['status'] as String?;
+        _paidAt = rows.first['paid_at'] != null
+            ? DateTime.tryParse(rows.first['paid_at'] as String)
+            : null;
+      }
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoadingPayment = false);
-    }
-  }
-
-  String _paymentMethodLabel(String? method) {
-    switch (method) {
-      case 'cod':
-        return 'Thanh toán khi nhận hàng (COD)';
-      case 'bank_transfer':
-        return 'Chuyển khoản ngân hàng';
-      case 'vnpay':
-        return 'VNPay';
-      case 'momo':
-        return 'Momo';
-      default:
-        return 'Chưa xác định';
+      // ignore — UI shows fallback text
+    } finally {
+      if (mounted) setState(() => _isLoadingPayment = false);
     }
   }
 
@@ -99,6 +88,17 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
     }
   }
 
+  String _paymentMethodLabelFromOrder(String? method) {
+    switch (method) {
+      case 'cod':
+        return 'Thanh toán khi nhận hàng (COD)';
+      case 'bank_transfer':
+        return 'Chuyển khoản ngân hàng';
+      default:
+        return method ?? 'Chưa xác định';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ManagerBloc, ManagerState>(
@@ -125,31 +125,26 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('DH-$reference', style: AppTypography.headlineSmall),
-                      StatusBadge(
-                        label: order.status.label,
-                        status: order.status,
-                      ),
-                    ],
-                  ),
+                  Text('DH-$reference', style: AppTypography.headlineSmall),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Khách hàng: ${order.customerName?.trim().isNotEmpty == true ? order.customerName! : 'Không rõ'}',
+                    'Khách hàng: ${order.customerName?.trim().isNotEmpty == true ? order.customerName! : order.customerEmail?.trim().isNotEmpty == true ? order.customerEmail! : 'Không rõ'}',
                     style: AppTypography.bodyMedium,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Ngày đặt: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
                     style: AppTypography.bodySmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  StatusBadge(
+                    label: order.status.label,
+                    status: order.status,
                   ),
                 ],
               ),
@@ -158,37 +153,45 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
             Text('Thanh toán', style: AppTypography.headlineSmall),
             const SizedBox(height: AppSpacing.sm),
             AppCard(
-              child: _isLoadingPayment
-                  ? const Center(child: CircularProgressIndicator())
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Phương thức: ${_paymentMethodLabelFromOrder(order.paymentMethod)}',
+                    style: AppTypography.bodyMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        'Trạng thái: ',
+                        style: AppTypography.bodyMedium,
+                      ),
+                      if (_isLoadingPayment)
+                        const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
                         Text(
-                          'Phương thức: ${_paymentMethodLabel(_payment?['method'] as String?)}',
-                          style: AppTypography.bodyMedium,
+                          _paymentStatusLabel(_paymentStatus),
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: _paymentStatusColor(_paymentStatus),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              'Trạng thái: ',
-                              style: AppTypography.bodyMedium,
-                            ),
-                            Text(
-                              _paymentStatusLabel(
-                                _payment?['status'] as String?,
-                              ),
-                              style: AppTypography.bodyMedium.copyWith(
-                                color: _paymentStatusColor(
-                                  _payment?['status'] as String?,
-                                ),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    ],
+                  ),
+                  if (_paidAt != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Thanh toán lúc: ${_paidAt!.hour.toString().padLeft(2, '0')}:${_paidAt!.minute.toString().padLeft(2, '0')} ${_paidAt!.day}/${_paidAt!.month}/${_paidAt!.year}',
+                      style: AppTypography.caption,
                     ),
+                  ],
+                ],
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             Text('Sản phẩm', style: AppTypography.headlineSmall),

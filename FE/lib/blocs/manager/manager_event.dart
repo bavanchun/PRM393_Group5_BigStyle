@@ -14,11 +14,13 @@ class ManagerLoadDashboard extends ManagerEvent {
 
 class ManagerLoadOrders extends ManagerEvent {
   final String? status;
+  final DateTime? fromDate;
+  final DateTime? toDate;
 
-  const ManagerLoadOrders({this.status});
+  const ManagerLoadOrders({this.status, this.fromDate, this.toDate});
 
   @override
-  List<Object?> get props => [status];
+  List<Object?> get props => [status, fromDate, toDate];
 }
 
 /// Manager updates an order's status. Bloc calls OrderService.updateOrderStatus

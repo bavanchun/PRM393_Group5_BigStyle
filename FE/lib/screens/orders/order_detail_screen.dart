@@ -82,25 +82,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppCard(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text('Đơn hàng',
-                                      style: AppTypography.headlineSmall),
-                                ),
-                                const SizedBox(width: 8),
-                                StatusBadge(
-                                  label: order.status.label,
-                                  status: order.status,
-                                ),
-                              ],
-                            ),
+                            Text('Đơn hàng',
+                                style: AppTypography.headlineSmall),
                             const SizedBox(height: 8),
                             Text(
                                 'Mã: ${order.orderNumber ?? order.id.substring(0, 8).toUpperCase()}',
@@ -109,6 +97,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             Text(
                                 'Ngày: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
                                 style: AppTypography.bodySmall),
+                            const SizedBox(height: 8),
+                            StatusBadge(
+                              label: order.status.label,
+                              status: order.status,
+                            ),
                           ],
                         ),
                       ),

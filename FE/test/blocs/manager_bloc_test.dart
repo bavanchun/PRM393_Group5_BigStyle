@@ -35,7 +35,11 @@ class FakeOrderService extends OrderService {
   int updateOrderStatusCallCount = 0;
 
   @override
-  Future<List<OrderModel>> getAllOrders({String? status}) async {
+  Future<List<OrderModel>> getAllOrders({
+    String? status,
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) async {
     getAllOrdersCallCount++;
     return ordersResult;
   }

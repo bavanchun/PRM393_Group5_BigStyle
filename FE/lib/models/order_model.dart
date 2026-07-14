@@ -74,6 +74,7 @@ class OrderModel extends Equatable {
   final String id;
   final String userId;
   final String? customerName;
+  final String? customerEmail;
   final List<OrderItem> items;
   final double subtotal;
   final double shippingFee;
@@ -97,6 +98,7 @@ class OrderModel extends Equatable {
     required this.id,
     required this.userId,
     this.customerName,
+    this.customerEmail,
     required this.items,
     required this.subtotal,
     this.shippingFee = 0,
@@ -145,7 +147,9 @@ class OrderModel extends Equatable {
       userId: map['user_id'] ?? '',
       customerName:
           (map['customer'] as Map<String, dynamic>?)?['full_name'] as String? ??
+          map['customer_name'] as String? ??
           shippingAddress?['name'] as String?,
+      customerEmail: shippingAddress?['email'] as String?,
       items:
           (map['items'] as List?)
               ?.map((e) => OrderItem.fromMap(e as Map<String, dynamic>))
@@ -177,6 +181,7 @@ class OrderModel extends Equatable {
     id: id,
     userId: userId,
     customerName: customerName,
+    customerEmail: customerEmail,
     items: items,
     subtotal: subtotal,
     shippingFee: shippingFee,
@@ -199,6 +204,7 @@ class OrderModel extends Equatable {
     id,
     userId,
     customerName,
+    customerEmail,
     items,
     subtotal,
     shippingFee,
