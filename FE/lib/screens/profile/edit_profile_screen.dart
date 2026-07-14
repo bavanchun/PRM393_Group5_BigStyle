@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/theme/app_colors.dart';
+import '../../widgets/auth_avatar.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
@@ -118,21 +119,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         onTap: _uploadingAvatar ? null : _pickAvatar,
                         child: Stack(
                           children: [
-                            CircleAvatar(
-                              radius: 48,
-                              backgroundColor: AppColors.secondary,
-                              backgroundImage: _pickedAvatarBytes != null
-                                  ? MemoryImage(_pickedAvatarBytes!)
-                                  : (user.avatarUrl != null
-                                          ? NetworkImage(user.avatarUrl!)
-                                          : null)
-                                      as ImageProvider?,
-                              child: _pickedAvatarBytes == null &&
-                                      user.avatarUrl == null
-                                  ? const Icon(Icons.person,
-                                      size: 48, color: AppColors.primary)
-                                  : null,
-                            ),
+                            _pickedAvatarBytes != null
+                                ? CircleAvatar(
+                                    radius: 48,
+                                    backgroundImage:
+                                        MemoryImage(_pickedAvatarBytes!),
+                                  )
+                                : AuthAvatar(
+                                    key: ValueKey(user.avatarUrl),
+                                    url: user.avatarUrl,
+                                    radius: 48,
+                                    fallback: const Icon(Icons.person,
+                                        size: 48, color: AppColors.primary),
+                                  ),
                             Positioned(
                               bottom: 0,
                               right: 0,
@@ -314,24 +313,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (_pickedAvatar != null && _pickedAvatarBytes != null) {
       setState(() => _uploadingAvatar = true);
-      // The `avatars` bucket's RLS requires the object path to start with the
-      // caller's uid, so upload to `<uid>/<timestamp>.jpg` (not the manager-only
-      // `products` bucket, which customers cannot write to).
       final fileName =
           '${currentUser.id}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       final uploadedUrl = await _productService.uploadProductImage(
         fileName,
         _pickedAvatarBytes!,
         'image/jpeg',
         bucket: 'avatars',
       );
+
+      debugPrint('[Avatar] Upload result URL: $uploadedUrl');
+
       if (!mounted) return;
       setState(() => _uploadingAvatar = false);
 
       if (uploadedUrl == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tải ảnh đại diện thất bại')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tải ảnh đại diện thất bại')),
+          );
+        }
         return;
       }
       _avatarUrl = uploadedUrl;

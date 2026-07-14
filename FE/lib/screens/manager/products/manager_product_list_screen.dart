@@ -27,6 +27,12 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
   String _searchQuery = '';
   String _selectedStatus = 'all';
 
+  // Draggable FAB state variables
+  Offset? _fabPosition;
+  bool _isDragging = false;
+  Offset? _dragStartFabPosition;
+  Offset? _dragStartPoint;
+
   @override
   void initState() {
     super.initState();
@@ -48,200 +54,172 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        title: const Text(
+          'Quản lý sản phẩm',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: AppColors.surface,
-        elevation: 2,
-        title: Row(
-          children: [
-            const Flexible(
-              child: Text(
-                'Quản trị BigStyle',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: AppColors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        actions: [
+          BlocBuilder<NotificationBloc, NotificationState>(
+            builder: (context, notifState) {
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: notifState.unreadCount > 0,
+                  label: notifState.unreadCount > 99
+                      ? const Text('99+')
+                      : Text('${notifState.unreadCount}'),
+                  backgroundColor: AppColors.error,
+                  textColor: Colors.white,
+                  textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                  child: const Icon(Icons.notifications_outlined),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Quản trị',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            ],
+                onPressed: () => Navigator.pushNamed(context, '/notifications'),
+              );
+            },
           ),
-          actions: [
-            BlocBuilder<NotificationBloc, NotificationState>(
-              builder: (context, notifState) {
-                return IconButton(
-                  icon: Badge(
-                    isLabelVisible: notifState.unreadCount > 0,
-                    label: notifState.unreadCount > 99
-                        ? const Text('99+')
-                        : Text('${notifState.unreadCount}'),
-                    backgroundColor: AppColors.error,
-                    textColor: Colors.white,
-                    textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-                    child: const Icon(Icons.notifications_outlined),
-                  ),
-                  onPressed: () => Navigator.pushNamed(context, '/notifications'),
-                );
-              },
-            ),
-          ],
-        ),
-        body: BlocConsumer<ManagerProductBloc, ManagerProductState>(
-        listener: (context, state) {
-          if (state is ManagerProductOperationSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.primary,
-              ),
-            );
-          } else if (state is ManagerProductError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          List<ProductModel> products = [];
-          bool isLoading = state is ManagerProductLoading;
+        ],
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          _fabPosition ??= Offset(
+            constraints.maxWidth - 56 - 16,
+            constraints.maxHeight - 56 - 16,
+          );
 
-          if (state is ManagerProductLoaded) {
-            products = state.products;
-          } else if (state is ManagerProductOperationSuccess) {
-            isLoading = true;
-          }
-
-          if (_searchQuery.isNotEmpty) {
-            products = products
-                .where(
-                  (p) =>
-                      p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
-                )
-                .toList();
-          }
-          if (_selectedStatus != 'all') {
-            bool isActiveFilter = _selectedStatus == 'active';
-            products = products
-                .where((p) => p.isActive == isActiveFilter)
-                .toList();
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Danh mục sản phẩm',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+              BlocConsumer<ManagerProductBloc, ManagerProductState>(
+                listener: (context, state) {
+                  if (state is ManagerProductOperationSuccess) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: AppColors.primary,
+                      ),
+                    );
+                  } else if (state is ManagerProductError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.error),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  List<ProductModel> products = [];
+                  bool isLoading = state is ManagerProductLoading;
+
+                  if (state is ManagerProductLoaded) {
+                    products = state.products;
+                  } else if (state is ManagerProductOperationSuccess) {
+                    isLoading = true;
+                  }
+
+                  if (_searchQuery.isNotEmpty) {
+                    products = products
+                        .where(
+                          (p) =>
+                              p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+                        )
+                        .toList();
+                  }
+                  if (_selectedStatus != 'all') {
+                    bool isActiveFilter = _selectedStatus == 'active';
+                    products = products
+                        .where((p) => p.isActive == isActiveFilter)
+                        .toList();
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Danh sách sản phẩm',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Quản lý kho hàng, giá bán và trạng thái hiển thị.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Quản lý kho hàng, giá bán và trạng thái hiển thị.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'Tổng: ${products.length}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Tổng: ${products.length}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
+
+                      _buildFilterBar(),
+
+                      Expanded(
+                        child: isLoading
+                            ? Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                ),
+                              )
+                            : _buildAdminProductList(products),
+                      ),
+
+                      _buildFooter(products.length),
+                    ],
+                  );
+                },
               ),
-
-              _buildFilterBar(),
-
-              Expanded(
-                child: isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
-                      )
-                    : _buildAdminProductList(products),
+              
+              // Draggable FAB
+              Positioned(
+                left: _fabPosition!.dx,
+                top: _fabPosition!.dy,
+                child: _buildDraggableFAB(constraints),
               ),
-
-              _buildFooter(products.length),
             ],
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'manager-products-fab',
-        onPressed: () {
-          final bloc = context.read<ManagerProductBloc>();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                value: bloc,
-                child: const ManagerCreateProductScreen(),
-              ),
-            ),
-          );
-        },
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: AppColors.onPrimary),
-        label: const Text(
-          'THÊM SẢN PHẨM MỚI',
-          style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.bold),
-        ),
       ),
     );
   }
 
   Widget _buildFilterBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -249,6 +227,7 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
         border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: _searchController,
@@ -294,57 +273,212 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
             ),
             style: const TextStyle(fontSize: 13),
           ),
-          const SizedBox(height: 10),
-
+          const SizedBox(height: 12),
+          
           Row(
             children: [
+              const Text(
+                'Lọc theo:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _selectedStatus,
-                  decoration: InputDecoration(
-                    labelText: 'Trạng thái',
-                    labelStyle: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.primary,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildFilterChip('Tất cả', 'all'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Đang bán', 'active'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Tạm ẩn', 'hidden'),
+                    ],
                   ),
-                  style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
-                  items: const [
-                    DropdownMenuItem<String>(
-                      value: 'all',
-                      child: Text(
-                        'Tất cả trạng thái',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    DropdownMenuItem<String>(
-                      value: 'active',
-                      child: Text('Đang bán', style: TextStyle(fontSize: 12)),
-                    ),
-                    DropdownMenuItem<String>(
-                      value: 'hidden',
-                      child: Text('Tạm ẩn', style: TextStyle(fontSize: 12)),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _selectedStatus = val;
-                      });
-                    }
-                  },
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final isSelected = _selectedStatus == value;
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? AppColors.onPrimary : AppColors.textSecondary,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          setState(() {
+            _selectedStatus = value;
+          });
+        }
+      },
+      selectedColor: AppColors.primary,
+      backgroundColor: AppColors.background,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isSelected ? AppColors.primary : AppColors.border.withValues(alpha: 0.5),
+        ),
+      ),
+      showCheckmark: false,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+
+  Widget _buildStatusBadge(bool isActive) {
+    final isHidden = !isActive;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: isHidden
+            ? AppColors.textHint.withValues(alpha: 0.15)
+            : AppColors.primary.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isHidden ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            size: 12,
+            color: isHidden ? AppColors.textSecondary : AppColors.primary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isHidden ? 'Tạm ẩn' : 'Hiển thị',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: isHidden ? AppColors.textSecondary : AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStockBadge(int totalStock) {
+    Color bgColor;
+    Color textColor;
+    IconData icon;
+    String label;
+
+    if (totalStock == 0) {
+      bgColor = AppColors.error.withValues(alpha: 0.15);
+      textColor = AppColors.error;
+      icon = Icons.cancel_outlined;
+      label = 'Hết hàng';
+    } else if (totalStock <= 5) {
+      bgColor = Colors.orange.withValues(alpha: 0.15);
+      textColor = Colors.orange.shade800;
+      icon = Icons.warning_amber_rounded;
+      label = 'Sắp hết: $totalStock';
+    } else {
+      bgColor = AppColors.success.withValues(alpha: 0.15);
+      textColor = AppColors.success;
+      icon = Icons.inventory_2_outlined;
+      label = 'Tồn: $totalStock';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: textColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDraggableFAB(BoxConstraints constraints) {
+    return GestureDetector(
+      onLongPressStart: (details) {
+        setState(() {
+          _isDragging = true;
+          _dragStartFabPosition = _fabPosition;
+          _dragStartPoint = details.globalPosition;
+        });
+      },
+      onLongPressMoveUpdate: (details) {
+        if (_dragStartFabPosition != null && _dragStartPoint != null) {
+          final delta = details.globalPosition - _dragStartPoint!;
+          setState(() {
+            double newX = _dragStartFabPosition!.dx + delta.dx;
+            double newY = _dragStartFabPosition!.dy + delta.dy;
+            
+            // Keep within boundaries with padding of 16
+            newX = newX.clamp(16.0, constraints.maxWidth - 56 - 16);
+            newY = newY.clamp(16.0, constraints.maxHeight - 56 - 16);
+            
+            _fabPosition = Offset(newX, newY);
+          });
+        }
+      },
+      onLongPressEnd: (details) {
+        setState(() {
+          _isDragging = false;
+          _dragStartFabPosition = null;
+          _dragStartPoint = null;
+        });
+      },
+      child: AnimatedScale(
+        scale: _isDragging ? 1.15 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: AnimatedOpacity(
+          opacity: _isDragging ? 0.8 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          child: FloatingActionButton(
+            heroTag: 'manager-products-fab',
+            onPressed: _isDragging
+                ? null
+                : () {
+                    final bloc = context.read<ManagerProductBloc>();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider.value(
+                          value: bloc,
+                          child: const ManagerCreateProductScreen(),
+                        ),
+                      ),
+                    );
+                  },
+            backgroundColor: AppColors.primary,
+            elevation: _isDragging ? 12 : 6,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add, color: AppColors.onPrimary, size: 28),
+          ),
+        ),
       ),
     );
   }
@@ -449,16 +583,16 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                   color: AppColors.onPrimary,
                                 ),
                               );
-                            },  // closes errorBuilder
-                          ),    // closes Image.network(
-                        ),  // closes ColorFiltered
-                      ),  // closes SizedBox
-                      ),  // closes ClipRRect
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
 
-                      const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                      Expanded(
-                        child: Column(
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -489,51 +623,9 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isHidden
-                                      ? AppColors.divider
-                                      : AppColors.success.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      isHidden
-                                          ? Icons.visibility_off
-                                          : Icons.check_circle,
-                                      size: 10,
-                                      color: isHidden
-                                          ? AppColors.textSecondary
-                                          : AppColors.success,
-                                    ),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      isHidden ? 'Tạm ẩn' : 'Đang bán',
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.bold,
-                                        color: isHidden
-                                            ? AppColors.textSecondary
-                                            : AppColors.success,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Tồn kho: $totalStock',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
+                              _buildStatusBadge(product.isActive),
+                              const SizedBox(width: 8),
+                              _buildStockBadge(totalStock),
                             ],
                           ),
                           const SizedBox(height: 6),

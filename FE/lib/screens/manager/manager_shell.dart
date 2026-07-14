@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../models/user_model.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_event.dart';
 import '../../blocs/notification/notification_bloc.dart';
 import '../../blocs/notification/notification_event.dart';
-import '../../blocs/notification/notification_state.dart';
+
 import '../../config/theme/app_colors.dart';
+import '../../widgets/auth_avatar.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
 import 'manager_orders_screen.dart';
@@ -91,23 +93,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
-                      child: user?.avatarUrl != null
-                          ? ClipOval(
-                              child: Image.network(user!.avatarUrl!,
-                                  width: 56, height: 56, fit: BoxFit.cover))
-                          : Text(
-                              (user?.fullName.isNotEmpty == true
-                                  ? user!.fullName[0]
-                                  : 'M'),
-                              style: const TextStyle(
-                                  color: AppColors.onPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700),
-                            ),
-                    ),
+                    _buildManagerAvatar(user),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -151,31 +137,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    BlocBuilder<NotificationBloc, NotificationState>(
-                      builder: (context, notifState) {
-                        return IconButton(
-                          icon: Badge(
-                            isLabelVisible: notifState.unreadCount > 0,
-                            label: notifState.unreadCount > 99
-                                ? const Text('99+')
-                                : Text('${notifState.unreadCount}'),
-                            backgroundColor: AppColors.error,
-                            textColor: Colors.white,
-                            textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-                            child: const Icon(Icons.notifications_outlined,
-                                color: AppColors.onPrimary, size: 20),
-                          ),
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/notifications'),
-                        );
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined,
-                          color: AppColors.onPrimary, size: 20),
-                      onPressed: () =>
-                          Navigator.pushNamed(context, '/edit-profile'),
-                    ),
+
                   ],
                 ),
               ),
@@ -210,6 +172,25 @@ class _ManagerProfileScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildManagerAvatar(UserModel? user) {
+    final initials = Text(
+      user?.fullName.isNotEmpty == true ? user!.fullName[0].toUpperCase() : 'M',
+      style: const TextStyle(
+        color: AppColors.onPrimary,
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+
+    return AuthAvatar(
+      key: ValueKey(user?.avatarUrl),
+      url: user?.avatarUrl,
+      radius: 28,
+      backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
+      fallback: initials,
     );
   }
 }

@@ -11,7 +11,6 @@ import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_state.dart';
 import '../../models/category_model.dart';
 import '../../widgets/product_card.dart';
-import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/app_error_state.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -88,7 +87,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
           Expanded(child: _buildBody()),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }
 

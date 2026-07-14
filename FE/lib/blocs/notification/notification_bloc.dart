@@ -10,6 +10,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       : super(const NotificationState()) {
     on<NotificationLoad>(_onLoad);
     on<NotificationMarkRead>(_onMarkRead);
+    on<NotificationMarkAllRead>(_onMarkAllRead);
   }
 
   Future<void> _onLoad(
@@ -42,6 +43,19 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       emit(state.copyWith(
         notifications: notifications,
         unreadCount: unreadCount,
+      ));
+    } catch (_) {}
+  }
+
+  Future<void> _onMarkAllRead(
+      NotificationMarkAllRead event, Emitter<NotificationState> emit) async {
+    try {
+      await _notificationService.markAllAsRead(event.userId);
+      final notifications =
+          state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+      emit(state.copyWith(
+        notifications: notifications,
+        unreadCount: 0,
       ));
     } catch (_) {}
   }
