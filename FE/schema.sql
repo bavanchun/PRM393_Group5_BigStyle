@@ -487,7 +487,7 @@ create policy "Users manage own chat messages"
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('products', 'products', true,  5242880, array['image/jpeg','image/png','image/webp']),
-  ('avatars',  'avatars',  false, 2097152, array['image/jpeg','image/png','image/webp']),
+  ('avatars',  'avatars',  true,  2097152, array['image/jpeg','image/png','image/webp']),
   ('reviews',  'reviews',  true,  5242880, array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
 
@@ -503,8 +503,20 @@ create policy "Managers upload product images"
     public.is_manager()
   );
 
+create policy "Public can view avatars"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
 create policy "Users manage own avatars"
-  on storage.objects for all
+  on storage.objects for insert
+  with check (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "Users update own avatars"
+  on storage.objects for update
+  using (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "Users delete own avatars"
+  on storage.objects for delete
   using (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
 
 create policy "Public can view review images"

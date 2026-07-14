@@ -20,6 +20,14 @@ class NotificationService {
         .eq('id', notificationId);
   }
 
+  Future<void> markAllAsRead(String userId) async {
+    await _client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('user_id', userId)
+        .eq('is_read', false);
+  }
+
   Future<int> getUnreadCount(String userId) async {
     final data = await _client
         .from('notifications')
@@ -29,3 +37,4 @@ class NotificationService {
     return data.length;
   }
 }
+

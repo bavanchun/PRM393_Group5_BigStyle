@@ -356,7 +356,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       onPressed: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/',
+                          '/home',
                           (route) => false,
                         );
                       },

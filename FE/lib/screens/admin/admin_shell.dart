@@ -4,6 +4,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../config/theme/app_colors.dart';
+import '../../widgets/auth_avatar.dart';
 import 'admin_dashboard_screen.dart';
 import 'admin_users_screen.dart';
 import 'admin_categories_screen.dart';
@@ -111,22 +112,20 @@ class _AdminProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
+                    AuthAvatar(
+                      key: ValueKey(user?.avatarUrl),
+                      url: user?.avatarUrl,
                       radius: 28,
                       backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
-                      child: user?.avatarUrl != null
-                          ? ClipOval(
-                              child: Image.network(user!.avatarUrl!,
-                                  width: 56, height: 56, fit: BoxFit.cover))
-                          : Text(
-                              (user?.fullName.isNotEmpty == true
-                                  ? user!.fullName[0]
-                                  : 'A'),
-                              style: const TextStyle(
-                                  color: AppColors.onPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700),
-                            ),
+                      fallback: Text(
+                        (user?.fullName.isNotEmpty == true
+                            ? user!.fullName[0]
+                            : 'A'),
+                        style: const TextStyle(
+                            color: AppColors.onPrimary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(

@@ -61,9 +61,9 @@ class AppBottomNav extends StatelessWidget {
                       label: 'Trang chủ',
                     ),
                     const BottomNavigationBarItem(
-                      icon: Icon(Icons.explore_outlined),
-                      activeIcon: Icon(Icons.explore),
-                      label: 'Khám phá',
+                      icon: Icon(Icons.chat_outlined),
+                      activeIcon: Icon(Icons.chat),
+                      label: 'ChatAI',
                     ),
                     BottomNavigationBarItem(
                       icon: cartCount > 0
@@ -112,7 +112,7 @@ class AppBottomNav extends StatelessWidget {
         Navigator.pushNamedAndRemoveUntil(
             context, '/home', (route) => false);
       case 1:
-        Navigator.pushNamed(context, '/products');
+        Navigator.pushNamed(context, '/chat');
       case 2:
         Navigator.pushNamed(context, '/cart');
       case 3:

@@ -8,6 +8,8 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
 import '../../blocs/manager_product/manager_product_bloc.dart';
+import '../../blocs/notification/notification_bloc.dart';
+import '../../blocs/notification/notification_state.dart';
 import 'categories/manager_category_list_screen.dart';
 import 'manager_dashboard_widgets.dart';
 import 'products/manager_create_product_screen.dart';
@@ -43,9 +45,22 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         elevation: 0,
         scrolledUnderElevation: 0.5,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => Navigator.pushNamed(context, '/notifications'),
+          BlocBuilder<NotificationBloc, NotificationState>(
+            builder: (context, notifState) {
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: notifState.unreadCount > 0,
+                  label: notifState.unreadCount > 99
+                      ? const Text('99+')
+                      : Text('${notifState.unreadCount}'),
+                  backgroundColor: AppColors.error,
+                  textColor: Colors.white,
+                  textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+                onPressed: () => Navigator.pushNamed(context, '/notifications'),
+              );
+            },
           ),
         ],
       ),

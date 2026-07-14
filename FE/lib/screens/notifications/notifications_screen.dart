@@ -10,6 +10,8 @@ import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_event.dart';
 import '../../models/notification_model.dart';
 import '../../models/order_status.dart';
+import '../../services/order_service.dart';
+import '../manager/manager_order_detail_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -39,21 +41,44 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Thông báo'),
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Thông báo'),
+            BlocBuilder<NotificationBloc, NotificationState>(
+              builder: (context, state) {
+                if (state.unreadCount > 0) {
+                  return Text(
+                    '${state.unreadCount} chưa đọc',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
         actions: [
           BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
               if (state.unreadCount > 0) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Text(
-                      '${state.unreadCount} chưa đọc',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                return TextButton.icon(
+                  onPressed: () {
+                    final userId = context.read<AuthBloc>().state.user?.id;
+                    if (userId != null) {
+                      context.read<NotificationBloc>().add(NotificationMarkAllRead(userId));
+                    }
+                  },
+                  icon: const Icon(Icons.done_all_rounded, size: 18),
+                  label: const Text('Đọc hết'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
                 );
               }
@@ -80,9 +105,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_none, size: 64, color: AppColors.textHint),
-                  const SizedBox(height: 16),
-                  Text('Chưa có thông báo nào', style: AppTypography.bodyMedium),
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_none_rounded,
+                      size: 48,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Chưa có thông báo nào',
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Các thông báo mới sẽ xuất hiện ở đây',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textHint,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -91,7 +140,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: state.notifications.length,
-            separatorBuilder: (_, _) => const Divider(height: 1, indent: 72),
+            separatorBuilder: (context, index) => const Divider(height: 1, indent: 72),
             itemBuilder: (context, index) {
               final notification = state.notifications[index];
               return _buildNotificationTile(context, notification, isManager);
@@ -156,6 +205,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Text(
@@ -165,11 +215,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ),
                         ),
                       ),
-                      Text(
-                        _formatTime(notification.createdAt),
-                        style: AppTypography.caption.copyWith(
-                          color: isUnread ? AppColors.primary : AppColors.textHint,
-                        ),
+                      const SizedBox(width: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isUnread) ...[
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.error,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Text(
+                            _formatTime(notification.createdAt),
+                            style: AppTypography.caption.copyWith(
+                              color: isUnread ? AppColors.primary : AppColors.textHint,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -186,16 +253,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     const SizedBox(height: 10),
                     _buildActionButtons(context, notification),
                   ],
-                  if (isUnread)
-                    Container(
-                      width: 8,
-                      height: 8,
-                      margin: const EdgeInsets.only(top: 6),
-                      decoration: const BoxDecoration(
-                        color: AppColors.error,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -239,7 +296,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _onTapNotification(
-      BuildContext context, NotificationModel notification, bool isManager) {
+      BuildContext context, NotificationModel notification, bool isManager) async {
     // Mark as read
     if (!notification.isRead) {
       context.read<NotificationBloc>().add(NotificationMarkRead(notification.id));
@@ -249,7 +306,48 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (notification.isOrderUpdate || notification.isNewOrder) {
       final orderId = notification.orderId;
       if (orderId != null) {
-        Navigator.pushNamed(context, '/order-detail', arguments: orderId);
+        if (isManager) {
+          // Show a loading indicator dialog
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => const Center(
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+          );
+          try {
+            final order = await OrderService().getOrderById(orderId);
+            if (context.mounted) {
+              Navigator.pop(context); // Dismiss loading dialog
+              if (order != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ManagerOrderDetailScreen(order: order),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Không tìm thấy thông tin đơn hàng.')),
+                );
+              }
+            }
+          } catch (e) {
+            if (context.mounted) {
+              Navigator.pop(context); // Dismiss loading dialog
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Lỗi khi tải đơn hàng: $e')),
+              );
+            }
+          }
+        } else {
+          Navigator.pushNamed(context, '/order-detail', arguments: orderId);
+        }
       }
     }
   }

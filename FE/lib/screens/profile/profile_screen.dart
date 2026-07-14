@@ -11,6 +11,7 @@ import '../../blocs/notification/notification_event.dart';
 import '../../blocs/notification/notification_state.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/auth_avatar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -76,22 +77,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     padding: const EdgeInsets.all(20),
                     child: Row(
                       children: [
-                        CircleAvatar(
+                        AuthAvatar(
+                          key: ValueKey(user?.avatarUrl),
+                          url: user?.avatarUrl,
                           radius: 30,
-                          backgroundColor: AppColors.secondary,
-                          backgroundImage: user?.avatarUrl != null
-                              ? NetworkImage(user!.avatarUrl!)
-                              : null,
-                          child: user?.avatarUrl == null
-                              ? Text(
-                                  (user?.fullName.isNotEmpty == true
-                                          ? user!.fullName[0]
-                                          : 'U')
-                                      .toUpperCase(),
-                                  style: AppTypography.headlineLarge
-                                      .copyWith(color: AppColors.primary),
-                                )
-                              : null,
+                          fallback: Text(
+                            (user?.fullName.isNotEmpty == true
+                                    ? user!.fullName[0]
+                                    : 'U')
+                                .toUpperCase(),
+                            style: AppTypography.headlineLarge
+                                .copyWith(color: AppColors.primary),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
