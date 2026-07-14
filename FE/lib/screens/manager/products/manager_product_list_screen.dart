@@ -5,6 +5,10 @@ import '../../../utils/currency_format.dart';
 import '../../../blocs/manager_product/manager_product_bloc.dart';
 import '../../../blocs/manager_product/manager_product_event.dart';
 import '../../../blocs/manager_product/manager_product_state.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../blocs/notification/notification_bloc.dart';
+import '../../../blocs/notification/notification_event.dart';
+import '../../../blocs/notification/notification_state.dart';
 import '../../../config/theme/app_colors.dart';
 import '../../../models/product_model.dart';
 import 'manager_create_product_screen.dart';
@@ -27,6 +31,10 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
   void initState() {
     super.initState();
     context.read<ManagerProductBloc>().add(LoadManagerProductsEvent());
+    final userId = context.read<AuthBloc>().state.user?.id;
+    if (userId != null) {
+      context.read<NotificationBloc>().add(NotificationLoad(userId));
+    }
   }
 
   @override
@@ -72,10 +80,29 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                 ),
               ),
             ),
+            ],
+          ),
+          actions: [
+            BlocBuilder<NotificationBloc, NotificationState>(
+              builder: (context, notifState) {
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: notifState.unreadCount > 0,
+                    label: notifState.unreadCount > 99
+                        ? const Text('99+')
+                        : Text('${notifState.unreadCount}'),
+                    backgroundColor: AppColors.error,
+                    textColor: Colors.white,
+                    textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                    child: const Icon(Icons.notifications_outlined),
+                  ),
+                  onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                );
+              },
+            ),
           ],
         ),
-      ),
-      body: BlocConsumer<ManagerProductBloc, ManagerProductState>(
+        body: BlocConsumer<ManagerProductBloc, ManagerProductState>(
         listener: (context, state) {
           if (state is ManagerProductOperationSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -422,15 +449,16 @@ class _ManagerProductListScreenState extends State<ManagerProductListScreen> {
                                   color: AppColors.onPrimary,
                                 ),
                               );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
+                            },  // closes errorBuilder
+                          ),    // closes Image.network(
+                        ),  // closes ColorFiltered
+                      ),  // closes SizedBox
+                      ),  // closes ClipRRect
 
-                    Expanded(
-                      child: Column(
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [

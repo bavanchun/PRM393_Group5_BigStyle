@@ -53,7 +53,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       appBar: AppBar(title: const Text('Chi tiết đơn hàng')),
       body: _orderId == null
           ? _buildError('Không tìm thấy mã đơn hàng.', canRetry: false)
-          : BlocBuilder<OrderBloc, OrderState>(
+          : BlocListener<OrderBloc, OrderState>(
+              listenWhen: (prev, curr) =>
+                  prev.error != curr.error && curr.error != null,
+              listener: (context, state) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.error!),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: BlocBuilder<OrderBloc, OrderState>(
               builder: (context, state) {
                 final order = state.selectedOrder;
 
@@ -71,23 +82,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppCard(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Đơn hàng',
-                                    style: AppTypography.headlineSmall),
-                                StatusBadge(
-                                  label: order.status.label,
-                                  status: order.status,
-                                ),
-                              ],
-                            ),
+                            Text('Đơn hàng',
+                                style: AppTypography.headlineSmall),
                             const SizedBox(height: 8),
                             Text(
                                 'Mã: ${order.orderNumber ?? order.id.substring(0, 8).toUpperCase()}',
@@ -96,12 +97,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             Text(
                                 'Ngày: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
                                 style: AppTypography.bodySmall),
+                            const SizedBox(height: 8),
+                            StatusBadge(
+                              label: order.status.label,
+                              status: order.status,
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 16),
-                      AppCard(child: _buildTimeline(order.status)),
-                      const SizedBox(height: 16),
+                      if (order.status != OrderStatus.cancelled) ...[
+                        AppCard(child: _buildTimeline(order.status)),
+                        const SizedBox(height: 16),
+                      ],
                       Text('Sản phẩm', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
                       ...order.items.map((item) => Padding(
@@ -200,6 +208,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 );
               },
             ),
+          ),
     );
   }
 

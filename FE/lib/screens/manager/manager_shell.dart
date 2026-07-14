@@ -5,6 +5,9 @@ import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_event.dart';
+import '../../blocs/notification/notification_bloc.dart';
+import '../../blocs/notification/notification_event.dart';
+import '../../blocs/notification/notification_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
@@ -24,6 +27,17 @@ class ManagerShell extends StatefulWidget {
 class _ManagerShellState extends State<ManagerShell> {
   int _currentIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<AuthBloc>().state.user?.id;
+      if (userId != null) {
+        context.read<NotificationBloc>().add(NotificationLoad(userId));
+      }
+    });
+  }
+
   final _screens = const [
     ManagerDashboard(),
     ManagerProductListScreen(),
@@ -40,11 +54,12 @@ class _ManagerShellState extends State<ManagerShell> {
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
-          // IndexedStack keeps ManagerOrdersScreen alive after its initial
-          // load, so re-fire the load whenever the manager switches back to
-          // the Orders tab to pick up any changes made elsewhere.
           if (index == _ordersTabIndex) {
             context.read<ManagerBloc>().add(const ManagerLoadOrders());
+          }
+          final userId = context.read<AuthBloc>().state.user?.id;
+          if (userId != null) {
+            context.read<NotificationBloc>().add(NotificationLoad(userId));
           }
         },
       ),
@@ -135,6 +150,25 @@ class _ManagerProfileScreen extends StatelessWidget {
                           ],
                         ],
                       ),
+                    ),
+                    BlocBuilder<NotificationBloc, NotificationState>(
+                      builder: (context, notifState) {
+                        return IconButton(
+                          icon: Badge(
+                            isLabelVisible: notifState.unreadCount > 0,
+                            label: notifState.unreadCount > 99
+                                ? const Text('99+')
+                                : Text('${notifState.unreadCount}'),
+                            backgroundColor: AppColors.error,
+                            textColor: Colors.white,
+                            textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                            child: const Icon(Icons.notifications_outlined,
+                                color: AppColors.onPrimary, size: 20),
+                          ),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/notifications'),
+                        );
+                      },
                     ),
                     IconButton(
                       icon: const Icon(Icons.edit_outlined,

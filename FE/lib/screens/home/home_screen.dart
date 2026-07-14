@@ -11,6 +11,10 @@ import '../../widgets/product_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/app_error_state.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/notification/notification_bloc.dart';
+import '../../blocs/notification/notification_event.dart';
+import '../../blocs/notification/notification_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +30,10 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<ProductBloc>().add(const LoadProducts());
     context.read<ProductBloc>().add(ProductLoadFeatured());
     context.read<ProductBloc>().add(ProductLoadCategories());
+    final userId = context.read<AuthBloc>().state.user?.id;
+    if (userId != null) {
+      context.read<NotificationBloc>().add(NotificationLoad(userId));
+    }
   }
 
   @override
@@ -238,12 +246,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Row(
           children: [
-            IconButton(
-              icon: const Icon(
-                Icons.notifications_outlined,
-                color: AppColors.textPrimary,
-              ),
-              onPressed: () => Navigator.pushNamed(context, '/notifications'),
+            BlocBuilder<NotificationBloc, NotificationState>(
+              builder: (context, notifState) {
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: notifState.unreadCount > 0,
+                    label: notifState.unreadCount > 99
+                        ? const Text('99+')
+                        : Text('${notifState.unreadCount}'),
+                    backgroundColor: AppColors.error,
+                    textColor: Colors.white,
+                    textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                    child: const Icon(Icons.notifications_outlined, color: AppColors.textPrimary),
+                  ),
+                  onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                );
+              },
             ),
             CircleAvatar(
               radius: 20,

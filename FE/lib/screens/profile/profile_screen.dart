@@ -6,11 +6,30 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../blocs/notification/notification_bloc.dart';
+import '../../blocs/notification/notification_event.dart';
+import '../../blocs/notification/notification_state.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_bottom_nav.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<AuthBloc>().state.user?.id;
+      if (userId != null) {
+        context.read<NotificationBloc>().add(NotificationLoad(userId));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +50,23 @@ class ProfileScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Cá nhân', style: AppTypography.headlineLarge),
-                        IconButton(
-                          icon: const Icon(Icons.notifications_outlined),
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/notifications'),
+                        BlocBuilder<NotificationBloc, NotificationState>(
+                          builder: (context, notifState) {
+                            return IconButton(
+                              icon: Badge(
+                                isLabelVisible: notifState.unreadCount > 0,
+                                label: notifState.unreadCount > 99
+                                    ? const Text('99+')
+                                    : Text('${notifState.unreadCount}'),
+                                backgroundColor: AppColors.error,
+                                textColor: Colors.white,
+                                textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                                child: const Icon(Icons.notifications_outlined),
+                              ),
+                              onPressed: () =>
+                                  Navigator.pushNamed(context, '/notifications'),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -110,6 +142,12 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.receipt_long_outlined,
                     title: 'Đơn hàng của tôi',
                     onTap: () => Navigator.pushNamed(context, '/orders'),
+                  ),
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.location_on_outlined,
+                    title: 'Địa chỉ giao hàng',
+                    onTap: () => Navigator.pushNamed(context, '/addresses'),
                   ),
                   _buildMenuItem(
                     context,

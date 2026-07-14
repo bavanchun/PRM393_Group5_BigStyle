@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../utils/currency_format.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -16,11 +15,14 @@ import '../../blocs/checkout/checkout_event.dart';
 import '../../blocs/checkout/checkout_state.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../models/customer_address_model.dart';
+import '../../services/address_service.dart';
+import '../../services/shipping_service.dart';
 import '../../services/voucher_service.dart';
+import '../../utils/currency_format.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import 'payment_qr_screen.dart';
-import 'widgets/checkout_address_section.dart';
 import 'widgets/checkout_item_list.dart';
 import 'widgets/checkout_payment_method_selector.dart';
 import 'widgets/checkout_price_summary.dart';
@@ -39,19 +41,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _promoController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _voucherService = VoucherService();
+  final _addressService = AddressService();
+  final _shippingService = ShippingService();
+
   List<String>? _selectedIds;
-  // 'cod' | 'bank_transfer'
   String _paymentMethod = 'cod';
-  // Vị trí hiện tại
+
+  // Address
+  List<CustomerAddressModel> _savedAddresses = [];
+  CustomerAddressModel? _selectedAddress;
+  bool _isLoadingAddresses = true;
+
+  // Location
   double? _latitude;
   double? _longitude;
   bool _isLoadingLocation = false;
-  // Phí vận chuyển cố định (flat). Dùng chung cho hiển thị và khi đặt hàng để
-  // số tiền trên màn khớp với total của đơn tạo ra.
-  static const double _shippingFee = AppConfig.flatShippingFee;
 
-  // Promo code preview state — validated client-side for UI feedback only;
-  // the create_order RPC re-derives the discount authoritatively.
+  // Dynamic shipping fee
+  double _shippingFee = AppConfig.flatShippingFee;
+
+  // Promo
   String? _promoCode;
   double _discountAmount = 0;
   bool _applyingPromo = false;
@@ -67,6 +76,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       } else {
         _selectedIds = const [];
       }
+      _loadAddresses();
     }
   }
 
@@ -76,6 +86,70 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _noteController.dispose();
     _promoController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAddresses() async {
+    final userId = context.read<AuthBloc>().state.user?.id;
+    if (userId == null) return;
+
+    try {
+      final addresses = await _addressService.getAddresses(userId);
+      if (!mounted) return;
+      setState(() {
+        _savedAddresses = addresses;
+        _isLoadingAddresses = false;
+      });
+      // Auto-select default address
+      final defaultAddr = addresses.where((a) => a.isDefault).firstOrNull;
+      if (defaultAddr != null) {
+        _selectAddress(defaultAddr);
+      } else if (addresses.isNotEmpty) {
+        _selectAddress(addresses.first);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadingAddresses = false);
+    }
+  }
+
+  void _selectAddress(CustomerAddressModel addr) {
+    setState(() {
+      _selectedAddress = addr;
+      _addressController.text = _buildAddressText(addr);
+    });
+    _calculateShipping(addr.province);
+  }
+
+  String _buildAddressText(CustomerAddressModel addr) {
+    final parts = [
+      addr.address,
+      if (addr.ward != null) addr.ward,
+      addr.district,
+      addr.province,
+    ].whereType<String>();
+    return parts.join(', ');
+  }
+
+  Future<void> _calculateShipping(String toProvince) async {
+    try {
+      const fromProvince = 'Thành phố Hồ Chí Minh';
+      final cartState = context.read<CartBloc>().state;
+      final items = _selectedIds == null || _selectedIds!.isEmpty
+          ? cartState.items
+          : cartState.items.where((i) => _selectedIds!.contains(i.id)).toList();
+      final subtotal = items.fold(0.0, (sum, i) => sum + i.totalPrice);
+
+      final fee = await _shippingService.calculateShippingFee(
+        fromProvince: fromProvince,
+        toProvince: toProvince,
+        subtotal: subtotal,
+      );
+      if (!mounted) return;
+      setState(() => _shippingFee = fee);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _shippingFee = AppConfig.flatShippingFee);
+    }
   }
 
   Future<void> _applyPromoCode(double subtotal) async {
@@ -115,107 +189,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  Future<void> _showLocationDialog() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.location_on_outlined,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Sử dụng vị trí hiện tại',
-                style: AppTypography.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Bạn muốn mở vị trí khi sử dụng app để tự động điền địa chỉ giao hàng?',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary,
-                        side: BorderSide(color: AppColors.divider),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text('Hủy'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text('Cho phép'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (confirmed == true) {
-      _getCurrentLocation();
-    }
-  }
-
   Future<void> _getCurrentLocation() async {
     if (_isLoadingLocation) return;
     setState(() => _isLoadingLocation = true);
 
     try {
-      // Kiểm tra dịch vụ vị trí có bật không
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Dịch vụ vị trí đang tắt. Vui lòng bật trong cài đặt.',
-            ),
+            content: Text('Dịch vụ vị trí đang tắt. Vui lòng bật trong cài đặt.'),
           ),
         );
         setState(() => _isLoadingLocation = false);
         return;
       }
 
-      // Kiểm tra quyền truy cập vị trí
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -240,7 +230,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         return;
       }
 
-      // Lấy vị trí hiện tại
       final position = await Geolocator.getCurrentPosition(
         locationSettings: AndroidSettings(
           accuracy: LocationAccuracy.high,
@@ -252,7 +241,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _latitude = position.latitude;
       _longitude = position.longitude;
 
-      // Reverse geocode
       final address = await _reverseGeocode(
         position.latitude,
         position.longitude,
@@ -261,24 +249,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (address != null && address.isNotEmpty) {
         _addressController.text = address;
+        setState(() => _selectedAddress = null);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
-              'Đã lấy vị trí thành công',
-              style: TextStyle(color: AppColors.onPrimary),
-            ),
+            content: const Text('Đã lấy vị trí thành công',
+                style: TextStyle(color: AppColors.onPrimary)),
             backgroundColor: AppColors.success,
           ),
         );
       } else {
         _addressController.text =
             'Vĩ độ: ${position.latitude.toStringAsFixed(6)}, Kinh độ: ${position.longitude.toStringAsFixed(6)}';
+        setState(() => _selectedAddress = null);
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Lỗi lấy vị trí: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi lấy vị trí: $e')),
+      );
     } finally {
       if (mounted) setState(() => _isLoadingLocation = false);
     }
@@ -311,8 +299,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       appBar: AppBar(title: const Text('Thanh toán')),
       body: BlocConsumer<CheckoutBloc, CheckoutState>(
         listener: (context, state) {
-          // Mutually exclusive: a given place-order result is either a COD
-          // success dialog or a SePay QR navigation — never both.
           if (state.awaitingPayment) {
             final authState = context.read<AuthBloc>().state;
             Navigator.pushNamed(
@@ -327,8 +313,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             );
           } else if (state.isSuccess) {
-            // COD order placed — remove only the checked-out items so
-            // unselected cart items survive.
             final authState = context.read<AuthBloc>().state;
             final userId = authState.user?.id;
             if (userId != null) {
@@ -346,16 +330,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: AppColors.success,
-                      size: 64,
-                    ),
+                    const Icon(Icons.check_circle, color: AppColors.success, size: 64),
                     const SizedBox(height: 16),
-                    Text(
-                      'Đặt hàng thành công!',
-                      style: AppTypography.headlineMedium,
-                    ),
+                    Text('Đặt hàng thành công!', style: AppTypography.headlineMedium),
                     const SizedBox(height: 8),
                     Text(
                       'Mã đơn hàng: ${state.orderNumber ?? state.orderId?.substring(0, 8)}',
@@ -372,22 +349,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         );
                       },
                     ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      label: 'Đóng',
+                      isOutlined: true,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/',
+                          (route) => false,
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
             );
           }
           if (state.error != null) {
-            // createOrder succeeded but createPayment failed for the bank
-            // transfer branch — orderId/orderNumber survive the error so
-            // "Thử lại" can retry only the payment insert, never the order.
-            // Gated on the specific message (not just orderId != null) so an
-            // order-creation failure never shows a payment-retry action with
-            // a stale orderId from a previous order.
             final canRetryPayment =
                 state.orderId != null &&
-                state.error ==
-                    'Tạo yêu cầu thanh toán thất bại. Vui lòng thử lại.';
+                state.error == 'Tạo yêu cầu thanh toán thất bại. Vui lòng thử lại.';
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.error!),
@@ -416,12 +398,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             builder: (context, cartState) {
               final items = _selectedIds == null || _selectedIds!.isEmpty
                   ? cartState.items
-                  : cartState.items
-                        .where((i) => _selectedIds!.contains(i.id))
-                        .toList();
+                  : cartState.items.where((i) => _selectedIds!.contains(i.id)).toList();
               final subtotal = items.fold(0.0, (sum, i) => sum + i.totalPrice);
-              // Preview only — server (create_order RPC) is the source of
-              // truth for the persisted subtotal/discount/total.
               final total = subtotal + _shippingFee - _discountAmount;
 
               return SingleChildScrollView(
@@ -431,13 +409,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CheckoutAddressSection(
-                        addressController: _addressController,
-                        isLoadingLocation: _isLoadingLocation,
-                        onUseCurrentLocation: _showLocationDialog,
-                        latitude: _latitude,
-                        longitude: _longitude,
-                      ),
+                      _buildAddressSection(),
                       const SizedBox(height: 24),
                       CheckoutItemList(items: items),
                       const SizedBox(height: 24),
@@ -449,16 +421,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         maxLines: 2,
                       ),
                       const SizedBox(height: 24),
-                      Text(
-                        'Phương thức thanh toán',
-                        style: AppTypography.headlineSmall,
-                      ),
+                      Text('Phương thức thanh toán', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
                       CheckoutPaymentMethodSelector(
                         value: _paymentMethod,
-                        onChanged: (value) {
-                          setState(() => _paymentMethod = value);
-                        },
+                        onChanged: (value) => setState(() => _paymentMethod = value),
                       ),
                       const SizedBox(height: 24),
                       CheckoutVoucherField(
@@ -492,13 +459,202 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  Widget _buildAddressSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Địa chỉ giao hàng', style: AppTypography.headlineSmall),
+            TextButton.icon(
+              onPressed: _isLoadingLocation
+                  ? null
+                  : () => _showLocationDialog(),
+              icon: _isLoadingLocation
+                  ? const SizedBox(
+                      width: 14, height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location, size: 16),
+              label: Text(_isLoadingLocation ? 'Đang lấy...' : 'Vị trí hiện tại',
+                  style: AppTypography.caption),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_isLoadingAddresses)
+          const Center(child: CircularProgressIndicator())
+        else if (_savedAddresses.isEmpty)
+          _buildManualAddressInput()
+        else ...[
+          ..._savedAddresses.map((addr) => _buildAddressRadio(addr)),
+          const SizedBox(height: 8),
+          _buildManualAddressInput(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildAddressRadio(CustomerAddressModel addr) {
+    final isSelected = _selectedAddress?.id == addr.id;
+    return GestureDetector(
+      onTap: () => _selectAddress(addr),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.05)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Radio<CustomerAddressModel>(
+              value: addr,
+              groupValue: _selectedAddress,
+              onChanged: (v) => _selectAddress(addr),
+              activeColor: AppColors.primary,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(addr.label,
+                            style: AppTypography.caption.copyWith(
+                                color: AppColors.primary, fontWeight: FontWeight.w600)),
+                      ),
+                      const SizedBox(width: 8),
+                      if (addr.isDefault)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text('Mặc định',
+                              style: AppTypography.caption.copyWith(
+                                  color: AppColors.success, fontWeight: FontWeight.w600)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text('${addr.fullName}${addr.phone != null ? ' - ${addr.phone}' : ''}',
+                      style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(_buildAddressText(addr),
+                      style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManualAddressInput() {
+    return Column(
+      children: [
+        AppTextField(
+          controller: _addressController,
+          hint: 'Nhập địa chỉ giao hàng',
+          prefixIcon: const Icon(Icons.location_on_outlined),
+          maxLines: 2,
+          onChanged: (_) => setState(() => _selectedAddress = null),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '* Tỉnh/Thành phố sẽ được dùng để tính phí vận chuyển',
+          style: AppTypography.caption.copyWith(color: AppColors.textHint),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showLocationDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56, height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 28),
+              ),
+              const SizedBox(height: 16),
+              Text('Sử dụng vị trí hiện tại', style: AppTypography.headlineSmall, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Text(
+                'Bạn muốn mở vị trí khi sử dụng app để tự động điền địa chỉ giao hàng?',
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        side: const BorderSide(color: AppColors.divider),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Hủy'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Cho phép'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirmed == true) _getCurrentLocation();
+  }
+
   void _placeOrder() {
     if (!_formKey.currentState!.validate()) return;
 
     final authState = context.read<AuthBloc>().state;
     final user = authState.user;
 
-    // Auth guard — require a real (non-mock) authenticated user
     if (user == null || user.id.isEmpty || user.id.startsWith('mock-')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng đăng nhập để đặt hàng')),
@@ -517,6 +673,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    final addressText = _addressController.text.trim();
+    if (addressText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập địa chỉ giao hàng')),
+      );
+      return;
+    }
+
     final subtotal = items.fold(0.0, (sum, i) => sum + i.totalPrice);
 
     context.read<CheckoutBloc>().add(
@@ -525,10 +689,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         items: items,
         subtotal: subtotal,
         shippingFee: _shippingFee,
-        address: _addressController.text,
-        latitude: _latitude,
-        longitude: _longitude,
+        address: addressText,
+        latitude: _latitude ?? _selectedAddress?.latitude,
+        longitude: _longitude ?? _selectedAddress?.longitude,
         note: _noteController.text.isNotEmpty ? _noteController.text : null,
+        customerEmail: user.email.isNotEmpty ? user.email : null,
         paymentMethod: _paymentMethod,
         promoCode: _promoCode,
       ),

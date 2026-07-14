@@ -7,6 +7,7 @@ import '../../config/theme/app_colors.dart';
 import 'admin_dashboard_screen.dart';
 import 'admin_users_screen.dart';
 import 'admin_categories_screen.dart';
+import 'admin_shipping_screen.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -22,6 +23,7 @@ class _AdminShellState extends State<AdminShell> {
     AdminDashboardScreen(),
     AdminUsersScreen(),
     AdminCategoriesScreen(),
+    AdminShippingScreen(),
     _AdminProfileScreen(),
   ];
 
@@ -67,6 +69,11 @@ class _AdminShellState extends State<AdminShell> {
               icon: Icon(Icons.category_outlined, size: 22),
               selectedIcon: Icon(Icons.category, size: 22, color: AppColors.primary),
               label: 'Danh mục',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.local_shipping_outlined, size: 22),
+              selectedIcon: Icon(Icons.local_shipping, size: 22, color: AppColors.primary),
+              label: 'Vận chuyển',
             ),
             NavigationDestination(
               icon: Icon(Icons.person_outline, size: 22),

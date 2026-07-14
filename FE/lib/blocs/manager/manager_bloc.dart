@@ -54,11 +54,17 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
         isOrdersLoading: true,
         selectedStatus: event.status,
         clearSelectedStatus: event.status == null,
+        fromDate: event.fromDate,
+        toDate: event.toDate,
         clearError: true,
       ),
     );
     try {
-      final orders = await _orderService.getAllOrders(status: event.status);
+      final orders = await _orderService.getAllOrders(
+        status: event.status,
+        fromDate: event.fromDate,
+        toDate: event.toDate,
+      );
       if (requestId != _ordersRequestId) return;
       emit(state.copyWith(isOrdersLoading: false, orders: orders));
     } catch (_) {
@@ -86,6 +92,8 @@ class ManagerBloc extends Bloc<ManagerEvent, ManagerState> {
       );
       final orders = await _orderService.getAllOrders(
         status: state.selectedStatus,
+        fromDate: state.fromDate,
+        toDate: state.toDate,
       );
       if (ordersRequestId != _ordersRequestId) return;
       final patchedRecentOrders = state.recentOrders
