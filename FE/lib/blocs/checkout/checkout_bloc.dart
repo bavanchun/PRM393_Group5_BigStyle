@@ -110,6 +110,21 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         return;
       }
 
+      if (event.paymentMethod == 'vnpay') {
+        // Order is created with payment_method=vnpay; the pending payments
+        // row + paymentUrl are minted by the BE when PaymentVnpayScreen opens.
+        emit(
+          state.copyWith(
+            isLoading: false,
+            awaitingPayment: true,
+            orderId: created.id,
+            orderNumber: created.orderNumber,
+            total: total,
+          ),
+        );
+        return;
+      }
+
       // COD: keep the original behavior — payments(cod,pending) row +
       // immediate cart clear + success screen.
       await _createPaymentRow(

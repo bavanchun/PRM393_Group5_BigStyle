@@ -16,26 +16,39 @@ class CheckoutPaymentMethodSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _PaymentMethodOption(
-            value: 'cod',
-            selectedValue: value,
-            icon: Icons.payments_outlined,
-            label: 'Thanh toán khi nhận hàng',
-            onChanged: onChanged,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _PaymentMethodOption(
+                value: 'cod',
+                selectedValue: value,
+                icon: Icons.payments_outlined,
+                label: 'Thanh toán khi nhận hàng',
+                onChanged: onChanged,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _PaymentMethodOption(
+                value: 'bank_transfer',
+                selectedValue: value,
+                icon: Icons.qr_code_2_outlined,
+                label: 'Chuyển khoản (SePay)',
+                onChanged: onChanged,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _PaymentMethodOption(
-            value: 'bank_transfer',
-            selectedValue: value,
-            icon: Icons.qr_code_2_outlined,
-            label: 'Chuyển khoản (SePay)',
-            onChanged: onChanged,
-          ),
+        const SizedBox(height: 12),
+        _PaymentMethodOption(
+          value: 'vnpay',
+          selectedValue: value,
+          icon: Icons.account_balance_outlined,
+          label: 'VNPay (Thẻ ATM / QR / Ví)',
+          onChanged: onChanged,
+          fullWidth: true,
         ),
       ],
     );
@@ -49,6 +62,7 @@ class _PaymentMethodOption extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onChanged,
+    this.fullWidth = false,
   });
 
   final String value;
@@ -56,6 +70,7 @@ class _PaymentMethodOption extends StatelessWidget {
   final IconData icon;
   final String label;
   final ValueChanged<String> onChanged;
+  final bool fullWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +79,7 @@ class _PaymentMethodOption extends StatelessWidget {
       onTap: () => onChanged(value),
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       child: Container(
+        width: fullWidth ? double.infinity : null,
         padding: const EdgeInsets.symmetric(
           vertical: AppSpacing.sm,
           horizontal: AppSpacing.sm,
@@ -78,23 +94,51 @@ class _PaymentMethodOption extends StatelessWidget {
             width: selected ? 1.5 : 1,
           ),
         ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: selected ? AppColors.primary : AppColors.textSecondary,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AppTypography.bodySmall.copyWith(
-                color: selected ? AppColors.primary : AppColors.textSecondary,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+        child: fullWidth
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    color:
+                        selected ? AppColors.primary : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: selected
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  Icon(
+                    icon,
+                    color:
+                        selected ? AppColors.primary : AppColors.textSecondary,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: selected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

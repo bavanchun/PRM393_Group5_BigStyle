@@ -18,7 +18,7 @@ class CheckoutPlaceOrder extends CheckoutEvent {
   final double? longitude;
   final String? note;
   final String? customerEmail;
-  // 'cod' | 'bank_transfer'
+  // 'cod' | 'bank_transfer' | 'vnpay'
   final String paymentMethod;
   // Voucher code applied at checkout (already preview-validated client-side
   // via VoucherService); re-derived authoritatively by the create_order RPC.

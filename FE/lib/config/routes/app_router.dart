@@ -8,6 +8,7 @@ import '../../screens/cart/cart_screen.dart';
 import '../../screens/cart/cart_item_edit_screen.dart';
 import '../../screens/checkout/checkout_screen.dart';
 import '../../screens/checkout/payment_qr_screen.dart';
+import '../../screens/checkout/payment_vnpay_screen.dart';
 import '../../screens/orders/orders_screen.dart';
 import '../../screens/orders/order_detail_screen.dart';
 import '../../screens/profile/profile_screen.dart';
@@ -42,6 +43,8 @@ class AppRouter {
         return MaterialPageRoute(settings: settings, builder: (_) => const CheckoutScreen());
       case '/payment-qr':
         return MaterialPageRoute(settings: settings, builder: (_) => const PaymentQrScreen());
+      case '/payment-vnpay':
+        return MaterialPageRoute(settings: settings, builder: (_) => const PaymentVnpayScreen());
       case '/orders':
         return MaterialPageRoute(settings: settings, builder: (_) => const OrdersScreen());
       case '/order-detail':

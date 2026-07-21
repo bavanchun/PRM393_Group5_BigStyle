@@ -11,6 +11,7 @@ class AppButton extends StatelessWidget {
   final IconData? icon;
   final double? width;
   final Color? backgroundColor;
+  final TextStyle? textStyle;
 
   const AppButton({
     super.key,
@@ -21,6 +22,7 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.width,
     this.backgroundColor,
+    this.textStyle,
   });
 
   @override
@@ -41,7 +43,7 @@ class AppButton extends StatelessWidget {
                 Icon(icon, size: 20),
                 const SizedBox(width: 8),
               ],
-              Text(label, style: AppTypography.button),
+              Text(label, style: textStyle ?? AppTypography.button),
             ],
           );
 
@@ -62,7 +64,7 @@ class AppButton extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: AppTypography.button.copyWith(
+            style: (textStyle ?? AppTypography.button).copyWith(
               color: backgroundColor ?? AppColors.primary,
             ),
           ),
