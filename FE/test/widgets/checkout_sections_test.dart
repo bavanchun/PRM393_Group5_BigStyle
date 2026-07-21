@@ -25,8 +25,10 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Thanh toán khi nhận hàng'));
     await tester.pump();
+    await tester.tap(find.text('VNPay (Thẻ ATM / QR / Ví)'));
+    await tester.pump();
 
-    expect(selectedValues, ['bank_transfer', 'cod']);
+    expect(selectedValues, ['bank_transfer', 'cod', 'vnpay']);
   });
 
   testWidgets('price summary renders subtotal shipping discount and total', (
