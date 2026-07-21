@@ -23,6 +23,7 @@ import '../../utils/currency_format.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import 'payment_qr_screen.dart';
+import 'payment_vnpay_screen.dart';
 import 'widgets/checkout_item_list.dart';
 import 'widgets/checkout_payment_method_selector.dart';
 import 'widgets/checkout_price_summary.dart';
@@ -136,7 +137,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final cartState = context.read<CartBloc>().state;
       final items = _selectedIds == null || _selectedIds!.isEmpty
           ? cartState.items
-          : cartState.items.where((i) => _selectedIds!.contains(i.id)).toList();
+          : cartState.items.where((i) => _selectedIds!.contains(i.id) || _selectedIds!.contains(i.variantId)).toList();
       final subtotal = items.fold(0.0, (sum, i) => sum + i.totalPrice);
 
       final fee = await _shippingService.calculateShippingFee(
@@ -301,23 +302,44 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         listener: (context, state) {
           if (state.awaitingPayment) {
             final authState = context.read<AuthBloc>().state;
-            Navigator.pushNamed(
-              context,
-              '/payment-qr',
-              arguments: PaymentQrArgs(
-                orderId: state.orderId!,
-                orderNumber: state.orderNumber,
-                total: state.total ?? 0,
-                userId: authState.user?.id ?? '',
-                selectedIds: _selectedIds,
-              ),
-            );
+            final userId = authState.user?.id ?? '';
+            if (_paymentMethod == 'vnpay') {
+              Navigator.pushNamed(
+                context,
+                '/payment-vnpay',
+                arguments: PaymentVnpayArgs(
+                  orderId: state.orderId!,
+                  orderNumber: state.orderNumber,
+                  total: state.total ?? 0,
+                  userId: userId,
+                  selectedIds: _selectedIds,
+                ),
+              );
+            } else {
+              Navigator.pushNamed(
+                context,
+                '/payment-qr',
+                arguments: PaymentQrArgs(
+                  orderId: state.orderId!,
+                  orderNumber: state.orderNumber,
+                  total: state.total ?? 0,
+                  userId: userId,
+                  selectedIds: _selectedIds,
+                ),
+              );
+            }
           } else if (state.isSuccess) {
             final authState = context.read<AuthBloc>().state;
             final userId = authState.user?.id;
             if (userId != null) {
+              final cartItems = context.read<CartBloc>().state.items;
               for (final id in (_selectedIds ?? <String>[])) {
-                context.read<CartBloc>().add(CartRemoveItem(id));
+                final toRemove = cartItems.where(
+                  (i) => i.id == id || i.variantId == id,
+                );
+                for (final item in toRemove) {
+                  context.read<CartBloc>().add(CartRemoveItem(item.id));
+                }
               }
             }
             showDialog(
@@ -398,7 +420,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             builder: (context, cartState) {
               final items = _selectedIds == null || _selectedIds!.isEmpty
                   ? cartState.items
-                  : cartState.items.where((i) => _selectedIds!.contains(i.id)).toList();
+                  : cartState.items.where((i) => _selectedIds!.contains(i.id) || _selectedIds!.contains(i.variantId)).toList();
               final subtotal = items.fold(0.0, (sum, i) => sum + i.totalPrice);
               final total = subtotal + _shippingFee - _discountAmount;
 
@@ -488,9 +510,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         else if (_savedAddresses.isEmpty)
           _buildManualAddressInput()
         else ...[
-          ..._savedAddresses.map((addr) => _buildAddressRadio(addr)),
-          const SizedBox(height: 8),
-          _buildManualAddressInput(),
+          RadioGroup<CustomerAddressModel>(
+            groupValue: _selectedAddress,
+            onChanged: (v) {
+              if (v != null) _selectAddress(v);
+            },
+            child: Column(
+              children: [
+                ..._savedAddresses.map((addr) => _buildAddressRadio(addr)),
+                const SizedBox(height: 8),
+                _buildManualAddressInput(),
+              ],
+            ),
+          ),
         ],
       ],
     );
@@ -518,8 +550,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           children: [
             Radio<CustomerAddressModel>(
               value: addr,
-              groupValue: _selectedAddress,
-              onChanged: (v) => _selectAddress(addr),
               activeColor: AppColors.primary,
             ),
             Expanded(
@@ -665,7 +695,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final cartState = context.read<CartBloc>().state;
     final items = _selectedIds == null || _selectedIds!.isEmpty
         ? cartState.items
-        : cartState.items.where((i) => _selectedIds!.contains(i.id)).toList();
+        : cartState.items.where((i) => _selectedIds!.contains(i.id) || _selectedIds!.contains(i.variantId)).toList();
     if (items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng chọn sản phẩm để đặt hàng')),

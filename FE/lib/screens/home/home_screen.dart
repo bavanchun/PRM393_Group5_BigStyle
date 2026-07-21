@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
@@ -13,6 +14,7 @@ import '../../blocs/notification/notification_bloc.dart';
 import '../../blocs/notification/notification_event.dart';
 import '../../blocs/notification/notification_state.dart';
 import '../../models/product_model.dart';
+import '../../providers/flash_sale_provider.dart';
 import '../../widgets/app_error_state.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../utils/currency_format.dart';
@@ -64,10 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
-  // --- Flash sale countdown ---
-  Duration _flashSaleLeft = const Duration(hours: 3, minutes: 24, seconds: 0);
-  Timer? _countdownTimer;
-
   // --- Quick filter chips ---
   final List<String> _quickFilters = [
     'Tất cả', 'Bán chạy', 'Áo', 'Quần', 'Phụ kiện', 'Giảm giá',
@@ -84,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (userId != null) {
       context.read<NotificationBloc>().add(NotificationLoad(userId));
     }
+    context.read<FlashSaleProvider>().init();
 
     _bannerController = PageController();
     _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
@@ -95,21 +94,13 @@ class _HomeScreenState extends State<HomeScreen> {
         curve: Curves.easeOutCubic,
       );
     });
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      setState(() {
-        if (_flashSaleLeft.inSeconds > 0) {
-          _flashSaleLeft -= const Duration(seconds: 1);
-        }
-      });
-    });
   }
 
   @override
   void dispose() {
     _bannerController.dispose();
     _bannerTimer?.cancel();
-    _countdownTimer?.cancel();
+    context.read<FlashSaleProvider>().dispose();
     super.dispose();
   }
 
@@ -582,96 +573,84 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // -------------------------------------------------------------------------
-  // 7. FLASH SALE
-  // -------------------------------------------------------------------------
   Widget _buildFlashSaleSection() {
-    final h = _flashSaleLeft.inHours.toString().padLeft(2, '0');
-    final m = (_flashSaleLeft.inMinutes % 60).toString().padLeft(2, '0');
-    final s = (_flashSaleLeft.inSeconds % 60).toString().padLeft(2, '0');
+    return Consumer<FlashSaleProvider>(
+      builder: (context, provider, _) {
+        if (provider.hasEnded || (provider.campaign == null && !provider.isLoading)) {
+          return const SizedBox.shrink();
+        }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
+        final h = provider.remaining.inHours.toString().padLeft(2, '0');
+        final m = (provider.remaining.inMinutes % 60).toString().padLeft(2, '0');
+        final s = (provider.remaining.inSeconds % 60).toString().padLeft(2, '0');
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(Icons.bolt, color: AppColors.primary, size: 22),
-                    const SizedBox(width: 4),
-                    Text(
-                      'FLASH SALE',
-                      style: AppTypography.displaySmall.copyWith(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
+                    Row(
+                      children: [
+                        const Icon(Icons.bolt, color: AppColors.primary, size: 22),
+                        const SizedBox(width: 4),
+                        Text(
+                          'FLASH SALE',
+                          style: AppTypography.displaySmall.copyWith(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xFF1A1512),
+                            height: 1.05,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
                         color: const Color(0xFF1A1512),
-                        height: 1.05,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '$h:$m:$s',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1512),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '$h:$m:$s',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                  ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 275,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: provider.campaign?.products.length ?? 0,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, i) {
+                    final product = provider.campaign!.products[i];
+                    return SizedBox(
+                      width: 150,
+                      child: _FlashSaleCard(product: product),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 275,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _mockFlashSaleProducts.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (context, i) {
-                return SizedBox(
-                  width: 150,
-                  child: _ProductCard(product: _mockFlashSaleProducts[i]),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
-
-  // -------------------------------------------------------------------------
-  // MOCK FLASH SALE PRODUCTS (thay API sau)
-  // -------------------------------------------------------------------------
-  List<_MockProduct> get _mockFlashSaleProducts => List.generate(
-        6,
-        (i) => _MockProduct(
-          id: 'fs$i',
-          name: 'Áo Oversize BigStyle Drop ${i + 1}',
-          brand: 'BIGSTYLE',
-          imageUrl: 'https://picsum.photos/seed/fs$i/400/500',
-          price: 299000,
-          originalPrice: 499000,
-          sizes: const ['M', 'L', 'XL'],
-          sold: 120 + i * 30,
-          rating: 4.5,
-        ),
-      );
 
   // -------------------------------------------------------------------------
   // SECTION HEADER dùng chung
@@ -830,32 +809,9 @@ class _HomeScreenState extends State<HomeScreen> {
 // ---------------------------------------------------------------------------
 // MOCK PRODUCT WRAPPER (dùng cho flash sale - tách biệt với real data)
 // ---------------------------------------------------------------------------
-class _MockProduct {
-  final String id;
-  final String name;
-  final String? brand;
-  final String imageUrl;
-  final int price;
-  final int? originalPrice;
-  final List<String> sizes;
-  final int sold;
-  final double rating;
-  _MockProduct({
-    required this.id,
-    required this.name,
-    this.brand,
-    required this.imageUrl,
-    required this.price,
-    this.originalPrice,
-    required this.sizes,
-    required this.sold,
-    required this.rating,
-  });
-  bool get onSale => originalPrice != null && originalPrice! > price;
-}
 
 // ---------------------------------------------------------------------------
-// PRODUCT CARD — dùng chung cho cả real ProductModel và _MockProduct
+// PRODUCT CARD — dùng cho grid (featured / new products)
 // ---------------------------------------------------------------------------
 class _ProductCard extends StatefulWidget {
   final dynamic product;
@@ -1049,18 +1005,31 @@ class _ProductCardState extends State<_ProductCard> {
                     ),
                   const SizedBox(height: 6),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        _formatPrice(_price()),
-                        style: AppTypography.priceSmall.copyWith(fontSize: 14, fontWeight: FontWeight.w800),
+                      Flexible(
+                        child: Text(
+                          _formatPrice(_price()),
+                          style: AppTypography.priceSmall.copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                       if (_onSale()) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          _formatPrice(_originalPrice()!),
-                          style: AppTypography.caption.copyWith(
-                            fontSize: 10,
-                            decoration: TextDecoration.lineThrough,
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            _formatPrice(_originalPrice()!),
+                            style: AppTypography.caption.copyWith(
+                              fontSize: 9,
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: AppColors.textHint,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ],
@@ -1076,4 +1045,148 @@ class _ProductCardState extends State<_ProductCard> {
   }
 
   String _formatPrice(int price) => formatVnd(price);
+}
+
+// ---------------------------------------------------------------------------
+// FLASH SALE CARD — dùng riêng cho FlashSaleProduct
+// ---------------------------------------------------------------------------
+class _FlashSaleCard extends StatelessWidget {
+  final FlashSaleProduct product;
+  const _FlashSaleCard({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/product-detail', arguments: product.id),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 3)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.cardRadius)),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      product.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        color: AppColors.secondary.withValues(alpha: 0.3),
+                        child: const Icon(Icons.checkroom, color: AppColors.textHint, size: 32),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'SALE',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                    if (product.isSoldOut)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          alignment: Alignment.center,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Hết hàng',
+                              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.labelLarge.copyWith(fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  // Progress bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: product.soldPercent,
+                      minHeight: 4,
+                      backgroundColor: AppColors.border,
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Đã bán ${product.soldQty}/${product.stockQty}',
+                    style: AppTypography.caption.copyWith(fontSize: 9, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _formatPriceVnd(product.salePrice),
+                          style: AppTypography.priceSmall.copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          _formatPriceVnd(product.originalPrice),
+                          style: AppTypography.caption.copyWith(
+                            fontSize: 9,
+                            decoration: TextDecoration.lineThrough,
+                            decorationColor: AppColors.textHint,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatPriceVnd(int price) => formatVnd(price);
 }

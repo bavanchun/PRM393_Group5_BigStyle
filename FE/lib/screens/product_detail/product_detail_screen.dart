@@ -714,12 +714,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         const SnackBar(
           content: Text('Đã thêm vào giỏ hàng'),
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
+          duration: Duration(milliseconds: 800),
         ),
       );
     }
     if (navigateToCart && mounted) {
-      Navigator.pushNamed(context, '/cart');
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) Navigator.pushNamed(context, '/cart');
     }
     return true;
   }
@@ -755,29 +756,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (!added) return;
     if (!mounted) return;
 
-    // Wait until cart state reflects the new item before navigating
-    final cartBloc = context.read<CartBloc>();
-    final beforeItems = cartBloc.state.items;
-    final beforeCount = beforeItems.length;
-    try {
-      await cartBloc.stream
-          .firstWhere(
-            (s) => s.items.length > beforeCount || s.error != null,
-          )
-          .timeout(const Duration(seconds: 5));
-    } catch (_) {}
-
-    if (!mounted) return;
-
-    // Get the newly added item IDs to pass to checkout
-    final afterItems = cartBloc.state.items;
-    final newItemIds = afterItems
-        .where((item) => !beforeItems.any((old) => old.id == item.id))
-        .map((item) => item.id)
-        .toList();
+    final selectedVariantId = product.variants.cast<VariantModel?>().firstWhere(
+      (v) => v!.size == state.selectedSize! && v.colorHex == state.selectedColor,
+      orElse: () => null,
+    )?.id;
 
     Navigator.pushNamed(context, '/checkout', arguments: {
-      'selectedIds': newItemIds,
+      'selectedIds': selectedVariantId != null ? [selectedVariantId] : null,
     });
   }
 
@@ -845,3 +830,5 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Color(int.parse(hex, radix: 16));
   }
 }
+
+

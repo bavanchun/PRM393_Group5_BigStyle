@@ -63,6 +63,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
       context.read<ProductBloc>().add(
         FilterByCategory(args, matched?.name ?? args),
       );
+    } else if (args is Map) {
+      _appliedArg = true;
+      if (args['featured'] == true) {
+        context.read<ProductBloc>().add(const SortProducts('bestselling'));
+      }
     }
   }
 
@@ -465,6 +470,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               Text('Sắp xếp theo', style: AppTypography.headlineMedium),
               const SizedBox(height: 20),
               ...[
+                'Bán chạy',
                 'Mới nhất',
                 'Giá: Thấp đến cao',
                 'Giá: Cao đến thấp',
@@ -476,27 +482,31 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     Icons.chevron_right,
                     color: AppColors.textHint,
                   ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    switch (option) {
-                      case 'Mới nhất':
-                        context.read<ProductBloc>().add(
-                          const SortProducts('newest'),
-                        );
-                      case 'Giá: Thấp đến cao':
-                        context.read<ProductBloc>().add(
-                          const SortProducts('price-asc'),
-                        );
-                      case 'Giá: Cao đến thấp':
-                        context.read<ProductBloc>().add(
-                          const SortProducts('price-desc'),
-                        );
-                      case 'Tên A-Z':
-                        context.read<ProductBloc>().add(
-                          const SortProducts('name'),
-                        );
-                    }
-                  },
+                    onTap: () {
+                      Navigator.pop(context);
+                      switch (option) {
+                        case 'Bán chạy':
+                          context.read<ProductBloc>().add(
+                            const SortProducts('bestselling'),
+                          );
+                        case 'Mới nhất':
+                          context.read<ProductBloc>().add(
+                            const SortProducts('newest'),
+                          );
+                        case 'Giá: Thấp đến cao':
+                          context.read<ProductBloc>().add(
+                            const SortProducts('price-asc'),
+                          );
+                        case 'Giá: Cao đến thấp':
+                          context.read<ProductBloc>().add(
+                            const SortProducts('price-desc'),
+                          );
+                        case 'Tên A-Z':
+                          context.read<ProductBloc>().add(
+                            const SortProducts('name'),
+                          );
+                      }
+                    },
                 ),
               ),
             ],

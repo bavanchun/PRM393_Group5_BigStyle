@@ -238,7 +238,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
             const SizedBox(height: 16),
             // Province dropdown
             DropdownButtonFormField<Province>(
-              value: _selectedProvince,
+              initialValue: _selectedProvince,
               decoration: const InputDecoration(
                 labelText: 'Tỉnh/Thành phố *',
                 prefixIcon: Icon(Icons.location_city_outlined),
@@ -266,7 +266,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
             const SizedBox(height: 12),
             // District dropdown
             DropdownButtonFormField<District>(
-              value: _selectedDistrict,
+              initialValue: _selectedDistrict,
               decoration: const InputDecoration(
                 labelText: 'Quận/Huyện',
                 prefixIcon: Icon(Icons.map_outlined),
@@ -291,7 +291,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
             const SizedBox(height: 12),
             // Ward dropdown
             DropdownButtonFormField<Ward>(
-              value: _selectedWard,
+              initialValue: _selectedWard,
               decoration: const InputDecoration(
                 labelText: 'Phường/Xã',
                 prefixIcon: Icon(Icons.location_on_outlined),
