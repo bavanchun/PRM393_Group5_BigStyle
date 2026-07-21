@@ -1,0 +1,18 @@
+{
+  "name": "bigstyle-flashsale-api",
+  "version": "1.0.0",
+  "description": "BigStyle Flash Sale auto-generator API + cron",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "cron": "node src/cron/flashSaleCron.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3"
+  }
+}
