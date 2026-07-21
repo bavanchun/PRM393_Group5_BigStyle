@@ -20,6 +20,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     on<NotificationMarkRead>(_onMarkRead);
     on<NotificationRealtimeReceived>(_onRealtimeReceived);
     on<NotificationCleared>((_, emit) => emit(const NotificationState()));
+    on<NotificationMarkAllRead>(_onMarkAllRead);
   }
 
   Future<void> _onLoad(
@@ -114,5 +115,18 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       // Keep the current list; surface the failure like the load path does.
       emit(state.copyWith(error: 'Đánh dấu đã đọc thất bại'));
     }
+  }
+
+  Future<void> _onMarkAllRead(
+      NotificationMarkAllRead event, Emitter<NotificationState> emit) async {
+    try {
+      await _notificationService.markAllAsRead(event.userId);
+      final notifications =
+          state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+      emit(state.copyWith(
+        notifications: notifications,
+        unreadCount: 0,
+      ));
+    } catch (_) {}
   }
 }

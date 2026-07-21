@@ -4,6 +4,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/review_model.dart';
+import '../../widgets/auth_avatar.dart';
 
 class ProductReviewSection extends StatelessWidget {
   final bool isLoading;
@@ -99,22 +100,18 @@ class _ReviewCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              AuthAvatar(
+                key: ValueKey(avatarUrl),
+                url: avatarUrl,
                 radius: 18,
-                backgroundColor: AppColors.secondary,
-                backgroundImage: avatarUrl?.isNotEmpty == true
-                    ? NetworkImage(avatarUrl!)
-                    : null,
-                child: avatarUrl?.isNotEmpty == true
-                    ? null
-                    : Text(
-                        review.authorName.isEmpty
-                            ? '?'
-                            : review.authorName[0].toUpperCase(),
-                        style: AppTypography.labelLarge.copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
+                fallback: Text(
+                  review.authorName.isEmpty
+                      ? '?'
+                      : review.authorName[0].toUpperCase(),
+                  style: AppTypography.labelLarge.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(

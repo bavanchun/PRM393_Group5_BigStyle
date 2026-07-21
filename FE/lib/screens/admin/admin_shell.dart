@@ -5,9 +5,11 @@ import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_typography.dart';
+import '../../widgets/auth_avatar.dart';
 import 'admin_dashboard_screen.dart';
 import 'admin_users_screen.dart';
 import 'admin_categories_screen.dart';
+import 'admin_shipping_screen.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -23,6 +25,7 @@ class _AdminShellState extends State<AdminShell> {
     AdminDashboardScreen(),
     AdminUsersScreen(),
     AdminCategoriesScreen(),
+    AdminShippingScreen(),
     _AdminProfileScreen(),
   ];
 
@@ -79,6 +82,11 @@ class _AdminShellState extends State<AdminShell> {
               label: 'Danh mục',
             ),
             NavigationDestination(
+              icon: Icon(Icons.local_shipping_outlined, size: 22),
+              selectedIcon: Icon(Icons.local_shipping, size: 22, color: AppColors.primary),
+              label: 'Vận chuyển',
+            ),
+            NavigationDestination(
               icon: Icon(Icons.person_outline, size: 22),
               selectedIcon: Icon(
                 Icons.person,
@@ -118,29 +126,22 @@ class _AdminProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
+                    AuthAvatar(
+                      key: ValueKey(user?.avatarUrl),
+                      url: user?.avatarUrl,
                       radius: 28,
                       backgroundColor: AppColors.onPrimary.withValues(
                         alpha: 0.2,
                       ),
-                      child: user?.avatarUrl != null
-                          ? ClipOval(
-                              child: Image.network(
-                                user!.avatarUrl!,
-                                width: 56,
-                                height: 56,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Text(
-                              (user?.fullName.isNotEmpty == true
-                                  ? user!.fullName[0]
-                                  : 'A'),
-                              style: AppTypography.headlineLarge.copyWith(
-                                color: AppColors.onPrimary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                      fallback: Text(
+                        (user?.fullName.isNotEmpty == true
+                            ? user!.fullName[0]
+                            : 'A'),
+                        style: AppTypography.headlineLarge.copyWith(
+                          color: AppColors.onPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(

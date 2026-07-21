@@ -78,11 +78,12 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       }
 
       // shipping_address jsonb payload — mirrors the shape create_order
-      // expects; latitude/longitude are optional.
+      // expects; latitude/longitude/email are optional.
       final shippingAddress = <String, dynamic>{
         'address': event.address,
         if (event.latitude != null) 'latitude': event.latitude,
         if (event.longitude != null) 'longitude': event.longitude,
+        if (event.customerEmail != null) 'email': event.customerEmail,
       };
 
       // Authoritative write path: create_order (SECURITY DEFINER) recomputes

@@ -25,7 +25,11 @@ class OrderService {
   // `customer:profiles(...)` join here always resolves to null for
   // managers. Customer name comes from `shipping_address.name`, denormalized
   // at order-creation time (see create_order RPC) — no `profiles` read here.
-  Future<List<OrderModel>> getAllOrders({String? status}) async {
+  Future<List<OrderModel>> getAllOrders({
+    String? status,
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) async {
     var query = _client
         .from('orders')
         .select(
@@ -33,6 +37,12 @@ class OrderService {
         );
     if (status != null && status.isNotEmpty) {
       query = query.eq('status', status);
+    }
+    if (fromDate != null) {
+      query = query.gte('created_at', fromDate.toIso8601String());
+    }
+    if (toDate != null) {
+      query = query.lte('created_at', toDate.toIso8601String());
     }
     final data = await query.order('created_at', ascending: false);
     return data.map((e) => OrderModel.fromMap(e)).toList();
@@ -93,6 +103,7 @@ class OrderService {
       id: saved.id,
       userId: saved.userId,
       customerName: saved.customerName,
+      customerEmail: saved.customerEmail,
       items: order.items,
       subtotal: saved.subtotal,
       shippingFee: saved.shippingFee,
@@ -162,6 +173,7 @@ class OrderService {
       id: saved.id,
       userId: saved.userId,
       customerName: saved.customerName,
+      customerEmail: saved.customerEmail,
       items: orderItems,
       subtotal: saved.subtotal,
       shippingFee: saved.shippingFee,

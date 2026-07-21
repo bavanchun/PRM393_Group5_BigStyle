@@ -150,31 +150,26 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('DH-$reference', style: AppTypography.headlineSmall),
-                      StatusBadge(
-                        label: order.status.label,
-                        status: order.status,
-                      ),
-                    ],
-                  ),
+                  Text('DH-$reference', style: AppTypography.headlineSmall),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Khách hàng: ${order.customerName?.trim().isNotEmpty == true ? order.customerName! : 'Không rõ'}',
+                    'Khách hàng: ${order.customerName?.trim().isNotEmpty == true ? order.customerName! : order.customerEmail?.trim().isNotEmpty == true ? order.customerEmail! : 'Không rõ'}',
                     style: AppTypography.bodyMedium,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Ngày đặt: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
                     style: AppTypography.bodySmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  StatusBadge(
+                    label: order.status.label,
+                    status: order.status,
                   ),
                 ],
               ),
@@ -214,6 +209,21 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
                             ),
                           ],
                         ),
+                        if (_payment?['paid_at'] != null) ...[
+                          const SizedBox(height: 4),
+                          Builder(
+                            builder: (context) {
+                              final paidAt = DateTime.tryParse(
+                                _payment!['paid_at'] as String,
+                              );
+                              if (paidAt == null) return const SizedBox.shrink();
+                              return Text(
+                                'Thanh toán lúc: ${paidAt.hour.toString().padLeft(2, '0')}:${paidAt.minute.toString().padLeft(2, '0')} ${paidAt.day}/${paidAt.month}/${paidAt.year}',
+                                style: AppTypography.caption,
+                              );
+                            },
+                          ),
+                        ],
                       ],
                     ),
             ),

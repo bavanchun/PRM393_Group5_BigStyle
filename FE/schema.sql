@@ -322,7 +322,7 @@ create table public.notifications (
   user_id     uuid references public.profiles(id) on delete cascade,
   title       text not null,
   body        text not null,
-  type        text check (type in ('order_update','promotion','system','new_product')),
+  type        text check (type in ('order_update','new_order','promotion','system','new_product')),
   data        jsonb,
   is_read     boolean default false,
   created_at  timestamptz default now()
@@ -382,6 +382,51 @@ begin
 end $$;
 
 grant execute on function public.cancel_my_order(uuid) to authenticated;
+
+-- Trigger: tự động notify shop manager khi có đơn hàng mới
+create or replace function public.notify_new_order()
+returns trigger as $$
+declare
+  manager_id uuid;
+  customer_name text;
+  item_count int;
+begin
+  SELECT DISTINCT p.store_id INTO manager_id
+  FROM public.order_items oi
+  JOIN public.product_variants pv ON pv.id = oi.variant_id
+  JOIN public.products p ON p.id = pv.product_id
+  WHERE oi.order_id = NEW.id
+  LIMIT 1;
+
+  SELECT full_name INTO customer_name
+  FROM public.profiles WHERE id = NEW.user_id;
+
+  SELECT count(*) INTO item_count
+  FROM public.order_items WHERE order_id = NEW.id;
+
+  IF manager_id IS NOT NULL AND manager_id != NEW.user_id THEN
+    INSERT INTO public.notifications (user_id, title, body, type, data)
+    VALUES (
+      manager_id,
+      'Đơn hàng mới từ ' || COALESCE(customer_name, 'Khách hàng'),
+      'Có ' || item_count || ' sản phẩm. Tổng: ' || NEW.total || 'đ',
+      'new_order',
+      jsonb_build_object(
+        'order_id', NEW.id,
+        'order_number', NEW.order_number,
+        'customer_name', customer_name,
+        'total', NEW.total,
+        'item_count', item_count
+      )
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ language plpgsql security definer;
+
+create trigger on_new_order
+  after insert on public.orders
+  for each row execute procedure public.notify_new_order();
 
 
 -- ============================================================
@@ -522,7 +567,7 @@ create policy "Users manage own chat messages"
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('products', 'products', true,  5242880, array['image/jpeg','image/png','image/webp']),
-  ('avatars',  'avatars',  false, 2097152, array['image/jpeg','image/png','image/webp']),
+  ('avatars',  'avatars',  true,  2097152, array['image/jpeg','image/png','image/webp']),
   ('reviews',  'reviews',  true,  5242880, array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
 
@@ -538,8 +583,20 @@ create policy "Managers upload product images"
     public.is_manager()
   );
 
+create policy "Public can view avatars"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
 create policy "Users manage own avatars"
-  on storage.objects for all
+  on storage.objects for insert
+  with check (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "Users update own avatars"
+  on storage.objects for update
+  using (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "Users delete own avatars"
+  on storage.objects for delete
   using (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
 
 create policy "Public can view review images"

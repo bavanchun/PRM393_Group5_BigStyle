@@ -703,7 +703,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   /// Returns `true` only when an item was actually added (i.e. not an
   /// auth-redirect, validation bail-out, or out-of-stock variant) — used by
   /// [_buyNow] to decide whether it's safe to navigate to the cart.
-  Future<bool> _addToCart({bool showSnackbar = true}) async {
+  Future<bool> _addToCart({bool showSnackbar = true, bool navigateToCart = true}) async {
     final detailState = context.read<ProductDetailBloc>().state;
     final product = detailState.product;
     if (product == null) return false;
@@ -812,6 +812,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       );
     }
+    if (navigateToCart && mounted) {
+      Navigator.pushNamed(context, '/cart');
+    }
     return true;
   }
 
@@ -842,10 +845,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
-    // _addToCart already waits for the CartBloc to confirm before resolving.
-    final added = await _addToCart(showSnackbar: false);
-    if (!added || !mounted) return;
-    Navigator.pushNamed(context, '/cart');
+    final added = await _addToCart(showSnackbar: false, navigateToCart: false);
+    if (!added) return;
+    if (!mounted) return;
+
+    // Wait until cart state reflects the new item before navigating
+    final cartBloc = context.read<CartBloc>();
+    final beforeItems = cartBloc.state.items;
+    final beforeCount = beforeItems.length;
+    try {
+      await cartBloc.stream
+          .firstWhere(
+            (s) => s.items.length > beforeCount || s.error != null,
+          )
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    // Get the newly added item IDs to pass to checkout
+    final afterItems = cartBloc.state.items;
+    final newItemIds = afterItems
+        .where((item) => !beforeItems.any((old) => old.id == item.id))
+        .map((item) => item.id)
+        .toList();
+
+    Navigator.pushNamed(context, '/checkout', arguments: {
+      'selectedIds': newItemIds,
+    });
   }
 
   Future<void> _openReviewEditor(String productId) async {

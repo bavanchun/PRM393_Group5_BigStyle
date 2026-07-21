@@ -20,6 +20,8 @@ import '../../screens/orders/orders_screen.dart';
 import '../../screens/orders/order_detail_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/profile/edit_profile_screen.dart';
+import '../../screens/profile/addresses_screen.dart';
+import '../../screens/profile/address_form_screen.dart';
 import '../../screens/chat/chat_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/delivery/delivery_map_screen.dart';
@@ -108,6 +110,16 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const EditProfileScreen(),
+        );
+      case '/addresses':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const AddressesScreen(),
+        );
+      case '/address-form':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const AddressFormScreen(),
         );
       case '/chat':
         return MaterialPageRoute(

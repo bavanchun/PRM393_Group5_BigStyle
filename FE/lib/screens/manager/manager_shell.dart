@@ -3,12 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../models/user_model.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_event.dart';
 import '../../blocs/support_inbox/support_inbox_bloc.dart';
 import '../../blocs/support_inbox/support_inbox_event.dart';
+import '../../blocs/notification/notification_bloc.dart';
+import '../../blocs/notification/notification_event.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_typography.dart';
+import '../../widgets/auth_avatar.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
 import 'manager_orders_screen.dart';
@@ -27,6 +31,17 @@ class ManagerShell extends StatefulWidget {
 
 class _ManagerShellState extends State<ManagerShell> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<AuthBloc>().state.user?.id;
+      if (userId != null) {
+        context.read<NotificationBloc>().add(NotificationLoad(userId));
+      }
+    });
+  }
 
   final _screens = const [
     ManagerDashboard(),
@@ -52,11 +67,12 @@ class _ManagerShellState extends State<ManagerShell> {
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
-          // IndexedStack keeps ManagerOrdersScreen alive after its initial
-          // load, so re-fire the load whenever the manager switches back to
-          // the Orders tab to pick up any changes made elsewhere.
           if (index == _ordersTabIndex) {
             context.read<ManagerBloc>().add(const ManagerLoadOrders());
+          }
+          final userId = context.read<AuthBloc>().state.user?.id;
+          if (userId != null) {
+            context.read<NotificationBloc>().add(NotificationLoad(userId));
           }
         },
       ),
@@ -88,31 +104,7 @@ class _ManagerProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: AppColors.onPrimary.withValues(
-                        alpha: 0.2,
-                      ),
-                      child: user?.avatarUrl != null
-                          ? ClipOval(
-                              child: Image.network(
-                                user!.avatarUrl!,
-                                width: 56,
-                                height: 56,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Text(
-                              (user?.fullName.isNotEmpty == true
-                                  ? user!.fullName[0]
-                                  : 'M'),
-                              style: AppTypography.headlineLarge.copyWith(
-                                color: AppColors.onPrimary,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                    ),
+                    _buildManagerAvatar(user),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -159,15 +151,6 @@ class _ManagerProfileScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.edit_outlined,
-                        color: AppColors.onPrimary,
-                        size: 20,
-                      ),
-                      onPressed: () =>
-                          Navigator.pushNamed(context, '/edit-profile'),
-                    ),
                   ],
                 ),
               ),
@@ -202,6 +185,25 @@ class _ManagerProfileScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildManagerAvatar(UserModel? user) {
+    final initials = Text(
+      user?.fullName.isNotEmpty == true ? user!.fullName[0].toUpperCase() : 'M',
+      style: const TextStyle(
+        color: AppColors.onPrimary,
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+
+    return AuthAvatar(
+      key: ValueKey(user?.avatarUrl),
+      url: user?.avatarUrl,
+      radius: 28,
+      backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
+      fallback: initials,
     );
   }
 }

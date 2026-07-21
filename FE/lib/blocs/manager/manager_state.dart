@@ -10,6 +10,8 @@ class ManagerState extends Equatable {
   final List<OrderModel> recentOrders;
   final List<OrderModel> orders;
   final String? selectedStatus;
+  final DateTime? fromDate;
+  final DateTime? toDate;
   final String? error;
 
   const ManagerState({
@@ -20,6 +22,8 @@ class ManagerState extends Equatable {
     this.recentOrders = const [],
     this.orders = const [],
     this.selectedStatus,
+    this.fromDate,
+    this.toDate,
     this.error,
   });
 
@@ -32,6 +36,10 @@ class ManagerState extends Equatable {
     List<OrderModel>? orders,
     String? selectedStatus,
     bool clearSelectedStatus = false,
+    DateTime? fromDate,
+    bool clearFromDate = false,
+    DateTime? toDate,
+    bool clearToDate = false,
     String? error,
     bool clearError = false,
   }) {
@@ -45,6 +53,8 @@ class ManagerState extends Equatable {
       selectedStatus: clearSelectedStatus
           ? null
           : selectedStatus ?? this.selectedStatus,
+      fromDate: clearFromDate ? null : fromDate ?? this.fromDate,
+      toDate: clearToDate ? null : toDate ?? this.toDate,
       error: clearError ? null : error ?? this.error,
     );
   }
@@ -58,6 +68,8 @@ class ManagerState extends Equatable {
     recentOrders,
     orders,
     selectedStatus,
+    fromDate,
+    toDate,
     error,
   ];
 }

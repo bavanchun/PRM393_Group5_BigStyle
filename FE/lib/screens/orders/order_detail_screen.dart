@@ -65,7 +65,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       appBar: AppBar(title: const Text('Chi tiết đơn hàng')),
       body: _orderId == null
           ? _buildError('Không tìm thấy mã đơn hàng.', canRetry: false)
-          : BlocBuilder<OrderBloc, OrderState>(
+          : BlocListener<OrderBloc, OrderState>(
+              listenWhen: (prev, curr) =>
+                  prev.error != curr.error && curr.error != null,
+              listener: (context, state) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.error!),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: BlocBuilder<OrderBloc, OrderState>(
               builder: (context, state) {
                 final order = state.selectedOrder;
 
@@ -83,7 +94,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppCard(
                         child: Column(
@@ -116,20 +126,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      AppCard(child: _buildTimeline(order.status)),
-                      if (deliveryRouteCtaVisible(
-                        order.status,
-                        order.latitude,
-                        order.longitude,
-                      )) ...[
-                        const SizedBox(height: 12),
-                        AppButton(
-                          label: 'Xem lộ trình giao hàng',
-                          isOutlined: true,
-                          onPressed: () => _openDeliveryRoute(order),
-                        ),
+                      if (order.status != OrderStatus.cancelled) ...[
+                        AppCard(child: _buildTimeline(order.status)),
+                        if (deliveryRouteCtaVisible(
+                          order.status,
+                          order.latitude,
+                          order.longitude,
+                        )) ...[
+                          const SizedBox(height: 12),
+                          AppButton(
+                            label: 'Xem lộ trình giao hàng',
+                            isOutlined: true,
+                            onPressed: () => _openDeliveryRoute(order),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
                       ],
-                      const SizedBox(height: 16),
                       Text('Sản phẩm', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
                       ...order.items.map(
@@ -264,6 +276,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 );
               },
             ),
+          ),
     );
   }
 
