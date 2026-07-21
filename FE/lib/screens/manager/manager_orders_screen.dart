@@ -23,12 +23,58 @@ class ManagerOrdersScreen extends StatefulWidget {
 }
 
 class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
+  DateTime? _fromDate;
+  DateTime? _toDate;
+
   @override
   void initState() {
     super.initState();
     context.read<ManagerBloc>().add(const ManagerLoadOrders());
     context.read<RefundRequestBloc>().add(
       const RefundRequestLoadPendingOrderIds(),
+    );
+  }
+
+  Future<void> _pickDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2024),
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+      initialDateRange: _fromDate != null && _toDate != null
+          ? DateTimeRange(start: _fromDate!, end: _toDate!)
+          : null,
+      locale: const Locale('vi', 'VN'),
+    );
+    if (picked != null) {
+      setState(() {
+        _fromDate = picked.start;
+        _toDate = picked.end.add(const Duration(days: 1));
+      });
+      _applyDateFilter();
+    }
+  }
+
+  void _setToday() {
+    final now = DateTime.now();
+    setState(() {
+      _fromDate = DateTime(now.year, now.month, now.day);
+      _toDate = _fromDate!.add(const Duration(days: 1));
+    });
+    _applyDateFilter();
+  }
+
+  void _clearDateFilter() {
+    setState(() {
+      _fromDate = null;
+      _toDate = null;
+    });
+    _applyDateFilter();
+  }
+
+  void _applyDateFilter() {
+    final status = context.read<ManagerBloc>().state.selectedStatus;
+    context.read<ManagerBloc>().add(
+      ManagerLoadOrders(status: status, fromDate: _fromDate, toDate: _toDate),
     );
   }
 
@@ -62,6 +108,7 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
             return Column(
               children: [
                 _buildFilterChips(state.selectedStatus),
+                _buildDateFilterRow(),
                 if (state.isOrdersLoading) const LinearProgressIndicator(),
                 const Divider(height: 1),
                 Expanded(child: _buildOrdersContent(state)),
@@ -92,10 +139,51 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
           return ChoiceChip(
             label: Text(status?.label ?? 'Tất cả'),
             selected: isSelected,
-            onSelected: (_) =>
-                context.read<ManagerBloc>().add(ManagerLoadOrders(status: key)),
+            onSelected: (_) => context.read<ManagerBloc>().add(
+              ManagerLoadOrders(status: key, fromDate: _fromDate, toDate: _toDate),
+            ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildDateFilterRow() {
+    final hasDateFilter = _fromDate != null || _toDate != null;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.xs),
+      child: Row(
+        children: [
+          _FilterChip(
+            icon: Icons.calendar_today,
+            label: _fromDate != null && _toDate != null
+                ? '${_fromDate!.day}/${_fromDate!.month} → ${_toDate!.subtract(const Duration(days: 1)).day}/${_toDate!.subtract(const Duration(days: 1)).month}'
+                : 'Chọn ngày',
+            onTap: _pickDateRange,
+          ),
+          const SizedBox(width: 4),
+          _FilterChip(
+            icon: Icons.today,
+            label: 'Hôm nay',
+            onTap: _setToday,
+            isActive: _fromDate != null &&
+                _fromDate ==
+                    DateTime(
+                      DateTime.now().year,
+                      DateTime.now().month,
+                      DateTime.now().day,
+                    ),
+          ),
+          if (hasDateFilter) ...[
+            const SizedBox(width: 4),
+            _FilterChip(
+              icon: Icons.clear,
+              label: 'Xoá',
+              onTap: _clearDateFilter,
+              isActive: true,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -109,7 +197,11 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         child: AppErrorState(
           message: state.error!,
           onRetry: () => context.read<ManagerBloc>().add(
-            ManagerLoadOrders(status: state.selectedStatus),
+            ManagerLoadOrders(
+              status: state.selectedStatus,
+              fromDate: _fromDate,
+              toDate: _toDate,
+            ),
           ),
         ),
       );
@@ -159,9 +251,57 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
   }
 
   Future<void> _reload(String? status) async {
-    context.read<ManagerBloc>().add(ManagerLoadOrders(status: status));
+    context.read<ManagerBloc>().add(
+      ManagerLoadOrders(status: status, fromDate: _fromDate, toDate: _toDate),
+    );
     await context.read<ManagerBloc>().stream.firstWhere(
       (state) => !state.isOrdersLoading,
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool isActive;
+
+  const _FilterChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.isActive = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : AppColors.divider,
+          borderRadius: BorderRadius.circular(16),
+          border: isActive ? Border.all(color: AppColors.primary) : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.textSecondary),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

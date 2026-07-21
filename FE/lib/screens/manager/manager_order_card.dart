@@ -81,7 +81,9 @@ class ManagerOrderCard extends StatelessWidget {
                       Text(
                         order.customerName?.trim().isNotEmpty == true
                             ? order.customerName!
-                            : 'Khách hàng',
+                            : order.customerEmail?.trim().isNotEmpty == true
+                                ? order.customerEmail!
+                                : 'Khách hàng',
                         style: AppTypography.bodySmall.copyWith(fontSize: 11),
                       ),
                     ],
