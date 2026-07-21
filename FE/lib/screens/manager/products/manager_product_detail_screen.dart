@@ -5,6 +5,7 @@ import '../../../blocs/manager_product/manager_product_bloc.dart';
 import '../../../blocs/manager_product/manager_product_event.dart';
 import '../../../blocs/manager_product/manager_product_state.dart';
 import '../../../config/theme/app_colors.dart';
+import '../../../config/theme/app_spacing.dart';
 import '../../../config/theme/app_typography.dart';
 import '../../../models/category_model.dart';
 import '../../../models/product_model.dart';
@@ -47,6 +48,7 @@ class _ManagerProductDetailScreenState
   List<CategoryModel> _categories = [];
   String? _selectedCategoryId;
   bool _isLoadingCategories = true;
+  String? _categoriesError;
 
   @override
   void initState() {
@@ -95,17 +97,25 @@ class _ManagerProductDetailScreenState
               : null;
         }
         _isLoadingCategories = false;
+        _categoriesError = null;
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoadingCategories = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi tải danh mục: $e'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      // No SnackBar here — the inline categories-retry banner already
+      // surfaces this; a toast on top would double-message it.
+      setState(() {
+        _isLoadingCategories = false;
+        _categoriesError = 'Lỗi tải danh mục: $e';
+      });
     }
+  }
+
+  void _retryLoadCategories() {
+    setState(() {
+      _isLoadingCategories = true;
+      _categoriesError = null;
+    });
+    _loadCategories();
   }
 
   void _addVariantRow() {
@@ -142,13 +152,18 @@ class _ManagerProductDetailScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Không', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Không',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Có, thoát',
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),
@@ -215,9 +230,7 @@ class _ManagerProductDetailScreenState
 
     final double price = double.tryParse(_priceController.text.trim()) ?? 0.0;
 
-    if (_imageUrls.isEmpty) {
-      _imageUrls.add('https://via.placeholder.com/150');
-    }
+    // No fake placeholder URL — empty images render the icon fallback in the UI.
 
     final updatedProduct = ProductModel(
       id: widget.product.id,
@@ -269,7 +282,10 @@ class _ManagerProductDetailScreenState
                 DeleteManagerProductEvent(widget.product.id),
               );
             },
-            child: const Text('Xóa', style: TextStyle(color: AppColors.error)),
+            child: Text(
+              'Xóa',
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -323,7 +339,9 @@ class _ManagerProductDetailScreenState
           ),
           title: Text(
             'Chi tiết & Cập nhật',
-            style: AppTypography.headlineMedium.copyWith(color: AppColors.textPrimary),
+            style: AppTypography.headlineMedium.copyWith(
+              color: AppColors.textPrimary,
+            ),
           ),
           iconTheme: const IconThemeData(color: AppColors.textPrimary),
           actions: [
@@ -346,14 +364,17 @@ class _ManagerProductDetailScreenState
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.onPrimary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppSpacing.xs),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   elevation: 0,
                 ),
-                child: const Text(
+                child: Text(
                   'Cập nhật',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: AppTypography.button.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -419,7 +440,7 @@ class _ManagerProductDetailScreenState
                                   decoration: const BoxDecoration(
                                     color: AppColors.surface,
                                     borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
+                                      Radius.circular(AppSpacing.xs),
                                     ),
                                   ),
                                   child: CustomPaint(
@@ -448,15 +469,15 @@ class _ManagerProductDetailScreenState
                                           const SizedBox(height: 4),
                                           Text(
                                             'Chọn tập tin',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                              decorationColor:
-                                                  AppColors.primary,
-                                            ),
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                                  color: AppColors.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                  decorationColor:
+                                                      AppColors.primary,
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -467,9 +488,9 @@ class _ManagerProductDetailScreenState
 
                               const SizedBox(height: 16),
                               if (_imageUrls.isNotEmpty) ...[
-                                const Text(
+                                Text(
                                   '* Bấm vào ảnh bất kỳ để đặt làm Ảnh chính (sẽ được đưa lên đầu)',
-                                  style: TextStyle(
+                                  style: AppTypography.caption.copyWith(
                                     fontSize: 11,
                                     fontStyle: FontStyle.italic,
                                     color: AppColors.primary,
@@ -506,7 +527,9 @@ class _ManagerProductDetailScreenState
                                               child: Container(
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(
+                                                        AppSpacing.xs,
+                                                      ),
                                                   border: Border.all(
                                                     color: isFirst
                                                         ? AppColors.primary
@@ -545,14 +568,17 @@ class _ManagerProductDetailScreenState
                                                         vertical: 2,
                                                       ),
                                                   alignment: Alignment.center,
-                                                  child: const Text(
+                                                  child: Text(
                                                     'Ảnh chính',
-                                                    style: TextStyle(
-                                                      fontSize: 9,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: AppColors.onPrimary,
-                                                    ),
+                                                    style: AppTypography
+                                                        .labelSmall
+                                                        .copyWith(
+                                                          fontSize: 9,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: AppColors
+                                                              .onPrimary,
+                                                        ),
                                                   ),
                                                 ),
                                               ),
@@ -568,7 +594,8 @@ class _ManagerProductDetailScreenState
                                                 child: Container(
                                                   decoration:
                                                       const BoxDecoration(
-                                                        color: AppColors.surface,
+                                                        color:
+                                                            AppColors.surface,
                                                         shape: BoxShape.circle,
                                                       ),
                                                   padding: const EdgeInsets.all(
@@ -596,7 +623,7 @@ class _ManagerProductDetailScreenState
                                           decoration: const BoxDecoration(
                                             color: AppColors.surface,
                                             borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
+                                              Radius.circular(AppSpacing.xs),
                                             ),
                                           ),
                                           child: CustomPaint(
@@ -662,8 +689,7 @@ class _ManagerProductDetailScreenState
                                 },
                                 child: Text(
                                   '+ Thêm màu mới',
-                                  style: TextStyle(
-                                    fontSize: 12,
+                                  style: AppTypography.labelSmall.copyWith(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -706,18 +732,21 @@ class _ManagerProductDetailScreenState
                                       ),
                                       child: LinearProgressIndicator(),
                                     )
+                                  : (_categoriesError != null &&
+                                        _categories.isEmpty)
+                                  ? _buildCategoriesRetry()
                                   : DropdownButtonFormField<String>(
                                       initialValue: _selectedCategoryId,
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'Danh mục *',
-                                        labelStyle: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.primary,
-                                        ),
-                                        border: OutlineInputBorder(),
+                                        labelStyle: AppTypography.labelSmall
+                                            .copyWith(
+                                              fontSize: 12,
+                                              color: AppColors.primary,
+                                            ),
+                                        border: const OutlineInputBorder(),
                                       ),
-                                      style: const TextStyle(
-                                        fontSize: 13,
+                                      style: AppTypography.bodySmall.copyWith(
                                         color: AppColors.textPrimary,
                                       ),
                                       items: _categories.map((cat) {
@@ -737,16 +766,15 @@ class _ManagerProductDetailScreenState
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
                                 initialValue: _selectedElasticity,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: 'Độ co giãn *',
-                                  labelStyle: TextStyle(
+                                  labelStyle: AppTypography.labelSmall.copyWith(
                                     fontSize: 12,
                                     color: AppColors.primary,
                                   ),
-                                  border: OutlineInputBorder(),
+                                  border: const OutlineInputBorder(),
                                 ),
-                                style: const TextStyle(
-                                  fontSize: 13,
+                                style: AppTypography.bodySmall.copyWith(
                                   color: AppColors.textPrimary,
                                 ),
                                 items: const [
@@ -866,7 +894,7 @@ class _ManagerProductDetailScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.sm),
         border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: Column(
@@ -878,6 +906,42 @@ class _ManagerProductDetailScreenState
           ),
           const SizedBox(height: 12),
           child,
+        ],
+      ),
+    );
+  }
+
+  /// Inline retry affordance shown in place of the category dropdown when
+  /// `_loadCategories` fails and no categories are available yet — mirrors
+  /// AppErrorState's message+retry shape but stays inline within the form
+  /// section instead of taking over the whole screen.
+  Widget _buildCategoriesRetry() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: AppColors.error, size: 20),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Text(
+              _categoriesError!,
+              style: AppTypography.bodySmall.copyWith(color: AppColors.error),
+            ),
+          ),
+          TextButton.icon(
+            onPressed: _retryLoadCategories,
+            icon: const Icon(Icons.refresh, size: 18),
+            label: const Text('Thử lại'),
+          ),
         ],
       ),
     );
@@ -909,7 +973,7 @@ class _ManagerProductDetailScreenState
           const SizedBox(height: 4),
           Text(
             name,
-            style: TextStyle(
+            style: AppTypography.caption.copyWith(
               fontSize: 11,
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -943,14 +1007,14 @@ class _ManagerProductDetailScreenState
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(fontSize: 12, color: AppColors.primary),
+        labelStyle: AppTypography.labelSmall.copyWith(color: AppColors.primary),
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 12,
           vertical: 10,
         ),
       ),
-      style: const TextStyle(fontSize: 13),
+      style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary),
     );
   }
 }
@@ -977,7 +1041,7 @@ class DashedBorderPainter extends CustomPainter {
     path.addRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(0, 0, size.width, size.height),
-        const Radius.circular(8),
+        const Radius.circular(AppSpacing.xs),
       ),
     );
 

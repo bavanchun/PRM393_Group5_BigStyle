@@ -13,7 +13,19 @@ import '../../config/theme/app_typography.dart';
 import '../../config/app_config.dart';
 
 class DeliveryMapScreen extends StatefulWidget {
-  const DeliveryMapScreen({super.key});
+  /// When [destination] is non-null the screen runs in delivery mode: it routes
+  /// the shop → this fixed order coordinate and never reads device GPS. When
+  /// null it stays in store-locator mode (customer GPS ↔ shop).
+  final LatLng? destination;
+  final String? destinationLabel;
+  final String? title;
+
+  const DeliveryMapScreen({
+    super.key,
+    this.destination,
+    this.destinationLabel,
+    this.title,
+  });
 
   @override
   State<DeliveryMapScreen> createState() => _DeliveryMapScreenState();
@@ -22,6 +34,8 @@ class DeliveryMapScreen extends StatefulWidget {
 class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
   GoogleMapController? _mapController;
   static const LatLng _shopLocation = LatLng(10.7758, 106.7048);
+
+  bool get _isDeliveryMode => widget.destination != null;
   LatLng? _customerLocation;
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
@@ -47,16 +61,22 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
   }
 
   Future<void> _initLocation() async {
-    try {
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
-      );
-      _customerLocation = LatLng(position.latitude, position.longitude);
-    } catch (_) {
-      _customerLocation = const LatLng(10.7728, 106.7018);
+    if (_isDeliveryMode) {
+      // Delivery mode: route to the order's stored coordinate; never touch GPS
+      // (a GPS failure must not silently substitute a downtown-HCMC fallback).
+      _customerLocation = widget.destination;
+    } else {
+      try {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 10),
+          ),
+        );
+        _customerLocation = LatLng(position.latitude, position.longitude);
+      } catch (_) {
+        _customerLocation = const LatLng(10.7728, 106.7018);
+      }
     }
 
     await _createMarkerIcons();
@@ -248,7 +268,10 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
           position: _customerLocation!,
           icon: _usePulseIcon ? _customerIconPulse! : _customerIconNormal!,
           anchor: const Offset(0.5, 0.5),
-          infoWindow: const InfoWindow(title: 'Vị trí của bạn'),
+          infoWindow: InfoWindow(
+            title: _isDeliveryMode ? 'Điểm giao hàng' : 'Vị trí của bạn',
+            snippet: _isDeliveryMode ? widget.destinationLabel : null,
+          ),
         ),
       };
     });
@@ -291,8 +314,12 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
   }
 
   Future<void> _openGoogleMaps() async {
+    // In delivery mode hand off directions to the order coordinate, not the
+    // shop (a courier taps this expecting turn-by-turn to the customer).
+    final target = _isDeliveryMode ? _customerLocation : _shopLocation;
+    final dest = target ?? _shopLocation;
     final uri = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=${_shopLocation.latitude},${_shopLocation.longitude}',
+      'https://www.google.com/maps/dir/?api=1&destination=${dest.latitude},${dest.longitude}',
     );
     try {
       final launched = await launchUrl(
@@ -312,6 +339,15 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
   }
 
   Future<void> _goToMyLocation() async {
+    // Delivery mode: recenter on the order destination, not device GPS.
+    if (_isDeliveryMode) {
+      final dest = _customerLocation;
+      if (dest != null) {
+        _mapController?.animateCamera(CameraUpdate.newLatLngZoom(dest, 15));
+      }
+      return;
+    }
+
     final messenger = ScaffoldMessenger.of(context);
 
     try {
@@ -350,7 +386,7 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
               onMapCreated: (controller) => _mapController = controller,
               markers: _markers,
               polylines: _polylines,
-              myLocationEnabled: true,
+              myLocationEnabled: !_isDeliveryMode,
               myLocationButtonEnabled: false,
               zoomControlsEnabled: false,
               mapToolbarEnabled: false,
@@ -386,6 +422,31 @@ class _DeliveryMapScreenState extends State<DeliveryMapScreen> {
               ),
             ),
           ),
+          if (widget.title != null)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 64,
+              right: 64,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    widget.title!,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.labelLarge.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           _buildBottomSheet(),
           if (_isLoading)
             ColoredBox(

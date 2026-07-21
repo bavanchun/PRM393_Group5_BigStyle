@@ -57,11 +57,11 @@ phase này — chỉ chuẩn bị để phase 2–4 điền nhất quán.
 
 ## Success Criteria
 
-- [ ] `docs/ux-flow-audit.md` tồn tại, có đủ heading cho 3 actor + mọi screen
+- [x] `docs/ux-flow-audit.md` tồn tại, có đủ heading cho 3 actor + mọi screen
       trong bảng inventory (plan.md) + cross-cutting + Top Priorities.
-- [ ] Nơi lưu ảnh local sẵn sàng + đã gitignore (ảnh không commit).
-- [ ] `adb devices` xác nhận emulator; lệnh chụp mẫu ghi trong doc.
-- [ ] Severity rubric + finding schema xuất hiện đúng 1 lần, dùng chung.
+- [x] Nơi lưu ảnh local sẵn sàng + đã gitignore (ảnh không commit).
+- [ ] `adb devices` xác nhận emulator; lệnh chụp mẫu ghi trong doc. <!-- partial: emulator clearly used (doc header cites emulator-5554, ảnh m01–m08/c02–c17) nhưng "lệnh chụp mẫu" không được ghi vào doc (grep adb/screencap/cách chụp = 0) -->
+- [x] Severity rubric + finding schema xuất hiện đúng 1 lần, dùng chung.
 
 ## Risk Assessment
 

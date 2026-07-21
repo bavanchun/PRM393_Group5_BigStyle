@@ -32,17 +32,17 @@ Smallest role cluster (4 screens), but 4/4 at zero shared-widget use (Phase 1) �
 
 ## Regression Checklist
 
-- [ ] AdminDashboard: stats rendering (revenue/users/products/orders — per `admin-smoke-baseline.md`'s live-verified values) unchanged.
-- [ ] AdminUsers: user list/role display unchanged.
-- [ ] AdminCategories: category CRUD unchanged.
-- [ ] AdminProfile: edit-profile link, logout unchanged.
-- [ ] Bottom `NavigationBar` tab switching unchanged (this is a shell-infra element, not a screen — do not restructure its tab order, only its color scheme, per this plan's out-of-scope constraint).
+- [ ] AdminDashboard: stats rendering (revenue/users/products/orders — per `admin-smoke-baseline.md`'s live-verified values) unchanged. <!-- dashboard rendered on device (Phase 1 smoke screenshot + qa-260710-1827) but stat values were not re-checked against the baseline — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] AdminUsers: user list/role display unchanged. <!-- device-verified post-merge: qa-260710-1827 "Admin Users filter chips correctly scope the list" + add-user validation exercised -->
+- [ ] AdminCategories: category CRUD unchanged. <!-- not re-walked post-merge — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] AdminProfile: edit-profile link, logout unchanged. <!-- Admin logout device-verified post-merge (qa-260710-1827); edit-profile link not re-walked — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Bottom `NavigationBar` tab switching unchanged (this is a shell-infra element, not a screen — do not restructure its tab order, only its color scheme, per this plan's out-of-scope constraint). <!-- admin tabs traversed post-merge (qa-260710-1827 covered Dashboard/Users/Profile with 0 new exceptions); no tab-array diff (plan.md closeout grep) -->
 
 ## Success Criteria
 
-- [ ] All 4 screens migrated.
-- [ ] AdminDashboard's contrast finding resolved (fixed or confirmed-false-positive-and-closed with the real-tool measurement documented).
-- [ ] Hardcode-guard passes for this cluster's files; `flutter analyze` + `flutter test` clean.
+- [x] All 4 screens migrated. <!-- evidence: completion note "AdminDashboard 12, AdminUsers 6, AdminCategories 5, AdminShell 6 = 29 total" — matches guard delta 59→30 exactly -->
+- [x] AdminDashboard's contrast finding resolved (fixed or confirmed-false-positive-and-closed with the real-tool measurement documented). <!-- evidence: completion note — white-on-primary-gradient re-measured at 6.70:1 (same figure independently verified in Phases 3/4/5), confirmed false positive, no fix needed -->
+- [x] Hardcode-guard passes for this cluster's files; `flutter analyze` + `flutter test` clean. <!-- evidence: `grep` of FE/lib/screens/admin/ this session — zero non-allowlisted hits; repo-wide guard also exit 0; flutter analyze/test re-run this session, clean/116 passing -->
 
 ## Risk Assessment
 

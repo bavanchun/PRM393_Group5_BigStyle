@@ -87,20 +87,21 @@ math — do 5 then 6 to avoid checkout-total merge friction.
 ## Acceptance Criteria (whole plan)
 
 - [ ] Avatar: user picks image in edit-profile → uploaded → `avatar_url` saved →
-      reflects in profile.
+      reflects in profile. <!-- code path complete incl. avatars-bucket fix; end-to-end flow not device-verified anywhere; deferred to device pass (plans/260712-1644 Phase 1) -->
 - [ ] Store: profile "Cửa hàng" opens the real `DeliveryMapScreen`; "Chỉ đường"
-      launches external Google Maps.
-- [ ] Manager: chosen color swatch persists real `color_hex` on new variants
-      (no more hardcoded `#914B34`).
-- [ ] Product list: "Size XL/2XL/3XL" filters by real variant size; "Sale"
-      filters to on-sale products (`sale_price` set).
+      launches external Google Maps. <!-- map open + tiles/marker device-verified (666a7e6); "Chỉ đường" external handoff code-verified only — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Manager: chosen color swatch persists real `color_hex` on new variants
+      (no more hardcoded `#914B34`). <!-- evidence: FE/lib/screens/manager/products/manager_create_product_screen.dart _swatchHexByName map + fallbackColorHex: _selectedSwatchHex threaded to variant insert (commit 2152eac), still intact post-refactor -->
+- [x] Product list: "Size XL/2XL/3XL" filters by real variant size; "Sale"
+      filters to on-sale products (`sale_price` set). <!-- evidence: FE/lib/blocs/product/product_state.dart filteredProducts (sizes.contains/hasDiscount) + product_list_screen.dart chip dispatch -->
 - [ ] Customer: cancel button on own pending/confirmed order → status becomes
       cancelled (via RPC, RLS-safe) → notification fired; order detail shows a
-      status timeline.
-- [ ] Voucher: valid code at checkout applies discount → `orders.discount_amount`
+      status timeline. <!-- RPC + isCancellable gate + timeline shipped and unit-tested; reject-path live-verified; positive cancel not device-verified — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Voucher: valid code at checkout applies discount → `orders.discount_amount`
       persisted, total recomputed, discount row shown on checkout + order detail;
       manager can create/toggle vouchers.
-- [ ] `flutter analyze` clean; no regressions to existing checkout/order/product flows.
+      <!-- discount write-path was later found stubbed (F1, qa-260711-1220) and fixed+prod-verified in PR #24 (tester-260711-1505) -->
+- [x] `flutter analyze` clean; no regressions to existing checkout/order/product flows. <!-- re-verified 2026-07-12: analyze 0 issues, 116/116 tests pass -->
 
 ## Out of Scope
 - Push notifications / FCM (separate plan).

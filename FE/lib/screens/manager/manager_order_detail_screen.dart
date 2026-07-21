@@ -3,14 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_state.dart';
+import '../../blocs/refund_request/refund_request_bloc.dart';
+import '../../blocs/refund_request/refund_request_event.dart';
+import '../../blocs/refund_request/refund_request_state.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../models/order_model.dart';
+import '../../models/refund_request_model.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/status_badge.dart';
 import '../../utils/currency_format.dart';
 import 'order_status_update_sheet.dart';
+import 'refund_decision_sheet.dart';
 
 /// Manager-only order detail screen. Unlike the customer-facing
 /// OrderDetailScreen, this one is instantiated with an [OrderModel] snapshot,
@@ -28,35 +33,66 @@ class ManagerOrderDetailScreen extends StatefulWidget {
 }
 
 class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
-  String? _paymentStatus;
-  DateTime? _paidAt;
+  Map<String, dynamic>? _payment;
   bool _isLoadingPayment = true;
+  String? _paymentError;
 
   @override
   void initState() {
     super.initState();
     _loadPayment();
+    context.read<RefundRequestBloc>().add(
+      RefundRequestLoadForOrder(widget.order.id),
+    );
   }
 
+  // Guards against a double-tap on the retry button starting two overlapping
+  // fetches — without this, an out-of-order resolution could leave the error
+  // card showing even after a later call already succeeded.
+  bool _paymentLoadInFlight = false;
+
   Future<void> _loadPayment() async {
+    if (_paymentLoadInFlight) return;
+    _paymentLoadInFlight = true;
+    setState(() {
+      _isLoadingPayment = true;
+      _paymentError = null;
+    });
     try {
       final rows = await Supabase.instance.client
           .from('payments')
-          .select('status, paid_at')
+          .select('method, status, amount, paid_at')
           .eq('order_id', widget.order.id)
           .order('created_at', ascending: false)
           .limit(1);
       if (!mounted) return;
-      if (rows.isNotEmpty) {
-        _paymentStatus = rows.first['status'] as String?;
-        _paidAt = rows.first['paid_at'] != null
-            ? DateTime.tryParse(rows.first['paid_at'] as String)
-            : null;
-      }
+      setState(() {
+        _payment = rows.isNotEmpty ? rows.first : null;
+        _isLoadingPayment = false;
+      });
     } catch (_) {
-      // ignore — UI shows fallback text
+      if (!mounted) return;
+      setState(() {
+        _isLoadingPayment = false;
+        _paymentError = 'Không tải được thông tin thanh toán';
+      });
     } finally {
-      if (mounted) setState(() => _isLoadingPayment = false);
+      _paymentLoadInFlight = false;
+    }
+  }
+
+  String _paymentMethodLabel(String? method) {
+    switch (method) {
+      case 'cod':
+        return 'Thanh toán khi nhận hàng (COD)';
+      case 'bank_transfer':
+        return 'Chuyển khoản ngân hàng';
+      case 'vnpay':
+        return 'VNPay';
+      case 'momo':
+        return 'Momo';
+      default:
+        return 'Chưa xác định';
     }
   }
 
@@ -85,17 +121,6 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
         return AppColors.warning;
       default:
         return AppColors.warning;
-    }
-  }
-
-  String _paymentMethodLabelFromOrder(String? method) {
-    switch (method) {
-      case 'cod':
-        return 'Thanh toán khi nhận hàng (COD)';
-      case 'bank_transfer':
-        return 'Chuyển khoản ngân hàng';
-      default:
-        return method ?? 'Chưa xác định';
     }
   }
 
@@ -153,45 +178,54 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
             Text('Thanh toán', style: AppTypography.headlineSmall),
             const SizedBox(height: AppSpacing.sm),
             AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Phương thức: ${_paymentMethodLabelFromOrder(order.paymentMethod)}',
-                    style: AppTypography.bodyMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        'Trạng thái: ',
-                        style: AppTypography.bodyMedium,
-                      ),
-                      if (_isLoadingPayment)
-                        const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      else
+              child: _isLoadingPayment
+                  ? const Center(child: CircularProgressIndicator())
+                  : _paymentError != null
+                  ? _buildPaymentError()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          _paymentStatusLabel(_paymentStatus),
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: _paymentStatusColor(_paymentStatus),
-                            fontWeight: FontWeight.w600,
-                          ),
+                          'Phương thức: ${_paymentMethodLabel(_payment?['method'] as String?)}',
+                          style: AppTypography.bodyMedium,
                         ),
-                    ],
-                  ),
-                  if (_paidAt != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Thanh toán lúc: ${_paidAt!.hour.toString().padLeft(2, '0')}:${_paidAt!.minute.toString().padLeft(2, '0')} ${_paidAt!.day}/${_paidAt!.month}/${_paidAt!.year}',
-                      style: AppTypography.caption,
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              'Trạng thái: ',
+                              style: AppTypography.bodyMedium,
+                            ),
+                            Text(
+                              _paymentStatusLabel(
+                                _payment?['status'] as String?,
+                              ),
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: _paymentStatusColor(
+                                  _payment?['status'] as String?,
+                                ),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_payment?['paid_at'] != null) ...[
+                          const SizedBox(height: 4),
+                          Builder(
+                            builder: (context) {
+                              final paidAt = DateTime.tryParse(
+                                _payment!['paid_at'] as String,
+                              );
+                              if (paidAt == null) return const SizedBox.shrink();
+                              return Text(
+                                'Thanh toán lúc: ${paidAt.hour.toString().padLeft(2, '0')}:${paidAt.minute.toString().padLeft(2, '0')} ${paidAt.day}/${paidAt.month}/${paidAt.year}',
+                                style: AppTypography.caption,
+                              );
+                            },
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
-                ],
-              ),
             ),
             const SizedBox(height: AppSpacing.md),
             Text('Sản phẩm', style: AppTypography.headlineSmall),
@@ -266,6 +300,10 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
                 ),
               ),
             ],
+            BlocBuilder<RefundRequestBloc, RefundRequestState>(
+              builder: (context, refundState) =>
+                  _buildRefundRequestSection(refundState),
+            ),
             if (order.status.nextStatuses.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
               SizedBox(
@@ -279,6 +317,34 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaymentError() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.error_outline, color: AppColors.error, size: 18),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: Text(
+                _paymentError!,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        TextButton.icon(
+          onPressed: _loadPayment,
+          icon: const Icon(Icons.refresh, size: 16),
+          label: const Text('Thử lại'),
+        ),
+      ],
     );
   }
 
@@ -302,6 +368,54 @@ class _ManagerOrderDetailScreenState extends State<ManagerOrderDetailScreen> {
               : AppTypography.bodyMedium,
         ),
       ],
+    );
+  }
+
+  /// Only pending requests get a decision affordance — approved/rejected
+  /// requests just show their outcome (the order's own StatusBadge already
+  /// reflects an approval as `refunded`).
+  Widget _buildRefundRequestSection(RefundRequestState refundState) {
+    final request = refundState.currentRequest;
+    if (request == null) return const SizedBox.shrink();
+
+    if (request.status != RefundRequestStatus.pending) {
+      return Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.md),
+        child: AppCard(
+          child: Text(
+            'Yêu cầu hoàn tiền: ${request.status.label}',
+            style: AppTypography.bodyMedium,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Yêu cầu hoàn tiền', style: AppTypography.headlineSmall),
+                Icon(Icons.warning_amber_rounded, color: AppColors.warning),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('Lý do: ${request.reason}', style: AppTypography.bodyMedium),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => showRefundDecisionSheet(context, request),
+                child: const Text('Xử lý yêu cầu hoàn tiền'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

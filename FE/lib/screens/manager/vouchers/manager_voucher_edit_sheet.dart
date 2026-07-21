@@ -22,7 +22,9 @@ Future<void> showManagerVoucherEditSheet(
     isScrollControlled: true,
     backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.bottomSheetRadius),
+      ),
     ),
     builder: (sheetContext) => BlocProvider.value(
       value: bloc,

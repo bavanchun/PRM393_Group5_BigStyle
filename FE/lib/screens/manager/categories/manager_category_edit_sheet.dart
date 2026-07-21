@@ -22,7 +22,9 @@ Future<void> showManagerCategoryEditSheet(
     isScrollControlled: true,
     backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.bottomSheetRadius),
+      ),
     ),
     builder: (sheetContext) => BlocProvider.value(
       value: bloc,
@@ -57,7 +59,9 @@ class _CategoryEditSheetContentState extends State<_CategoryEditSheetContent> {
     super.initState();
     final c = widget.existing;
     _nameController = TextEditingController(text: c?.name ?? '');
-    _sortController = TextEditingController(text: (c?.sortOrder ?? 0).toString());
+    _sortController = TextEditingController(
+      text: (c?.sortOrder ?? 0).toString(),
+    );
     _imageUrl = c?.imageUrl;
     _isActive = c?.isActive ?? true;
   }
@@ -80,12 +84,12 @@ class _CategoryEditSheetContentState extends State<_CategoryEditSheetContent> {
       if (!mounted) return;
       setState(() => _uploadingImage = true);
       context.read<ManagerCategoryBloc>().add(
-            UploadManagerCategoryImageEvent(
-              fileName: fileName,
-              fileBytes: bytes,
-              mimeType: mimeType,
-            ),
-          );
+        UploadManagerCategoryImageEvent(
+          fileName: fileName,
+          fileBytes: bytes,
+          mimeType: mimeType,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = 'Lỗi chọn ảnh: $e');
@@ -145,7 +149,7 @@ class _CategoryEditSheetContentState extends State<_CategoryEditSheetContent> {
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(
               'Có, ẩn danh mục',
-              style: TextStyle(
+              style: AppTypography.labelLarge.copyWith(
                 color: AppColors.error,
                 fontWeight: FontWeight.bold,
               ),
@@ -159,9 +163,9 @@ class _CategoryEditSheetContentState extends State<_CategoryEditSheetContent> {
       _submitting = true;
       _error = null;
     });
-    context
-        .read<ManagerCategoryBloc>()
-        .add(SoftDeleteManagerCategoryEvent(widget.existing!.id));
+    context.read<ManagerCategoryBloc>().add(
+      SoftDeleteManagerCategoryEvent(widget.existing!.id),
+    );
   }
 
   void _onState(BuildContext context, ManagerCategoryState state) {
@@ -255,7 +259,9 @@ class _CategoryEditSheetContentState extends State<_CategoryEditSheetContent> {
                     // Block submit while an image upload is in flight, else
                     // _submit() captures a stale (null) _imageUrl and saves the
                     // category without the just-picked image.
-                    onPressed: (_submitting || _uploadingImage) ? null : _submit,
+                    onPressed: (_submitting || _uploadingImage)
+                        ? null
+                        : _submit,
                     child: _submitting
                         ? const SizedBox(
                             width: 18,

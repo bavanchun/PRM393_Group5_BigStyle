@@ -36,19 +36,19 @@ Second customer cluster — account/order-management screens plus DeliveryMap (a
 
 ## Regression Checklist
 
-- [ ] Profile: menu items, logout, edit-profile navigation, delivery-map link all function identically.
-- [ ] EditProfile: form save/validation unchanged.
-- [ ] Orders/OrderDetail: status filtering, order-detail navigation, badge display (now tonal) all correct per actual order status (not just visually — verify the `StatusBadge` maps the right color to the right status, this is the exact thing `M6`/`C30` were about).
-- [ ] Chat: message send/receive UI, online indicator unchanged.
-- [ ] Notifications: list rendering unchanged.
-- [ ] DeliveryMap: map rendering (Google Maps SDK, unrelated to this migration), bottom-sheet shop-info card, "Chỉ đường" button all function identically.
+- [ ] Profile: menu items, logout, edit-profile navigation, delivery-map link all function identically. <!-- not device-verified post-reskin (QA pass didn't reach customer Profile); deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] EditProfile: form save/validation unchanged. <!-- not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] Orders/OrderDetail: status filtering, order-detail navigation, badge display (now tonal) all correct per actual order status (not just visually — verify the `StatusBadge` maps the right color to the right status, this is the exact thing `M6`/`C30` were about). <!-- StatusBadge status→tone mapping is unit-tested (status_badge_test.dart); the on-device walk of customer Orders/OrderDetail was not done — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] Chat: message send/receive UI, online indicator unchanged. <!-- not device-verified post-reskin (no online indicator exists in current code per completion note); deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] Notifications: list rendering unchanged. <!-- not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] DeliveryMap: map rendering (Google Maps SDK, unrelated to this migration), bottom-sheet shop-info card, "Chỉ đường" button all function identically. <!-- map tiles+marker later device-verified when the Maps SDK key landed (666a7e6); sheet + "Chỉ đường" button not re-walked post-reskin — deferred to device pass (plans/260712-1644 Phase 1) -->
 
 ## Success Criteria
 
-- [ ] All 7 screens migrated.
-- [ ] `StatusBadge` correctly wired on Orders/OrderDetail (closes `C30` residual + `M6` cross-reference to manager side is Phase 5's job, not this one).
-- [ ] Profile + Chat contrast findings re-verified with a real tool, not audit-cited numbers.
-- [ ] Hardcode-guard passes for this cluster's files; `flutter analyze` + `flutter test` clean.
+- [x] All 7 screens migrated. <!-- evidence: completion note per-screen hit counts (Profile 0, EditProfile 4, Orders 1, Chat 8, Notifications 0, DeliveryMap 14) — guard delta 166→139 (-27) matches exactly -->
+- [x] `StatusBadge` correctly wired on Orders/OrderDetail (closes `C30` residual + `M6` cross-reference to manager side is Phase 5's job, not this one). <!-- evidence: grep this session — orders_screen.dart:104 and order_detail_screen.dart:89-91,245 both call StatusBadge(label:..., status: order.status), confirming genuine status-awareness (order_detail_screen.dart no longer hardwired to AppColors.primary) -->
+- [x] Profile + Chat contrast findings re-verified with a real tool, not audit-cited numbers. <!-- evidence: completion note — Profile role-chip re-checked as already-tonal (stale finding, same math as Phase 3); Chat avatar (6.70:1) and quick-reply chip (~5.55:1) hand-computed WCAG figures recorded -->
+- [x] Hardcode-guard passes for this cluster's files; `flutter analyze` + `flutter test` clean. <!-- evidence: repo-wide guard confirmed exit 0 this session (superset of this cluster); completion note + re-run this session (flutter analyze clean, flutter test 116 passing) -->
 
 ## Risk Assessment
 

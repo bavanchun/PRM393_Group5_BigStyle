@@ -97,11 +97,11 @@ seed data alignment, not broad manager access to all products.
 
 ## Success Criteria
 
-- [ ] `hoangbavan4478+manager@gmail.com` manager profile exists.
-- [ ] Pre/post SQL counts recorded in implementation report.
-- [ ] 15 active seed products have `store_id` equal to the `+manager` UUID.
-- [ ] Manager product tab no longer empty.
-- [ ] No RLS policy widened.
+- [x] `hoangbavan4478+manager@gmail.com` manager profile exists. <!-- evidence: Completion Notes below — resolved to profile UUID 2f94db39-94ba-4097-8d5f-3517fe62ba76 -->
+- [x] Pre/post SQL counts recorded in implementation report. <!-- evidence: Completion Notes below — pre-count 15 null store_id, post-count 15 owned/0 orphan -->
+- [x] 15 active seed products have `store_id` equal to the `+manager` UUID. <!-- evidence: Completion Notes below — "Post-count: 15 manager-owned products, 0 orphan products, 15 total products" -->
+- [x] Manager product tab no longer empty. <!-- evidence: Completion Notes below — Android manager smoke showed "Tổng: 15" and "Hiển thị 15 trên 15 sản phẩm" -->
+- [x] No RLS policy widened. <!-- evidence: Completion Notes below describes only a data UPDATE (store_id column, `where store_id is null`); no policy DDL performed -->
 
 ## Risk Assessment
 

@@ -11,6 +11,9 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../utils/validators.dart';
 import 'otp_input.dart';
+import 'password_auth_form.dart';
+
+enum _LoginMode { password, otp }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,6 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _otpKey = GlobalKey<OtpInputState>();
+  // Password form is the default entry (user decision); OTP is secondary.
+  _LoginMode _mode = _LoginMode.password;
   bool _showOtp = false;
   // True between dispatching a VerifyOTPEvent and the next terminal auth state.
   // Gates the OTP boxes / resend / Google / debug triggers and scopes the
@@ -155,28 +160,43 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 32),
                       _buildHeroImage(),
                       const SizedBox(height: 32),
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            _buildEmailField(),
-                            const SizedBox(height: 16),
-                            if (!_showOtp) ...[
-                              _buildSendOtpButton(state),
-                            ] else ...[
-                              _buildOtpSection(state),
-                            ],
-                            const SizedBox(height: 24),
-                            _buildDivider(),
-                            const SizedBox(height: 24),
-                            _buildGoogleButton(state),
-                            if (_hasDebugTestLogin) ...[
-                              const SizedBox(height: 16),
-                              _buildDebugTestLoginButtons(state),
-                            ],
-                          ],
+                      if (_mode == _LoginMode.password) ...[
+                        const PasswordAuthForm(),
+                        _buildModeSwitchLink(
+                          'Quên mật khẩu hoặc muốn dùng mã OTP? Đăng nhập bằng OTP',
+                          () => setState(() => _mode = _LoginMode.otp),
                         ),
-                      ),
+                      ] else ...[
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              _buildEmailField(),
+                              const SizedBox(height: 16),
+                              if (!_showOtp) ...[
+                                _buildSendOtpButton(state),
+                              ] else ...[
+                                _buildOtpSection(state),
+                              ],
+                            ],
+                          ),
+                        ),
+                        _buildModeSwitchLink(
+                          'Đăng nhập bằng email & mật khẩu',
+                          () => setState(() {
+                            _mode = _LoginMode.password;
+                            _showOtp = false;
+                          }),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      _buildDivider(),
+                      const SizedBox(height: 24),
+                      _buildGoogleButton(state),
+                      if (_hasDebugTestLogin) ...[
+                        const SizedBox(height: 16),
+                        _buildDebugTestLoginButtons(state),
+                      ],
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -361,6 +381,23 @@ class _LoginScreenState extends State<LoginScreen> {
           onResend: _sendOtp,
         ),
       ],
+    );
+  }
+
+  Widget _buildModeSwitchLink(String label, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: TextButton(
+        onPressed: onTap,
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 

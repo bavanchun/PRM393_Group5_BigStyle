@@ -84,10 +84,10 @@ preferred because the app already has product upload flow and public bucket.
 
 ## Success Criteria
 
-- [ ] URL audit report lists checked URLs and failures.
-- [ ] No active seed product image URL returns 404.
-- [ ] Android smoke log has no product `NetworkImageLoadException` 404.
-- [ ] Local seed migration updated if remote data repair is intended permanent.
+- [ ] URL audit report lists checked URLs and failures. <!-- partial: sweep results recorded (2 repaired; 21/21 HTTP 200) but no per-URL listing kept in any report -->
+- [x] No active seed product image URL returns 404. <!-- evidence: Completion Notes below — "Second HEAD sweep returned HTTP 200 for every active seed image URL" -->
+- [x] Android smoke log has no product `NetworkImageLoadException` 404. <!-- evidence: phase-05-full-android-smoke-verification.md Completion Notes — runtime log review found "no image 404" -->
+- [ ] Local seed migration updated if remote data repair is intended permanent. <!-- no evidence found: seed migration 20260704100000 untouched since Jul 4; the 2 image-URL repairs were applied remote-only -->
 
 ## Risk Assessment
 

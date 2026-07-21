@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/app_spacing.dart';
+import '../../../../config/theme/app_typography.dart';
 import '../form/manager_product_variant_form_row.dart';
 import 'manager_product_variant_table_cells.dart';
 
@@ -80,12 +82,12 @@ class ManagerProductVariantsTable extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: AppColors.primary),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSpacing.xs),
               ),
             ),
             child: Text(
               '+ THÊM KÍCH CỠ MỚI',
-              style: TextStyle(
+              style: AppTypography.labelSmall.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 11,

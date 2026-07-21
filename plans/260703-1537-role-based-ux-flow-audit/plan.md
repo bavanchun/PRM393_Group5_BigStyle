@@ -76,15 +76,16 @@ hợp sau cùng.
 
 ## Acceptance Criteria (toàn plan)
 
-- [ ] `docs/ux-flow-audit.md` tồn tại: mỗi actor 1 section, mỗi screen liệt kê
+- [x] `docs/ux-flow-audit.md` tồn tại: mỗi actor 1 section, mỗi screen liệt kê
       trạng thái (loading/empty/error/success) + bảng findings theo schema trên.
-- [ ] Mỗi màn của mỗi actor được kiểm bằng emulator (visual) — screenshot lưu
+- [x] Mỗi màn của mỗi actor được kiểm bằng emulator (visual) — screenshot lưu
       **local, KHÔNG commit** (gitignore); doc mô tả bằng chữ + evidence file:line,
       không nhúng ảnh. Màn không dựng được state → ghi rõ "N/A — lý do".
-- [ ] Toàn bộ ~36 issue từ 2 scout report được xác nhận (giữ/loại) + bổ sung phát
+      <!-- evidence: docs/ux-flow-audit.md header documents emulator-5554 pass (17 customer + 8 manager shots, local gitignored); login/otp + manager_order_detail marked code-review-only with reason per the N/A clause -->
+- [x] Toàn bộ ~36 issue từ 2 scout report được xác nhận (giữ/loại) + bổ sung phát
       hiện mới; không bỏ sót screen nào trong bảng inventory.
-- [ ] Section "Top Priorities" cuối doc xếp hạng P0→P3 để user biết sửa gì trước.
-- [ ] KHÔNG có thay đổi code (chỉ doc + ảnh). Nếu phát hiện quick-win user muốn
+- [x] Section "Top Priorities" cuối doc xếp hạng P0→P3 để user biết sửa gì trước.
+- [x] KHÔNG có thay đổi code (chỉ doc + ảnh). Nếu phát hiện quick-win user muốn
       fix, tách plan/PR riêng.
 
 ## Dependencies

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/app_typography.dart';
 import 'manager_product_variants_table.dart';
 
 class VariantTableHeaderCell extends StatelessWidget {
@@ -28,7 +29,7 @@ class VariantTableHeaderCell extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(
+        style: AppTypography.labelSmall.copyWith(
           fontSize: 10,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
@@ -88,11 +89,14 @@ class VariantTableInputCell extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 11),
+          style: AppTypography.caption.copyWith(
+            fontSize: 11,
+            color: AppColors.textPrimary,
+          ),
           decoration: InputDecoration(
             isDense: true,
             hintText: hintText,
-            hintStyle: const TextStyle(fontSize: 10, color: AppColors.textHint),
+            hintStyle: AppTypography.caption.copyWith(fontSize: 10),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 4,
               vertical: 6,
@@ -146,11 +150,20 @@ class VariantSizeDropdownCell extends StatelessWidget {
                 borderSide: BorderSide(color: AppColors.border, width: 0.5),
               ),
             ),
-            style: const TextStyle(fontSize: 11, color: AppColors.textPrimary),
+            style: AppTypography.caption.copyWith(
+              fontSize: 11,
+              color: AppColors.textPrimary,
+            ),
             items: items.map((size) {
               return DropdownMenuItem<String>(
                 value: size,
-                child: Text(size, style: const TextStyle(fontSize: 11)),
+                child: Text(
+                  size,
+                  style: AppTypography.caption.copyWith(
+                    fontSize: 11,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               );
             }).toList(),
             onChanged: (val) {

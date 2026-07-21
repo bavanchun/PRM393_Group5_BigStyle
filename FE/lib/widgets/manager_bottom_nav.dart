@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_typography.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/support_inbox/support_inbox_bloc.dart';
+import '../blocs/support_inbox/support_inbox_state.dart';
+import '../config/theme/app_colors.dart';
+import '../config/theme/app_typography.dart';
 
 class ManagerBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -47,23 +50,28 @@ class ManagerBottomNav extends StatelessWidget {
                   .copyWith(color: AppColors.primary, fontSize: 11),
               unselectedLabelStyle:
                   AppTypography.labelSmall.copyWith(fontSize: 11),
-              items: const [
-                BottomNavigationBarItem(
+              items: [
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.dashboard_outlined),
                   activeIcon: Icon(Icons.dashboard),
                   label: 'Tổng quan',
                 ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.inventory_2_outlined),
                   activeIcon: Icon(Icons.inventory_2),
                   label: 'Sản phẩm',
                 ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.receipt_long_outlined),
                   activeIcon: Icon(Icons.receipt_long),
                   label: 'Đơn hàng',
                 ),
                 BottomNavigationBarItem(
+                  icon: const _MessagesNavIcon(Icons.chat_bubble_outline),
+                  activeIcon: const _MessagesNavIcon(Icons.chat_bubble),
+                  label: 'Tin nhắn',
+                ),
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person),
                   label: 'Cá nhân',
@@ -73,6 +81,26 @@ class ManagerBottomNav extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Chat icon carrying a live unread badge from the app-scoped inbox bloc.
+class _MessagesNavIcon extends StatelessWidget {
+  final IconData icon;
+  const _MessagesNavIcon(this.icon);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SupportInboxBloc, SupportInboxState>(
+      buildWhen: (p, c) => p.totalUnread != c.totalUnread,
+      builder: (context, state) {
+        return Badge.count(
+          count: state.totalUnread,
+          isLabelVisible: state.totalUnread > 0,
+          child: Icon(icon),
+        );
+      },
     );
   }
 }

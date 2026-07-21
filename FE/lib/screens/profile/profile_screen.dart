@@ -160,6 +160,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   _buildMenuItem(
                     context,
+                    icon: Icons.support_agent_outlined,
+                    title: 'Chat với nhân viên',
+                    onTap: () => Navigator.pushNamed(context, '/support-chat'),
+                  ),
+                  _buildMenuItem(
+                    context,
                     icon: Icons.location_on_outlined,
                     title: 'Cửa hàng',
                     onTap: () => Navigator.pushNamed(context, '/delivery-map'),

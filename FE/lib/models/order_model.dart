@@ -5,6 +5,8 @@ import 'product_model.dart';
 /// Maps an order_items row joined as:
 /// *, variant:product_variants(*, product:products(*))
 class OrderItem extends Equatable {
+  // order_items row id — null for items built pre-insert at checkout.
+  final String? id;
   final String variantId;
   final String productName;
   final String? productImage;
@@ -16,6 +18,7 @@ class OrderItem extends Equatable {
   final ProductModel? product;
 
   const OrderItem({
+    this.id,
     required this.variantId,
     required this.productName,
     this.productImage,
@@ -46,6 +49,7 @@ class OrderItem extends Equatable {
     }
 
     return OrderItem(
+      id: map['id'] as String?,
       variantId: map['variant_id'] ?? '',
       productName: map['product_name'] ?? '',
       productImage: map['product_image'] as String?,
@@ -59,6 +63,7 @@ class OrderItem extends Equatable {
 
   @override
   List<Object?> get props => [
+    id,
     variantId,
     productName,
     productImage,
@@ -93,6 +98,17 @@ class OrderModel extends Equatable {
   final String? cancellationReason;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  // Stamped server-side (trigger) the moment status transitions to
+  // delivered — drives the customer refund-request 7-day window.
+  final DateTime? deliveredAt;
+
+  /// Mirrors the server-side RLS window check exactly (delivered_at >= now()
+  /// - interval '7 days') so the button is hidden before an insert would be
+  /// rejected — the RLS policy remains the actual enforcement.
+  bool get isRefundRequestWindowOpen =>
+      status == OrderStatus.delivered &&
+      deliveredAt != null &&
+      DateTime.now().difference(deliveredAt!) < const Duration(days: 7);
 
   const OrderModel({
     required this.id,
@@ -114,6 +130,7 @@ class OrderModel extends Equatable {
     this.cancellationReason,
     required this.createdAt,
     this.updatedAt,
+    this.deliveredAt,
   });
 
   /// Insert map for the orders table.
@@ -160,7 +177,13 @@ class OrderModel extends Equatable {
       total: (map['total'] ?? 0).toDouble(),
       status: OrderStatus.values.firstWhere(
         (e) => e.name == map['status'],
-        orElse: () => OrderStatus.pending,
+        orElse: () {
+          assert(
+            false,
+            'OrderModel.fromMap: unknown order status "${map['status']}", falling back to pending',
+          );
+          return OrderStatus.pending;
+        },
       ),
       address: shippingAddress?['address'] as String?,
       latitude: (shippingAddress?['latitude'] as num?)?.toDouble(),
@@ -173,6 +196,9 @@ class OrderModel extends Equatable {
       createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: map['updated_at'] != null
           ? DateTime.tryParse(map['updated_at'] as String)
+          : null,
+      deliveredAt: map['delivered_at'] != null
+          ? DateTime.tryParse(map['delivered_at'] as String)
           : null,
     );
   }
@@ -197,6 +223,7 @@ class OrderModel extends Equatable {
     cancellationReason: cancellationReason,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    deliveredAt: deliveredAt,
   );
 
   @override
@@ -218,6 +245,7 @@ class OrderModel extends Equatable {
     orderNumber,
     paymentMethod,
     createdAt,
+    deliveredAt,
     updatedAt,
   ];
 }

@@ -7,8 +7,17 @@ import '../../config/theme/app_typography.dart';
 import '../../blocs/order/order_bloc.dart';
 import '../../blocs/order/order_event.dart';
 import '../../blocs/order/order_state.dart';
+import '../../blocs/review/review_bloc.dart';
+import '../../blocs/review/review_event.dart';
+import '../../blocs/refund_request/refund_request_bloc.dart';
+import '../../blocs/refund_request/refund_request_event.dart';
+import '../../blocs/refund_request/refund_request_state.dart';
 import '../../models/order_model.dart';
 import '../../models/order_status.dart';
+import '../../models/refund_request_model.dart';
+import '../product_detail/review_editor_sheet.dart';
+import '../delivery/delivery_map_args.dart';
+import 'refund_request_sheet.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/status_badge.dart';
@@ -36,6 +45,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         context.read<OrderBloc>().add(OrderLoadDetail(orderId));
+        context.read<RefundRequestBloc>().add(
+          RefundRequestLoadForOrder(orderId),
+        );
       });
     }
   }
@@ -87,20 +99,28 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Đơn hàng',
-                                style: AppTypography.headlineSmall),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Đơn hàng',
+                                  style: AppTypography.headlineSmall,
+                                ),
+                                StatusBadge(
+                                  label: order.status.label,
+                                  status: order.status,
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 8),
                             Text(
-                                'Mã: ${order.orderNumber ?? order.id.substring(0, 8).toUpperCase()}',
-                                style: AppTypography.bodySmall),
+                              'Mã: ${order.orderNumber ?? order.id.substring(0, 8).toUpperCase()}',
+                              style: AppTypography.bodySmall,
+                            ),
                             const SizedBox(height: 4),
                             Text(
-                                'Ngày: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
-                                style: AppTypography.bodySmall),
-                            const SizedBox(height: 8),
-                            StatusBadge(
-                              label: order.status.label,
-                              status: order.status,
+                              'Ngày: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}',
+                              style: AppTypography.bodySmall,
                             ),
                           ],
                         ),
@@ -108,42 +128,78 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       const SizedBox(height: 16),
                       if (order.status != OrderStatus.cancelled) ...[
                         AppCard(child: _buildTimeline(order.status)),
+                        if (deliveryRouteCtaVisible(
+                          order.status,
+                          order.latitude,
+                          order.longitude,
+                        )) ...[
+                          const SizedBox(height: 12),
+                          AppButton(
+                            label: 'Xem lộ trình giao hàng',
+                            isOutlined: true,
+                            onPressed: () => _openDeliveryRoute(order),
+                          ),
+                        ],
                         const SizedBox(height: 16),
                       ],
                       Text('Sản phẩm', style: AppTypography.headlineSmall),
                       const SizedBox(height: 12),
-                      ...order.items.map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: AppCard(
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.productName.isNotEmpty
-                                              ? item.productName
-                                              : 'Sản phẩm',
-                                          style: AppTypography.bodyMedium
-                                              .copyWith(
-                                                  fontWeight: FontWeight.w600),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Size ${item.size} x${item.quantity}',
-                                          style: AppTypography.caption,
-                                        ),
-                                      ],
+                      ...order.items.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: AppCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.productName.isNotEmpty
+                                                ? item.productName
+                                                : 'Sản phẩm',
+                                            style: AppTypography.bodyMedium
+                                                .copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Size ${item.size} x${item.quantity}',
+                                            style: AppTypography.caption,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      formatVnd(item.unitPrice),
+                                      style: AppTypography.priceSmall,
+                                    ),
+                                  ],
+                                ),
+                                if (order.status == OrderStatus.delivered &&
+                                    item.id != null &&
+                                    item.product?.id != null)
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton.icon(
+                                      onPressed: () => _openReview(order, item),
+                                      icon: const Icon(
+                                        Icons.rate_review_outlined,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Đánh giá'),
                                     ),
                                   ),
-                                  Text(formatVnd(item.unitPrice),
-                                      style: AppTypography.priceSmall),
-                                ],
-                              ),
+                              ],
                             ),
-                          )),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       AppCard(
                         child: Column(
@@ -163,33 +219,41 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                       if (order.address != null) ...[
                         const SizedBox(height: 16),
-                          AppCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Địa chỉ giao hàng',
-                                    style: AppTypography.headlineSmall),
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Địa chỉ giao hàng',
+                                style: AppTypography.headlineSmall,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                order.address!,
+                                style: AppTypography.bodyMedium,
+                              ),
+                              if (order.note != null) ...[
                                 const SizedBox(height: 8),
-                                Text(order.address!,
-                                    style: AppTypography.bodyMedium),
-                                if (order.note != null) ...[
-                                  const SizedBox(height: 8),
-                                  Text('Ghi chú: ${order.note}',
-                                      style: AppTypography.bodySmall),
-                                ],
-                                if (order.cancellationReason != null) ...[
-                                  const SizedBox(height: 8),
-                                  Text('Lý do huỷ: ${order.cancellationReason}',
-                                      style: AppTypography.bodySmall.copyWith(
-                                        color: AppColors.error,
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                ],
+                                Text(
+                                  'Ghi chú: ${order.note}',
+                                  style: AppTypography.bodySmall,
+                                ),
                               ],
-                            ),
+                              if (order.cancellationReason != null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Lý do huỷ: ${order.cancellationReason}',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.error,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
+                        ),
                       ],
-                      if (order.status == OrderStatus.pending) ...[
+                      if (order.status.isCancellable) ...[
                         const SizedBox(height: 24),
                         AppButton(
                           label: 'Huỷ đơn hàng',
@@ -197,6 +261,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           onPressed: () => _confirmCancel(order),
                         ),
                       ],
+                      BlocBuilder<RefundRequestBloc, RefundRequestState>(
+                        builder: (context, refundState) =>
+                            _buildRefundSection(order, refundState),
+                      ),
                       const SizedBox(height: 24),
                       AppButton(
                         label: 'Quay lại',
@@ -215,11 +283,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   /// Renders the linear happy-path stepper, or a terminal badge when the
   /// order was cancelled/refunded (those statuses aren't part of the path).
   Widget _buildTimeline(OrderStatus status) {
-    if (status == OrderStatus.cancelled) {
+    if (status == OrderStatus.cancelled || status == OrderStatus.refunded) {
       return Row(
-        children: [
-          StatusBadge(label: status.label, status: status),
-        ],
+        children: [StatusBadge(label: status.label, status: status)],
       );
     }
 
@@ -250,8 +316,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     color: i <= currentIndex
                         ? AppColors.primary
                         : AppColors.textHint,
-                    fontWeight:
-                        i == currentIndex ? FontWeight.w700 : FontWeight.w400,
+                    fontWeight: i == currentIndex
+                        ? FontWeight.w700
+                        : FontWeight.w400,
                   ),
                 ),
               ],
@@ -273,13 +340,126 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
+  /// Opens the review editor for a delivered order item. The order item is the
+  /// eligibility proof, so its id is passed directly as the review's
+  /// order_item_id; the current review (if any) is loaded to prefill the sheet.
+  Future<void> _openReview(OrderModel order, OrderItem item) async {
+    final productId = item.product?.id;
+    final orderItemId = item.id;
+    if (productId == null || orderItemId == null) return;
+
+    final reviewBloc = context.read<ReviewBloc>();
+    reviewBloc.add(ReviewLoad(productId, userId: order.userId));
+    final loaded = await reviewBloc.stream.firstWhere(
+      (state) =>
+          state.productId == productId &&
+          state.userId == order.userId &&
+          !state.isLoading,
+    );
+    if (!mounted) return;
+
+    await ReviewEditorSheet.show(
+      context,
+      productId: productId,
+      userId: order.userId,
+      // An existing review's order_item_id is immutable (DB trigger); reuse it
+      // so resubmitting from a different delivered item doesn't violate the
+      // provenance guard.
+      orderItemId: loaded.myReview?.orderItemId ?? orderItemId,
+      existingReview: loaded.myReview,
+    );
+  }
+
+  void _openDeliveryRoute(OrderModel order) {
+    Navigator.pushNamed(
+      context,
+      '/delivery-map',
+      arguments: {
+        'latitude': order.latitude,
+        'longitude': order.longitude,
+        'label': order.address,
+        'title': 'Lộ trình giao hàng',
+      },
+    );
+  }
+
+  /// Shows either the request button (eligible, no request yet), a status
+  /// card (request already exists), or nothing (not delivered / window
+  /// closed) — mirrors the .isCancellable gating pattern just above.
+  Widget _buildRefundSection(OrderModel order, RefundRequestState refundState) {
+    final request = refundState.currentRequest;
+    if (request == null) {
+      if (!order.isRefundRequestWindowOpen) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: AppButton(
+          label: 'Yêu cầu hoàn tiền',
+          isOutlined: true,
+          onPressed: () => showRefundRequestSheet(
+            context,
+            orderId: order.id,
+            userId: order.userId,
+          ),
+        ),
+      );
+    }
+
+    Color tone;
+    switch (request.status) {
+      case RefundRequestStatus.pending:
+        tone = AppColors.warning;
+      case RefundRequestStatus.approved:
+        tone = AppColors.success;
+      case RefundRequestStatus.rejected:
+        tone = AppColors.error;
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Yêu cầu hoàn tiền',
+                  style: AppTypography.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  request.status.label,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: tone,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            if (request.status == RefundRequestStatus.rejected &&
+                request.managerNote != null &&
+                request.managerNote!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Lý do từ chối: ${request.managerNote}',
+                style: AppTypography.bodySmall,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _confirmCancel(OrderModel order) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Huỷ đơn hàng?'),
         content: const Text(
-            'Bạn có chắc chắn muốn huỷ đơn hàng này? Hành động này không thể hoàn tác.'),
+          'Bạn có chắc chắn muốn huỷ đơn hàng này? Hành động này không thể hoàn tác.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -303,13 +483,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded,
-                size: 56, color: AppColors.textHint),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 56,
+              color: AppColors.textHint,
+            ),
             const SizedBox(height: 16),
             Text(
               message,
-              style: AppTypography.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -330,15 +514,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style: isBold
-                ? AppTypography.headlineSmall
-                : AppTypography.bodyMedium),
+        Text(
+          label,
+          style: isBold
+              ? AppTypography.headlineSmall
+              : AppTypography.bodyMedium,
+        ),
         Text(
           formatVnd(amount),
           style: isBold
               ? AppTypography.headlineSmall.copyWith(
-                  color: AppColors.primary, fontWeight: FontWeight.w700)
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                )
               : AppTypography.bodyMedium,
         ),
       ],

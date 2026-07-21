@@ -68,10 +68,10 @@ Verified call sites (red-team grep, at pinned SHA): `orders_screen.dart:102-118,
 
 ## Success Criteria
 
-- [ ] `size_selector.dart` deleted; `flutter analyze` clean.
-- [ ] `product_card.dart`: zero raw `BorderRadius.circular(literal)` (all 4 sites) and zero direct `GoogleFonts.*` calls (all 5 sites).
-- [ ] `StatusBadge` built, `StatusColors`-driven, OrderStatus-aware, used by ≥1 real consumer as a smoke test.
-- [ ] `flutter analyze` clean; existing widget tests still pass.
+- [x] `size_selector.dart` deleted; `flutter analyze` clean. <!-- evidence: `find`/`grep` this session confirm the file no longer exists anywhere under FE/lib and has zero importers; completion note + `flutter analyze` re-run this session ("No issues found!") -->
+- [x] `product_card.dart`: zero raw `BorderRadius.circular(literal)` (all 4 sites) and zero direct `GoogleFonts.*` calls (all 5 sites). <!-- evidence: grep of FE/lib/widgets/product_card.dart this session — all 4 radii use AppSpacing.cardRadius/microRadius, all text styles use AppTypography.*, zero GoogleFonts.* calls -->
+- [x] `StatusBadge` built, `StatusColors`-driven, OrderStatus-aware, used by ≥1 real consumer as a smoke test. <!-- evidence: FE/lib/widgets/status_badge.dart read directly this session (OrderStatus switch resolving via Theme.of(context).extension<StatusColors>()); manager_order_card.dart:96 confirmed consumer -->
+- [x] `flutter analyze` clean; existing widget tests still pass. <!-- evidence: completion note (43/43: 37 prior + 6 new incl. test/widgets/status_badge_test.dart's 6 testWidgets cases, verified present this session); re-ran flutter analyze/flutter test this session, clean / 116 passing -->
 
 ## Risk Assessment
 

@@ -30,24 +30,24 @@ Smallest, lowest-urgency cluster (2 screens) — last in the demo-visibility-ord
 
 ## Regression Checklist
 
-- [ ] Login: email input, OTP-send flow, OTP verification, debug test-login buttons (dev only) all function identically.
-- [ ] Splash: routing logic (session-cached → role-appropriate home; no session → login) completely unchanged — this phase touches only colors/typography/shape, zero routing logic.
+- [ ] Login: email input, OTP-send flow, OTP verification, debug test-login buttons (dev only) all function identically. <!-- partial device evidence post-merge (qa-260710-1827): debug buttons gate + email validation + successful role logins verified; OTP send/verify not re-walked (and later reworked by plans/260710-1906) — deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Splash: routing logic (session-cached → role-appropriate home; no session → login) completely unchanged — this phase touches only colors/typography/shape, zero routing logic. <!-- diff evidence: completion note (7 color hits only) + plan.md closeout Navigator/router grep across all 44 changed files = 0; every subsequent device session routed through splash correctly -->
 
 ## Success Criteria
 
-- [ ] Both screens migrated.
-- [ ] Login's contrast finding resolved or confirmed-false-positive with real-tool measurement documented.
-- [ ] The debug test-login `kDebugMode` gate and its call-site are unchanged by the sweep (diff-verified); optionally build `--release` and confirm the buttons are absent. <!-- Updated: Red Team Session 1 -->
-- [ ] Hardcode-guard passes repo-wide now (this is the last cluster — zero **non-allowlisted** occurrences across all of `lib/screens` + `lib/widgets`, not just this cluster's files). <!-- Updated: Red Team Session 1 - allowlist-aware wording; raw zero was unachievable -->
-- [ ] `flutter analyze` + `flutter test` clean.
+- [x] Both screens migrated. <!-- evidence: completion note (Login 22 hits incl. 3 sites of literal v1 hex never token-referenced; OtpInput 1 hit; Splash 7 hits, all itemized) -->
+- [x] Login's contrast finding resolved or confirmed-false-positive with real-tool measurement documented. <!-- evidence: completion note — hero-slogan primary-on-light re-measured, consistent with the 6.2-6.7:1 range independently verified in Phases 3-6; no fix applied -->
+- [x] The debug test-login `kDebugMode` gate and its call-site are unchanged by the sweep (diff-verified); optionally build `--release` and confirm the buttons are absent. <!-- Updated: Red Team Session 1 --> <!-- evidence: `git diff 6e77ccf..90a9123 -- FE/lib/screens/auth/login_screen.dart` re-run this session, grepped for kDebugMode/_hasDebugTestLogin/_buildDebugTestLoginButtons — zero matching diff lines across the whole reskin span; qa-260710-1827 separately confirms "Debug test-login buttons correctly hidden with no --dart-define creds, correctly shown once supplied" -->
+- [x] Hardcode-guard passes repo-wide now (this is the last cluster — zero **non-allowlisted** occurrences across all of `lib/screens` + `lib/widgets`, not just this cluster's files). <!-- Updated: Red Team Session 1 - allowlist-aware wording; raw zero was unachievable --> <!-- re-verified 2026-07-12: ./scripts/check_hardcoded_colors.sh exits 0 -->
+- [x] `flutter analyze` + `flutter test` clean. <!-- re-verified 2026-07-12: analyze 0 issues, 116/116 tests -->
 
 ## Whole-Plan Closeout (do this at the end of this phase, not a separate step)
 
-- [ ] Re-run Phase 0's diff (`git diff <original-pinned-SHA>...HEAD -- FE/lib`) one more time — confirm every screen file that was ever touched across Phases 1-7 is accounted for in this plan's changes, nothing slipped through unreviewed.
-- [ ] Confirm zero `app_router.dart` / `*_shell.dart` tab-array / `Navigator.push*` call-graph changes anywhere in the full diff (out-of-scope check from `plan.md`).
-- [ ] **Rotate the shared QA-account password** used for role logins during this plan's QA passes (reset via Supabase SQL, same technique that set it) — the audit pipeline left a shared test password live on 3 QA-alias accounts; don't let it outlive the plan. Never commit dart-define credential values. <!-- Updated: Red Team Session 1 -->
-- [ ] Merge `feat/visual-reskin` → `dev` per the Execution Model in plan.md (final rebase + full-app smoke first).
-- [ ] Mark this plan's `plan.md` status `completed`.
+- [x] Re-run Phase 0's diff (`git diff <original-pinned-SHA>...HEAD -- FE/lib`) one more time — confirm every screen file that was ever touched across Phases 1-7 is accounted for in this plan's changes, nothing slipped through unreviewed. <!-- plan.md closeout: zero drift re-confirmed immediately pre-merge; full diff enumerated (44 changed files) -->
+- [x] Confirm zero `app_router.dart` / `*_shell.dart` tab-array / `Navigator.push*` call-graph changes anywhere in the full diff (out-of-scope check from `plan.md`). <!-- plan.md closeout: verified two ways (zero app_router diff lines; full-diff grep = 0 matches) -->
+- [ ] **Rotate the shared QA-account password** used for role logins during this plan's QA passes (reset via Supabase SQL, same technique that set it) — the audit pipeline left a shared test password live on 3 QA-alias accounts; don't let it outlive the plan. Never commit dart-define credential values. <!-- Updated: Red Team Session 1 --> <!-- NOT done: journal 260710-1800 "flagged for user to handle separately; not rotated blind this session"; the post-merge QA session then re-set the shared password again (qa-260710-1827 limitations) — still open as of 2026-07-12 -->
+- [ ] Merge `feat/visual-reskin` → `dev` per the Execution Model in plan.md (final rebase + full-app smoke first). <!-- merge itself done (d5bd510) after analyze+test+guard, but the mandated pre-merge full-app smoke was not performed (journal: regression checklists not walked); a post-merge full-app emulator audit ran the same day (qa-260710-1827) -->
+- [x] Mark this plan's `plan.md` status `completed`. <!-- done in commit 8ffdf7e -->
 
 ## Risk Assessment
 

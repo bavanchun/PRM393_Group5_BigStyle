@@ -1,8 +1,42 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/notification_model.dart';
 
 class NotificationService {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient _client;
+
+  NotificationService({SupabaseClient? client})
+    : _client = client ?? Supabase.instance.client;
+
+  /// Emits a signal (no payload) whenever a `notifications` row for [userId]
+  /// is inserted or updated. Callers refetch via [getNotifications] on each
+  /// signal rather than merging partial payloads — mirrors the confirm-then-
+  /// refetch pattern in `payment_service.dart`.
+  Stream<void> subscribeToChanges(String userId) {
+    late final RealtimeChannel channel;
+    late final StreamController<void> controller;
+    controller = StreamController<void>.broadcast(
+      onListen: () {
+        channel = _client
+            .channel('notifications-$userId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'notifications',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'user_id',
+                value: userId,
+              ),
+              callback: (_) => controller.add(null),
+            )
+            .subscribe();
+      },
+      onCancel: () => _client.removeChannel(channel),
+    );
+    return controller.stream;
+  }
 
   Future<List<NotificationModel>> getNotifications(String userId) async {
     final data = await _client

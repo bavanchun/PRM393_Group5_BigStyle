@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'checkout_event.dart';
 import 'checkout_state.dart';
 import '../../services/order_service.dart';
@@ -130,7 +131,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         ),
       );
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: 'Đặt hàng thất bại: $e'));
+      final reason = e is PostgrestException ? e.message : e.toString();
+      emit(state.copyWith(isLoading: false, error: 'Đặt hàng thất bại: $reason'));
     }
   }
 

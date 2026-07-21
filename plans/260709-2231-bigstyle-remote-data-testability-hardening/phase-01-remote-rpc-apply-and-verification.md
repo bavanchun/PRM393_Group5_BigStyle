@@ -87,11 +87,11 @@ Manager edit screen
 
 ## Success Criteria
 
-- [ ] Remote `pg_proc` shows `update_product_with_variants`.
-- [ ] Function has `SECURITY DEFINER` and fixed `search_path`.
-- [ ] `flutter analyze` passes.
-- [ ] `flutter test` passes.
-- [ ] No duplicate/conflicting RPC migration is created.
+- [x] Remote `pg_proc` shows `update_product_with_variants`. <!-- evidence: Completion Notes below — applied to agbnpqgxsppdrpbqoipo, remote function verified present -->
+- [x] Function has `SECURITY DEFINER` and fixed `search_path`. <!-- evidence: Completion Notes below — "SECURITY DEFINER, search_path=public, anon_can_execute=false, authenticated_can_execute=true" -->
+- [x] `flutter analyze` passes. <!-- evidence: reports/260709-remote-data-android-smoke-report.md:38 "flutter analyze: pass" -->
+- [x] `flutter test` passes. <!-- evidence: reports/260709-remote-data-android-smoke-report.md:39 "flutter test: pass, 3/3 tests" -->
+- [x] No duplicate/conflicting RPC migration is created. <!-- evidence: Completion Notes below — only a grant-repair migration added alongside the original RPC, no second RPC definition -->
 
 ## Risk Assessment
 

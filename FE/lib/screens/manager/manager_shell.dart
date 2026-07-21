@@ -6,15 +6,18 @@ import '../../blocs/auth/auth_state.dart';
 import '../../models/user_model.dart';
 import '../../blocs/manager/manager_bloc.dart';
 import '../../blocs/manager/manager_event.dart';
+import '../../blocs/support_inbox/support_inbox_bloc.dart';
+import '../../blocs/support_inbox/support_inbox_event.dart';
 import '../../blocs/notification/notification_bloc.dart';
 import '../../blocs/notification/notification_event.dart';
-
 import '../../config/theme/app_colors.dart';
+import '../../config/theme/app_typography.dart';
 import '../../widgets/auth_avatar.dart';
 import '../../widgets/manager_bottom_nav.dart';
 import 'manager_dashboard.dart';
 import 'manager_orders_screen.dart';
 import 'products/manager_product_list_screen.dart';
+import 'support/manager_support_inbox_screen.dart';
 
 /// Index of the Orders tab within [_ManagerShellState._screens].
 const _ordersTabIndex = 2;
@@ -29,9 +32,19 @@ class ManagerShell extends StatefulWidget {
 class _ManagerShellState extends State<ManagerShell> {
   int _currentIndex = 0;
 
+  final _screens = const [
+    ManagerDashboard(),
+    ManagerProductListScreen(),
+    ManagerOrdersScreen(),
+    ManagerSupportInboxScreen(),
+    _ManagerProfileScreen(),
+  ];
+
   @override
   void initState() {
     super.initState();
+    // Start the live staff inbox so the nav badge stays current.
+    context.read<SupportInboxBloc>().add(const SupportInboxSubscribe());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = context.read<AuthBloc>().state.user?.id;
       if (userId != null) {
@@ -39,13 +52,6 @@ class _ManagerShellState extends State<ManagerShell> {
       }
     });
   }
-
-  final _screens = const [
-    ManagerDashboard(),
-    ManagerProductListScreen(),
-    ManagerOrdersScreen(),
-    _ManagerProfileScreen(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -101,18 +107,16 @@ class _ManagerProfileScreen extends StatelessWidget {
                         children: [
                           Text(
                             user?.fullName ?? 'Quản lý',
-                            style: const TextStyle(
+                            style: AppTypography.headlineMedium.copyWith(
                               color: AppColors.onPrimary,
-                              fontSize: 18,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             user?.email ?? '',
-                            style: TextStyle(
+                            style: AppTypography.bodySmall.copyWith(
                               color: AppColors.onPrimary.withValues(alpha: 0.8),
-                              fontSize: 13,
                             ),
                           ),
                           if (user?.brandName != null &&
@@ -120,15 +124,20 @@ class _ManagerProfileScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                Icon(Icons.store,
-                                    size: 12,
-                                    color: AppColors.onPrimary.withValues(alpha: 0.8)),
+                                Icon(
+                                  Icons.store,
+                                  size: 12,
+                                  color: AppColors.onPrimary.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   user.brandName!,
-                                  style: TextStyle(
-                                    color: AppColors.onPrimary.withValues(alpha: 0.8),
-                                    fontSize: 12,
+                                  style: AppTypography.caption.copyWith(
+                                    color: AppColors.onPrimary.withValues(
+                                      alpha: 0.8,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -137,7 +146,6 @@ class _ManagerProfileScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -212,11 +220,13 @@ class _ProfileMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: color ?? AppColors.textSecondary),
-      title: Text(title,
-          style: TextStyle(
-              fontSize: 14, color: color ?? AppColors.textPrimary)),
-      trailing:
-          Icon(Icons.chevron_right, color: AppColors.textHint, size: 20),
+      title: Text(
+        title,
+        style: AppTypography.bodyMedium.copyWith(
+          color: color ?? AppColors.textPrimary,
+        ),
+      ),
+      trailing: Icon(Icons.chevron_right, color: AppColors.textHint, size: 20),
       onTap: onTap,
     );
   }

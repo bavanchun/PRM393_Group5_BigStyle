@@ -50,10 +50,11 @@ launching the Google Maps directions URL to the hardcoded shop coords.
 5. Remove the dead `_showMap` placeholder.
 
 ## Success Criteria
-- [ ] Profile "Cửa hàng" opens the real map (marker, route, distance/ETA render).
-- [ ] "Chỉ đường" opens Google Maps (app or browser) with directions.
-- [ ] No dead placeholder sheet remains.
-- [ ] `flutter analyze` clean; builds on Android (and iOS if available).
+- [x] Profile "Cửa hàng" opens the real map (marker, route, distance/ETA render).
+      <!-- device-verified: blank-map root cause (missing Android Maps SDK key) fixed and tiles+marker confirmed live after keyed rebuild (commit 666a7e6); shop card + route fallback verified live earlier -->
+- [ ] "Chỉ đường" opens Google Maps (app or browser) with directions. <!-- launchUrl + fallback code exists (delivery_map_screen.dart:325); external handoff never observed on device — not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] No dead placeholder sheet remains. <!-- evidence: commit 2152eac deletes _showMap() from profile_screen.dart; confirmed absent in current file -->
+- [x] `flutter analyze` clean; builds on Android (and iOS if available). <!-- analyze re-verified 2026-07-12; Android debug builds proven by repeated emulator smokes; iOS never attempted -->
 
 ## Risk Assessment
 - `url_launcher` platform config: `canLaunchUrl` may return false without proper

@@ -8,6 +8,7 @@ import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/app_spacing.dart';
 import '../../../config/theme/app_typography.dart';
 import '../../../models/voucher_model.dart';
+import '../../../widgets/app_error_state.dart';
 import 'manager_voucher_edit_sheet.dart';
 
 class ManagerVoucherListScreen extends StatefulWidget {
@@ -47,6 +48,14 @@ class _ManagerVoucherListScreenState extends State<ManagerVoucherListScreen> {
         label: const Text('Thêm mã giảm giá'),
       ),
       body: BlocConsumer<ManagerVoucherBloc, ManagerVoucherState>(
+        // Once a list has loaded, a later error can only ever arrive as a
+        // background-refresh failure (the sum-type state has no field to
+        // carry the error alongside cached data), so a SnackBar is the only
+        // affordance for it. Before that, the builder's full-screen
+        // AppErrorState already covers the failure, so suppress the SnackBar
+        // to avoid double-messaging the same error.
+        listenWhen: (previous, current) =>
+            current is! ManagerVoucherError || _vouchers != null,
         listener: (context, state) {
           if (state is ManagerVoucherLoaded) {
             setState(() => _vouchers = state.vouchers);
@@ -90,19 +99,11 @@ class _ManagerVoucherListScreenState extends State<ManagerVoucherListScreen> {
           // No data loaded yet.
           if (state is ManagerVoucherError) {
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Không tải được mã giảm giá',
-                      style: AppTypography.bodyMedium),
-                  const SizedBox(height: AppSpacing.sm),
-                  FilledButton(
-                    onPressed: () => context
-                        .read<ManagerVoucherBloc>()
-                        .add(LoadManagerVouchersEvent()),
-                    child: const Text('Thử lại'),
-                  ),
-                ],
+              child: AppErrorState(
+                message: state.error,
+                onRetry: () => context.read<ManagerVoucherBloc>().add(
+                  LoadManagerVouchersEvent(),
+                ),
               ),
             );
           }
@@ -115,8 +116,8 @@ class _ManagerVoucherListScreenState extends State<ManagerVoucherListScreen> {
   Future<void> _reload() async {
     context.read<ManagerVoucherBloc>().add(LoadManagerVouchersEvent());
     await context.read<ManagerVoucherBloc>().stream.firstWhere(
-          (s) => s is! ManagerVoucherLoading,
-        );
+      (s) => s is! ManagerVoucherLoading,
+    );
   }
 }
 
@@ -134,9 +135,7 @@ class _CenteredMessage extends StatelessWidget {
       child: ListView(
         children: [
           const SizedBox(height: 120),
-          Center(
-            child: Text(message, style: AppTypography.bodyMedium),
-          ),
+          Center(child: Text(message, style: AppTypography.bodyMedium)),
         ],
       ),
     );
@@ -215,7 +214,10 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isActive ? AppColors.success : AppColors.textHint;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),

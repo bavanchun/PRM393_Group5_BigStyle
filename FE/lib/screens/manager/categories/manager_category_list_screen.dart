@@ -7,6 +7,7 @@ import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/app_spacing.dart';
 import '../../../config/theme/app_typography.dart';
 import '../../../models/category_model.dart';
+import '../../../widgets/app_error_state.dart';
 import 'manager_category_edit_sheet.dart';
 
 class ManagerCategoryListScreen extends StatefulWidget {
@@ -46,6 +47,14 @@ class _ManagerCategoryListScreenState extends State<ManagerCategoryListScreen> {
         label: const Text('Thêm danh mục'),
       ),
       body: BlocConsumer<ManagerCategoryBloc, ManagerCategoryState>(
+        // Once a list has loaded, a later error can only ever arrive as a
+        // background-refresh failure (the sum-type state has no field to
+        // carry the error alongside cached data), so a SnackBar is the only
+        // affordance for it. Before that, the builder's full-screen
+        // AppErrorState already covers the failure, so suppress the SnackBar
+        // to avoid double-messaging the same error.
+        listenWhen: (previous, current) =>
+            current is! ManagerCategoryError || _categories != null,
         listener: (context, state) {
           if (state is ManagerCategoryLoaded) {
             setState(() => _categories = state.categories);
@@ -89,19 +98,11 @@ class _ManagerCategoryListScreenState extends State<ManagerCategoryListScreen> {
           // No data loaded yet.
           if (state is ManagerCategoryError) {
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Không tải được danh mục',
-                      style: AppTypography.bodyMedium),
-                  const SizedBox(height: AppSpacing.sm),
-                  FilledButton(
-                    onPressed: () => context
-                        .read<ManagerCategoryBloc>()
-                        .add(LoadManagerCategoriesEvent()),
-                    child: const Text('Thử lại'),
-                  ),
-                ],
+              child: AppErrorState(
+                message: state.error,
+                onRetry: () => context.read<ManagerCategoryBloc>().add(
+                  LoadManagerCategoriesEvent(),
+                ),
               ),
             );
           }
@@ -114,8 +115,8 @@ class _ManagerCategoryListScreenState extends State<ManagerCategoryListScreen> {
   Future<void> _reload() async {
     context.read<ManagerCategoryBloc>().add(LoadManagerCategoriesEvent());
     await context.read<ManagerCategoryBloc>().stream.firstWhere(
-          (s) => s is! ManagerCategoryLoading,
-        );
+      (s) => s is! ManagerCategoryLoading,
+    );
   }
 }
 
@@ -133,9 +134,7 @@ class _CenteredMessage extends StatelessWidget {
       child: ListView(
         children: [
           const SizedBox(height: 120),
-          Center(
-            child: Text(message, style: AppTypography.bodyMedium),
-          ),
+          Center(child: Text(message, style: AppTypography.bodyMedium)),
         ],
       ),
     );
@@ -211,7 +210,10 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isActive ? AppColors.success : AppColors.textHint;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),

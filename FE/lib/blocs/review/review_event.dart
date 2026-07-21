@@ -21,6 +21,7 @@ class ReviewLoad extends ReviewEvent {
 class ReviewSubmit extends ReviewEvent {
   final String productId;
   final String userId;
+  final String orderItemId;
   final int rating;
   final String? comment;
   final ReviewSizeFeedback? sizeFeedback;
@@ -28,11 +29,19 @@ class ReviewSubmit extends ReviewEvent {
   const ReviewSubmit({
     required this.productId,
     required this.userId,
+    required this.orderItemId,
     required this.rating,
     this.comment,
     this.sizeFeedback,
   });
 
   @override
-  List<Object?> get props => [productId, userId, rating, comment, sizeFeedback];
+  List<Object?> get props => [
+    productId,
+    userId,
+    orderItemId,
+    rating,
+    comment,
+    sizeFeedback,
+  ];
 }

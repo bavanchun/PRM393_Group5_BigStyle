@@ -3,6 +3,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_typography.dart';
 import '../../utils/currency_format.dart';
+import 'pressable_scale.dart';
 
 class ProductCard extends StatelessWidget {
   final String imageUrl;
@@ -14,6 +15,11 @@ class ProductCard extends StatelessWidget {
   final String? brandName;
   final VoidCallback? onTap;
 
+  /// Context-unique Hero tag for the list→detail shared-element transition.
+  /// Null disables the Hero wrap (e.g. favorites, where the same product
+  /// can render more than once and a shared tag would collide).
+  final String? heroTag;
+
   const ProductCard({
     super.key,
     required this.imageUrl,
@@ -24,13 +30,27 @@ class ProductCard extends StatelessWidget {
     this.soldCount = 0,
     this.brandName,
     this.onTap,
+    this.heroTag,
   });
 
   bool get hasDiscount => originalPrice != null && originalPrice! > price;
 
+  Widget _buildImage() {
+    final image = Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => Container(
+        color: AppColors.secondary.withValues(alpha: 0.3),
+        child: Icon(Icons.image_outlined, color: AppColors.textHint, size: 36),
+      ),
+    );
+    if (heroTag == null) return image;
+    return Hero(tag: heroTag!, child: image);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -43,26 +63,21 @@ class ProductCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      color: AppColors.secondary.withValues(alpha: 0.3),
-                      child: Icon(Icons.image_outlined,
-                          color: AppColors.textHint, size: 36),
-                    ),
-                  ),
+                  _buildImage(),
                   if (hasDiscount)
                     Positioned(
                       top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.microRadius),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.microRadius,
+                          ),
                         ),
                         child: Text(
                           'SALE',
@@ -103,10 +118,7 @@ class ProductCard extends StatelessWidget {
             ),
           Text(
             name,
-            style: AppTypography.labelLarge.copyWith(
-              fontSize: 12,
-              height: 1.2,
-            ),
+            style: AppTypography.labelLarge.copyWith(fontSize: 12, height: 1.2),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -115,32 +127,37 @@ class ProductCard extends StatelessWidget {
             Wrap(
               spacing: 3,
               runSpacing: 2,
-              children: sizes.take(3).map((s) => Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 4, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.microRadius),
-                    ),
-                    child: Text(
-                      s,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: AppColors.textHint,
-                        fontWeight: FontWeight.w500,
+              children: sizes
+                  .take(3)
+                  .map(
+                    (s) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.microRadius,
+                        ),
+                      ),
+                      child: Text(
+                        s,
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: AppColors.textHint,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  )).toList(),
+                  )
+                  .toList(),
             ),
           const SizedBox(height: 2),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                formatVnd(price),
-                style: AppTypography.priceSmall,
-              ),
+              Text(formatVnd(price), style: AppTypography.priceSmall),
               if (hasDiscount) ...[
                 const SizedBox(width: 4),
                 Padding(
@@ -162,8 +179,11 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 1),
               child: Row(
                 children: [
-                  Icon(Icons.shopping_bag_outlined,
-                      size: 10, color: AppColors.textHint),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 10,
+                    color: AppColors.textHint,
+                  ),
                   const SizedBox(width: 2),
                   Text(
                     'Đã bán $soldCount',

@@ -22,9 +22,11 @@ class StatusBadge extends StatelessWidget {
     return switch (status) {
       OrderStatus.pending => statusColors.warning,
       OrderStatus.confirmed => AppColors.primary,
+      OrderStatus.processing => statusColors.info,
       OrderStatus.shipping => statusColors.info,
       OrderStatus.delivered => statusColors.success,
       OrderStatus.cancelled => statusColors.error,
+      OrderStatus.refunded => statusColors.warning,
     };
   }
 

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import 'auth_event.dart';
 import 'auth_state.dart';
-import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/google_auth_service.dart';
 
@@ -10,16 +10,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthService _authService;
   final GoogleAuthService _googleAuthService;
 
+  // Drops a second password submit while one is in flight — a double-tap must
+  // not race a second auth call (UI button-disable alone is insufficient).
+  bool _passwordAuthInFlight = false;
+
   AuthBloc(this._authService, this._googleAuthService)
     : super(const AuthInitial()) {
     on<CheckSessionEvent>(_onCheckSession);
     on<SendOTPEvent>(_onSendOtp);
     on<VerifyOTPEvent>(_onVerifyOtp);
     on<PasswordSignInEvent>(_onPasswordSignIn);
+    on<PasswordSignUpEvent>(_onPasswordSignUp);
     on<GoogleSignInEvent>(_onGoogleSignIn);
-    on<MockLoginEvent>(_onMockLogin);
     on<SignOutEvent>(_onSignOut);
     on<UpdateProfileEvent>(_onUpdateProfile);
+    on<PasswordResetRequestEvent>(_onPasswordResetRequest);
+    on<UpdatePasswordEvent>(_onUpdatePassword);
   }
 
   Future<void> _onCheckSession(
@@ -78,8 +84,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     PasswordSignInEvent event,
     Emitter<AuthState> emit,
   ) async {
-    if (kReleaseMode) return;
-
+    if (_passwordAuthInFlight) return;
+    _passwordAuthInFlight = true;
     emit(const AuthLoading());
     try {
       final user = await _authService.signInWithPassword(
@@ -89,10 +95,54 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         emit(AuthSuccess(user));
       } else {
-        emit(const AuthError('Đăng nhập test thất bại'));
+        emit(const AuthError('Email hoặc mật khẩu không đúng'));
       }
     } catch (_) {
-      emit(const AuthError('Đăng nhập test thất bại'));
+      emit(const AuthError('Email hoặc mật khẩu không đúng'));
+    } finally {
+      _passwordAuthInFlight = false;
+    }
+  }
+
+  Future<void> _onPasswordSignUp(
+    PasswordSignUpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (_passwordAuthInFlight) return;
+    _passwordAuthInFlight = true;
+    emit(const AuthLoading());
+    try {
+      final result = await _authService.signUpWithPassword(
+        email: event.email,
+        password: event.password,
+        fullName: event.fullName,
+      );
+      switch (result.outcome) {
+        case SignUpOutcome.success:
+          final user = result.user;
+          if (user != null) {
+            emit(AuthSuccess(user));
+          } else {
+            emit(const AuthSignUpConfirmationPending());
+          }
+        case SignUpOutcome.confirmationPending:
+          emit(const AuthSignUpConfirmationPending());
+        case SignUpOutcome.alreadyRegistered:
+          emit(const AuthError('Email đã được đăng ký — hãy đăng nhập'));
+      }
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('already registered') ||
+          msg.contains('already been registered') ||
+          msg.contains('user already')) {
+        emit(const AuthError('Email đã được đăng ký — hãy đăng nhập'));
+      } else {
+        emit(const AuthError('Đăng ký thất bại'));
+      }
+    } catch (_) {
+      emit(const AuthError('Đăng ký thất bại'));
+    } finally {
+      _passwordAuthInFlight = false;
     }
   }
 
@@ -116,40 +166,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onMockLogin(
-    MockLoginEvent event,
-    Emitter<AuthState> emit,
-  ) async {
-    if (kReleaseMode) return;
-
-    emit(const AuthLoading());
-    UserRole role;
-    switch (event.role) {
-      case 'admin':
-        role = UserRole.admin;
-        break;
-      case 'manager':
-        role = UserRole.manager;
-        break;
-      default:
-        role = UserRole.customer;
-    }
-
-    final user = UserModel(
-      id: 'mock-${event.role}-id',
-      email: '${event.role}@bigstyle.com',
-      fullName: event.role == 'admin'
-          ? 'Admin BigStyle'
-          : event.role == 'manager'
-          ? 'Quản lý BigStyle'
-          : 'Nguyễn Văn A',
-      phone: '0123456789',
-      role: role,
-      createdAt: DateTime.now(),
-    );
-    emit(AuthSuccess(user));
-  }
-
   Future<void> _onSignOut(SignOutEvent event, Emitter<AuthState> emit) async {
     await _authService.signOut();
     await _googleAuthService.signOut();
@@ -165,6 +181,45 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthSuccess(event.user));
     } catch (_) {
       emit(const AuthError('Cập nhật thất bại'));
+    }
+  }
+
+  Future<void> _onPasswordResetRequest(
+    PasswordResetRequestEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (_passwordAuthInFlight) return;
+    _passwordAuthInFlight = true;
+    emit(const AuthLoading());
+    try {
+      await _authService.sendPasswordReset(event.email);
+      emit(const AuthPasswordResetEmailSent());
+    } catch (_) {
+      emit(const AuthError('Gửi email đặt lại mật khẩu thất bại'));
+    } finally {
+      _passwordAuthInFlight = false;
+    }
+  }
+
+  Future<void> _onUpdatePassword(
+    UpdatePasswordEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (_passwordAuthInFlight) return;
+    _passwordAuthInFlight = true;
+    emit(const AuthLoading());
+    try {
+      await _authService.updatePassword(event.password);
+      final user = await _authService.getCurrentUser();
+      if (user != null) {
+        emit(AuthSuccess(user));
+      } else {
+        emit(const AuthError('Không thể cập nhật mật khẩu. Vui lòng thử lại.'));
+      }
+    } catch (_) {
+      emit(const AuthError('Đổi mật khẩu thất bại'));
+    } finally {
+      _passwordAuthInFlight = false;
     }
   }
 }

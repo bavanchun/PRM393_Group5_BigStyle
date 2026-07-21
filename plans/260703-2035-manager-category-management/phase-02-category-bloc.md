@@ -49,10 +49,10 @@ app's `MultiBlocProvider`.
 4. `flutter analyze` clean.
 
 ## Success Criteria
-- [ ] Bloc compiles; events map to `CategoryService` methods.
-- [ ] Success of a mutation triggers a list reload (`Loaded`).
-- [ ] Errors surface as `Error(message)`.
-- [ ] Bloc available via `context.read<ManagerCategoryBloc>()` app-wide.
+- [x] Bloc compiles; events map to `CategoryService` methods.
+- [x] Success of a mutation triggers a list reload (`Loaded`).
+- [x] Errors surface as `Error(message)`.
+- [x] Bloc available via `context.read<ManagerCategoryBloc>()` app-wide.
 
 ## Risk Assessment
 - Wrong provider placement → screen can't read bloc; verify against

@@ -66,10 +66,10 @@ String formatVnd(num amount) => '${_vndGrouping.format(amount)}đ';
 7. Commit.
 
 ## Success Criteria
-- [ ] `formatVnd(0)=='0đ'`, `formatVnd(10000)=='10.000đ'`, `formatVnd(350000)=='350.000đ'`, `formatVnd(1234567)=='1.234.567đ'` (unit tests)
-- [ ] All 3 guard greps in step 4 pass
-- [ ] analyze/tests green; emulator spot-check shows separators
-- [ ] 1 commit
+- [x] `formatVnd(0)=='0đ'`, `formatVnd(10000)=='10.000đ'`, `formatVnd(350000)=='350.000đ'`, `formatVnd(1234567)=='1.234.567đ'` (unit tests) <!-- evidence: FE/test/utils/currency_format_test.dart — exact 4 cases (+ a 5th, integral double), all pass live 2026-07-12 -->
+- [x] All 3 guard greps in step 4 pass <!-- re-verified 2026-07-12: toStringAsFixed(0)đ = 0, non-util NumberFormat = 0, leftover local formatters = only the documented admin compact wrapper -->
+- [ ] analyze/tests green; emulator spot-check shows separators <!-- analyze/tests green (then + re-verified 2026-07-12); the emulator spot-check was never documented — not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] 1 commit <!-- 8083ff0 -->
 
 ## Risk Assessment
 - Decimal amounts round via `#,###` — all VND amounts are whole (`double` but integral); acceptable.

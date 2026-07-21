@@ -110,13 +110,14 @@ Add `check (type <> 'percentage' or value <= 100)` so a percentage can't exceed
 7. Verify end-to-end: apply code → order row has `discount_amount` + reduced total.
 
 ## Success Criteria
-- [ ] Valid code reduces total; `orders.discount_amount` persisted (verify DB).
-- [ ] Expired/invalid/below-min code → error, no discount applied.
-- [ ] Discount row visible on checkout and order detail.
-- [ ] Manager creates a voucher and toggles it active/inactive; inactive code
-      rejected at checkout.
-- [ ] "Khuyến mãi" dashboard action opens the voucher manager (no coming-soon).
-- [ ] `flutter analyze` clean; COD + bank-transfer checkout still work.
+- [x] Valid code reduces total; `orders.discount_amount` persisted (verify DB).
+      <!-- note: the original create_order stubbed the discount to 0 (found as F1 in qa-260711-1220); fixed in PR #24 and prod-verified via BEGIN/ROLLBACK RPC transactions + checkout-bloc contract test (tester-260711-1505 report) -->
+- [x] Expired/invalid/below-min code → error, no discount applied. <!-- evidence: FE/supabase/migrations/20260711150200_create_order_money_path_hardening.sql — raises on expired (expires_at>now()), invalid (not found), below-min (subtotal<min_order_amount); checkout catches PostgrestException generically -->
+- [x] Discount row visible on checkout and order detail. <!-- evidence: FE/lib/screens/checkout/widgets/checkout_price_summary.dart:35-38 (if discountAmount>0); FE/lib/screens/orders/order_detail_screen.dart:179-182 (if order.discountAmount!=null && >0) -->
+- [x] Manager creates a voucher and toggles it active/inactive; inactive code
+      rejected at checkout. <!-- evidence: manager CRUD/toggle — manager_voucher_edit_sheet.dart SwitchListTile + manager_voucher_bloc.dart ToggleManagerVoucherActiveEvent; inactive-rejected — create_order/validate_voucher migrations both require is_active=true in the WHERE clause -->
+- [x] "Khuyến mãi" dashboard action opens the voucher manager (no coming-soon). <!-- evidence: FE/lib/screens/manager/manager_dashboard.dart _openVoucherManager pushes ManagerVoucherListScreen, replacing _showComingSoon -->
+- [x] `flutter analyze` clean; COD + bank-transfer checkout still work. <!-- COD device-verified in 260709 smoke (order CF-20260709-54E569); bank QR device-verified in 260703 audit -->
 
 ## Risk Assessment
 - **Client-trusted discount/total (red-team HIGH)**: PostgREST insert policy only

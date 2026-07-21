@@ -40,7 +40,9 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       final users = await _adminService.getAllUsers();
       emit(state.copyWith(isLoading: false, users: users));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: 'Lỗi tải danh sách用户: $e'));
+      emit(
+        state.copyWith(isLoading: false, error: 'Lỗi tải danh sách người dùng: $e'),
+      );
     }
   }
 

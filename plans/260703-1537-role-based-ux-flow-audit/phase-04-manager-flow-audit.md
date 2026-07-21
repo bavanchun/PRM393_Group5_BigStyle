@@ -72,11 +72,12 @@ create_product · product_detail.
 
 ## Success Criteria
 
-- [ ] 8 screen manager có States + bảng findings.
-- [ ] Xác nhận 3 nghi P1: no role guard, silent status-update failure, dashboard mở
+- [ ] 8 screen manager có States + bảng findings. <!-- partial: bảng findings đủ mọi screen manager, nhưng dòng "States:" chỉ có ở manager_orders -->
+- [x] Xác nhận 3 nghi P1: no role guard, silent status-update failure, dashboard mở
       nhầm màn đơn.
-- [ ] Kiểm chứng thực tế category/color khi tạo SP có lưu không (DB check).
-- [ ] Mọi seed finding giữ/loại + severity + evidence.
+      <!-- M38 xác nhận không guard (hạ P2 vì RLS đã verify — X1), M7 giữ P1, M4 xác nhận trực tiếp ✅ -->
+- [ ] Kiểm chứng thực tế category/color khi tạo SP có lưu không (DB check). <!-- xác nhận qua code + emulator (M23/M26 ✅: dropdown/danh mục & màu không gán vào model) nhưng không có bằng chứng check row DB thật sau khi tạo SP -->
+- [x] Mọi seed finding giữ/loại + severity + evidence.
 
 ## Risk Assessment
 

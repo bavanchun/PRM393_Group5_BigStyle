@@ -38,17 +38,24 @@ class PasswordSignInEvent extends AuthEvent {
   List<Object?> get props => [email];
 }
 
+class PasswordSignUpEvent extends AuthEvent {
+  final String email;
+  final String password;
+  final String fullName;
+  const PasswordSignUpEvent({
+    required this.email,
+    required this.password,
+    required this.fullName,
+  });
+
+  @override
+  List<Object?> get props => [email, fullName];
+}
+
 class CheckSessionEvent extends AuthEvent {
   const CheckSessionEvent();
 }
 
-class MockLoginEvent extends AuthEvent {
-  final String role;
-  const MockLoginEvent(this.role);
-
-  @override
-  List<Object?> get props => [role];
-}
 
 class SignOutEvent extends AuthEvent {
   const SignOutEvent();
@@ -60,4 +67,20 @@ class UpdateProfileEvent extends AuthEvent {
 
   @override
   List<Object?> get props => [user];
+}
+
+class PasswordResetRequestEvent extends AuthEvent {
+  final String email;
+  const PasswordResetRequestEvent(this.email);
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class UpdatePasswordEvent extends AuthEvent {
+  final String password;
+  const UpdatePasswordEvent(this.password);
+
+  @override
+  List<Object?> get props => [password];
 }

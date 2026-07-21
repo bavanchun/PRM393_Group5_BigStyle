@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../blocs/support_chat/support_chat_bloc.dart';
+import '../../services/support_chat_service.dart';
+import '../../screens/chat/support_chat_screen.dart';
 import '../../screens/splash/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
+import '../../screens/auth/reset_password_screen.dart';
+import '../../blocs/search/search_bloc.dart';
+import '../../services/product_service.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/product_list/product_list_screen.dart';
 import '../../screens/product_detail/product_detail_screen.dart';
+import '../../screens/search/search_screen.dart';
 import '../../screens/cart/cart_screen.dart';
 import '../../screens/cart/cart_item_edit_screen.dart';
 import '../../screens/checkout/checkout_screen.dart';
@@ -17,6 +25,7 @@ import '../../screens/profile/address_form_screen.dart';
 import '../../screens/chat/chat_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/delivery/delivery_map_screen.dart';
+import '../../screens/delivery/delivery_map_args.dart';
 import '../../screens/manager/manager_shell.dart';
 import '../../screens/admin/admin_shell.dart';
 import '../../screens/favorites/favorites_screen.dart';
@@ -25,47 +34,138 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(settings: settings, builder: (_) => const SplashScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const SplashScreen(),
+        );
       case '/login':
-        return MaterialPageRoute(settings: settings, builder: (_) => const LoginScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const LoginScreen(),
+        );
+      case '/reset-password':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ResetPasswordScreen(),
+        );
       case '/home':
-        return MaterialPageRoute(settings: settings, builder: (_) => const HomeScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const HomeScreen(),
+        );
       case '/products':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ProductListScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ProductListScreen(),
+        );
+      case '/search':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (context) => BlocProvider(
+            create: (_) => SearchBloc(context.read<ProductService>()),
+            child: const SearchScreen(),
+          ),
+        );
       case '/product-detail':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ProductDetailScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ProductDetailScreen(),
+        );
       case '/cart':
-        return MaterialPageRoute(settings: settings, builder: (_) => const CartScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CartScreen(),
+        );
       case '/cart-item-edit':
-        return MaterialPageRoute(settings: settings, builder: (_) => const CartItemEditScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CartItemEditScreen(),
+        );
       case '/checkout':
-        return MaterialPageRoute(settings: settings, builder: (_) => const CheckoutScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CheckoutScreen(),
+        );
       case '/payment-qr':
-        return MaterialPageRoute(settings: settings, builder: (_) => const PaymentQrScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const PaymentQrScreen(),
+        );
       case '/orders':
-        return MaterialPageRoute(settings: settings, builder: (_) => const OrdersScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const OrdersScreen(),
+        );
       case '/order-detail':
-        return MaterialPageRoute(settings: settings, builder: (_) => const OrderDetailScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const OrderDetailScreen(),
+        );
       case '/profile':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ProfileScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ProfileScreen(),
+        );
       case '/edit-profile':
-        return MaterialPageRoute(settings: settings, builder: (_) => const EditProfileScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const EditProfileScreen(),
+        );
       case '/addresses':
-        return MaterialPageRoute(settings: settings, builder: (_) => const AddressesScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const AddressesScreen(),
+        );
       case '/address-form':
-        return MaterialPageRoute(settings: settings, builder: (_) => const AddressFormScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const AddressFormScreen(),
+        );
       case '/chat':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ChatScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ChatScreen(),
+        );
+      case '/support-chat':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => BlocProvider(
+            create: (_) => SupportChatBloc(SupportChatService()),
+            child: const SupportChatScreen(title: 'Chat với nhân viên'),
+          ),
+        );
       case '/notifications':
-        return MaterialPageRoute(settings: settings, builder: (_) => const NotificationsScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const NotificationsScreen(),
+        );
       case '/delivery-map':
-        return MaterialPageRoute(settings: settings, builder: (_) => const DeliveryMapScreen());
+        final deliveryArgs = DeliveryMapArgs.fromRouteArguments(
+          settings.arguments,
+        );
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => DeliveryMapScreen(
+            destination: deliveryArgs?.destination,
+            destinationLabel: deliveryArgs?.destinationLabel,
+            title: deliveryArgs?.title,
+          ),
+        );
       case '/manager':
-        return MaterialPageRoute(settings: settings, builder: (_) => const ManagerShell());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ManagerShell(),
+        );
       case '/admin':
-        return MaterialPageRoute(settings: settings, builder: (_) => const AdminShell());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const AdminShell(),
+        );
       case '/favorites':
-        return MaterialPageRoute(settings: settings, builder: (_) => const FavoritesScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const FavoritesScreen(),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

@@ -20,6 +20,8 @@ import '../../services/address_service.dart';
 import '../../services/shipping_service.dart';
 import '../../services/voucher_service.dart';
 import '../../utils/currency_format.dart';
+import '../../utils/haptics.dart';
+import '../../widgets/animated_success_check.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import 'payment_qr_screen.dart';
@@ -320,6 +322,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 context.read<CartBloc>().add(CartRemoveItem(id));
               }
             }
+            Haptics.success();
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -330,7 +333,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, color: AppColors.success, size: 64),
+                    const AnimatedSuccessCheck(size: 64),
                     const SizedBox(height: 16),
                     Text('Đặt hàng thành công!', style: AppTypography.headlineMedium),
                     const SizedBox(height: 8),
@@ -406,6 +409,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

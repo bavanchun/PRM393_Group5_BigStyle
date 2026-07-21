@@ -57,10 +57,10 @@ existing `UpdateProfileEvent`. RLS already allows `auth.uid()=id` UPDATE on
 6. Disable the Save button while `_saving || _uploadingAvatar`.
 
 ## Success Criteria
-- [ ] Picking + saving updates `profiles.avatar_url` (verify row in DB).
-- [ ] Profile header + edit screen show the new avatar after save.
-- [ ] Save disabled during upload; upload failure keeps old avatar + shows error.
-- [ ] `flutter analyze` clean.
+- [ ] Picking + saving updates `profiles.avatar_url` (verify row in DB). <!-- code path complete (avatars bucket, <uid>/ path); no DB/device verification recorded in journal or QA reports — not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [ ] Profile header + edit screen show the new avatar after save. <!-- not device-verified; deferred to device pass (plans/260712-1644 Phase 1) -->
+- [x] Save disabled during upload; upload failure keeps old avatar + shows error. <!-- evidence: FE/lib/screens/profile/edit_profile_screen.dart:223,232 (isLoading/onPressed gated on _saving||_uploadingAvatar), :331 (early return + snackbar on null uploadedUrl, no save dispatched) -->
+- [x] `flutter analyze` clean. <!-- re-verified 2026-07-12: No issues found -->
 
 ## Risk Assessment
 - Upload uses user JWT to the `products` bucket (already works for manager) —

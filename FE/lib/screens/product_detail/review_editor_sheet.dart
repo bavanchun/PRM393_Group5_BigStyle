@@ -11,12 +11,14 @@ import '../../models/review_model.dart';
 class ReviewEditorSheet extends StatefulWidget {
   final String productId;
   final String userId;
+  final String orderItemId;
   final ReviewModel? existingReview;
 
   const ReviewEditorSheet({
     super.key,
     required this.productId,
     required this.userId,
+    required this.orderItemId,
     this.existingReview,
   });
 
@@ -24,6 +26,7 @@ class ReviewEditorSheet extends StatefulWidget {
     BuildContext context, {
     required String productId,
     required String userId,
+    required String orderItemId,
     ReviewModel? existingReview,
   }) {
     final reviewBloc = context.read<ReviewBloc>();
@@ -36,6 +39,7 @@ class ReviewEditorSheet extends StatefulWidget {
         child: ReviewEditorSheet(
           productId: productId,
           userId: userId,
+          orderItemId: orderItemId,
           existingReview: existingReview,
         ),
       ),
@@ -175,6 +179,7 @@ class _ReviewEditorSheetState extends State<ReviewEditorSheet> {
       ReviewSubmit(
         productId: widget.productId,
         userId: widget.userId,
+        orderItemId: widget.orderItemId,
         rating: _rating,
         comment: comment.isEmpty ? null : comment,
         sizeFeedback: _sizeFeedback,

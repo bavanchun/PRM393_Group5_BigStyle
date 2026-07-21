@@ -15,6 +15,7 @@ import 'blocs/cart/cart_bloc.dart';
 import 'blocs/checkout/checkout_bloc.dart';
 import 'blocs/order/order_bloc.dart';
 import 'blocs/notification/notification_bloc.dart';
+import 'blocs/notification/notification_event.dart';
 import 'blocs/chat/chat_bloc.dart';
 import 'blocs/manager/manager_bloc.dart';
 import 'blocs/review/review_bloc.dart';
@@ -37,8 +38,12 @@ import 'blocs/manager_product/manager_product_bloc.dart';
 import 'blocs/manager_category/manager_category_bloc.dart';
 import 'blocs/manager_voucher/manager_voucher_bloc.dart';
 import 'blocs/admin/admin_bloc.dart';
+import 'blocs/support_inbox/support_inbox_bloc.dart';
+import 'blocs/refund_request/refund_request_bloc.dart';
+import 'services/support_chat_service.dart';
 import 'services/category_service.dart';
 import 'services/voucher_service.dart';
+import 'services/refund_request_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,6 +89,14 @@ class _BigStyleAppState extends State<BigStyleApp> {
           if (!ctx.mounted) return;
           // Only navigate — do NOT re-dispatch SignOutEvent (causes infinite loop)
           Navigator.of(ctx).pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+      } else if (event == supa.AuthChangeEvent.passwordRecovery) {
+        // The bigstyle://reset-password link opened this temporary recovery
+        // session — route to the reset screen so the user can set a new
+        // password (ResetPasswordScreen calls auth.updateUser to finish it).
+        final ctx = navigatorKey.currentContext;
+        if (ctx != null && ctx.mounted) {
+          Navigator.of(ctx).pushNamed('/reset-password');
         }
       } else if (event == supa.AuthChangeEvent.tokenRefreshed) {
         debugPrint('Session: Token refreshed');
@@ -134,17 +147,31 @@ class _BigStyleAppState extends State<BigStyleApp> {
           BlocProvider(create: (_) => ReviewBloc(ReviewService())),
           BlocProvider(create: (_) => WishlistBloc(WishlistService())),
           BlocProvider(
+            create: (_) => RefundRequestBloc(RefundRequestService()),
+          ),
+          BlocProvider(
             create: (_) => PaymentBloc(paymentService, CartService()),
           ),
           BlocProvider(create: (_) => AdminBloc(AdminService())),
+          BlocProvider(create: (_) => SupportInboxBloc(SupportChatService())),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listenWhen: (previous, current) =>
-              current is AuthSuccess &&
-              current.user != null &&
-              !current.user!.id.startsWith('mock-'),
+              (current is AuthSuccess &&
+                  current.user != null &&
+                  !current.user!.id.startsWith('mock-')) ||
+              current is AuthInitial,
           listener: (context, state) {
-            context.read<CartBloc>().add(CartLoad(state.user!.id));
+            if (state is AuthSuccess && state.user != null) {
+              context.read<CartBloc>().add(CartLoad(state.user!.id));
+              context.read<NotificationBloc>().add(
+                NotificationLoad(state.user!.id),
+              );
+            } else if (state is AuthInitial) {
+              // Sign-out: tear down the realtime subscription. The bloc
+              // itself stays alive (app-scoped) for the next sign-in.
+              context.read<NotificationBloc>().unsubscribe();
+            }
           },
           child: MaterialApp(
             title: 'BigStyle',

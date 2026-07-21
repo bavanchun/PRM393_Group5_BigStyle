@@ -26,7 +26,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: BlocBuilder<AdminBloc, AdminState>(
+      body: BlocConsumer<AdminBloc, AdminState>(
+        // AdminBloc is one app-wide instance and AdminShell keeps all 4 admin
+        // tabs mounted (IndexedStack), sharing this single error field — gate
+        // on dashboardStats already being loaded so a Users/Categories action
+        // failing elsewhere doesn't pop a wrongly-attributed SnackBar here.
+        listenWhen: (previous, current) =>
+            current.error != null &&
+            current.error != previous.error &&
+            current.dashboardStats.isNotEmpty,
+        listener: (context, state) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        },
         builder: (context, state) {
           return RefreshIndicator(
             onRefresh: () async {
@@ -69,16 +89,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   color: AppColors.onPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.admin_panel_settings,
-                    color: AppColors.onPrimary, size: 22),
+                child: const Icon(
+                  Icons.admin_panel_settings,
+                  color: AppColors.onPrimary,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Admin Panel',
-                  style: TextStyle(
+                  style: AppTypography.headlineLarge.copyWith(
                     color: AppColors.onPrimary,
-                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -91,19 +113,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Xin chào, Admin!',
-            style: TextStyle(
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.onPrimary,
-              fontSize: 14,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Tổng quan nền tảng BigStyle',
-            style: TextStyle(
+            style: AppTypography.bodySmall.copyWith(
               color: AppColors.onPrimary.withValues(alpha: 0.8),
-              fontSize: 13,
             ),
           ),
         ],
@@ -153,26 +173,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         color: AppColors.success.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.payments_outlined,
-                          color: AppColors.success, size: 20),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Tổng doanh thu',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
+                      child: const Icon(
+                        Icons.payments_outlined,
+                        color: AppColors.success,
+                        size: 20,
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    Text('Tổng doanh thu', style: AppTypography.bodySmall),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   _formatCurrency(revenue),
-                  style: const TextStyle(
-                    fontSize: 28,
+                  style: AppTypography.headlineLarge.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    fontSize: 28,
                   ),
                 ),
               ],
@@ -181,10 +197,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 16),
 
           // Stats grid
-          Text(
-            'Thống kê',
-            style: AppTypography.headlineMedium,
-          ),
+          Text('Thống kê', style: AppTypography.headlineMedium),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -342,20 +355,12 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 22,
+            style: AppTypography.headlineLarge.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(label, style: AppTypography.labelSmall),
         ],
       ),
     );
@@ -403,13 +408,9 @@ class _ActionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(title, style: AppTypography.labelLarge),
                     const SizedBox(height: 2),
-                    Text(subtitle,
-                        style:
-                            TextStyle(fontSize: 12, color: AppColors.textHint)),
+                    Text(subtitle, style: AppTypography.caption),
                   ],
                 ),
               ),

@@ -57,11 +57,11 @@ Extend `CategoryModel`, extract a shared slug generator, and add
 5. `flutter analyze` clean.
 
 ## Success Criteria
-- [ ] `generateSlug` shared; product create still compiles + behaves the same.
-- [ ] `CategoryModel` round-trips slug/isActive/sortOrder via to/fromMap.
-- [ ] `CategoryService` create sets a non-null unique slug; softDelete flips
+- [x] `generateSlug` shared; product create still compiles + behaves the same.
+- [x] `CategoryModel` round-trips slug/isActive/sortOrder via to/fromMap.
+- [x] `CategoryService` create sets a non-null unique slug; softDelete flips
       is_active; no hard delete anywhere.
-- [ ] `getCategories()` (customer) filters `is_active=true`.
+- [x] `getCategories()` (customer) filters `is_active=true`.
 
 ## Risk Assessment
 - Moving slug helper could break product create → covered by Phase 4 regression

@@ -29,11 +29,11 @@ create table public.profiles (
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email)
-  values (new.id, new.email);
+  insert into public.profiles (id, email, full_name)
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name');
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -364,6 +364,25 @@ create trigger on_order_status_change
   after update on public.orders
   for each row execute procedure public.notify_order_update();
 
+-- Customer self-cancel: own order, only while pending or confirmed.
+create or replace function public.cancel_my_order(p_order_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.orders set status = 'cancelled'
+   where id = p_order_id
+     and user_id = auth.uid()
+     and status in ('pending', 'confirmed');
+  if not found then
+    raise exception 'Order cannot be cancelled';
+  end if;
+end $$;
+
+grant execute on function public.cancel_my_order(uuid) to authenticated;
+
 -- Trigger: tự động notify shop manager khi có đơn hàng mới
 create or replace function public.notify_new_order()
 returns trigger as $$
@@ -432,15 +451,76 @@ alter table public.reviews enable row level security;
 create policy "Anyone can view reviews"
   on public.reviews for select using (true);
 
-create policy "Users insert own reviews"
+-- Purchase-gate: only a customer with a delivered order item for the product
+-- may write/edit the review, bound to that specific order_item_id.
+create policy "Purchasers insert own verified reviews"
   on public.reviews for insert
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.order_items oi
+      join public.orders o on o.id = oi.order_id
+      join public.product_variants pv on pv.id = oi.variant_id
+      where oi.id = reviews.order_item_id
+        and o.user_id = auth.uid()
+        and o.status = 'delivered'
+        and pv.product_id = reviews.product_id
+    )
+  );
 
-create policy "Users update own reviews"
+create policy "Purchasers update own verified reviews"
   on public.reviews for update
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.order_items oi
+      join public.orders o on o.id = oi.order_id
+      join public.product_variants pv on pv.id = oi.variant_id
+      where oi.id = reviews.order_item_id
+        and o.user_id = auth.uid()
+        and o.status = 'delivered'
+        and pv.product_id = reviews.product_id
+    )
+  );
 
--- Trigger: tự động cập nhật avg_rating trên products
+-- Provenance immutable + is_verified recomputed server-side (client value ignored).
+create or replace function public.enforce_review_gate()
+returns trigger
+language plpgsql set search_path = public
+as $$
+begin
+  if (tg_op = 'UPDATE') then
+    if new.product_id is distinct from old.product_id
+       or new.user_id is distinct from old.user_id
+       or new.order_item_id is distinct from old.order_item_id then
+      raise exception 'review provenance is immutable';
+    end if;
+  end if;
+
+  new.is_verified := exists (
+    select 1
+    from public.order_items oi
+    join public.orders o on o.id = oi.order_id
+    join public.product_variants pv on pv.id = oi.variant_id
+    where oi.id = new.order_item_id
+      and o.user_id = new.user_id
+      and o.status = 'delivered'
+      and pv.product_id = new.product_id
+  );
+  return new;
+end;
+$$;
+
+create trigger on_review_guard
+  before insert or update on public.reviews
+  for each row execute procedure public.enforce_review_gate();
+
+-- Trigger: tự động cập nhật avg_rating trên products.
+-- SECURITY DEFINER so a customer's review insert can bump the manager-owned
+-- products row.
 create or replace function public.update_product_rating()
 returns trigger as $$
 begin
@@ -451,7 +531,7 @@ begin
   where id = new.product_id;
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_review_insert
   after insert on public.reviews
@@ -543,3 +623,179 @@ create index idx_order_items_order    on public.order_items(order_id);
 create index idx_notifications_user   on public.notifications(user_id, is_read, created_at desc);
 create index idx_reviews_product      on public.reviews(product_id);
 create index idx_chat_user            on public.chat_messages(user_id, created_at desc);
+
+-- ============================================================
+-- BẢNG: support chat (human manager ↔ customer)
+-- ============================================================
+create table public.support_conversations (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid not null references auth.users(id) on delete cascade unique,
+  status text not null default 'open',
+  last_message_at timestamptz not null default now(),
+  last_message_preview text,
+  unread_for_staff int not null default 0,
+  unread_for_customer int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table public.support_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.support_conversations(id) on delete cascade,
+  sender_id uuid not null references auth.users(id) on delete cascade,
+  content text not null,
+  created_at timestamptz not null default now(),
+  read_at timestamptz
+);
+
+create index support_messages_conversation_idx
+  on public.support_messages(conversation_id, created_at desc, id);
+
+do $$ begin
+  alter publication supabase_realtime add table public.support_messages;
+exception when duplicate_object then null; end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.support_conversations;
+exception when duplicate_object then null; end $$;
+
+-- Staff = manager or admin (SECURITY DEFINER, avoids profiles RLS recursion).
+create or replace function public.is_staff()
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role in ('manager', 'admin')
+  );
+$$;
+
+create or replace function public.get_or_create_my_conversation()
+returns public.support_conversations
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_row public.support_conversations;
+begin
+  insert into public.support_conversations (customer_id)
+  values (auth.uid())
+  on conflict (customer_id) do update set customer_id = excluded.customer_id
+  returning * into v_row;
+  return v_row;
+end $$;
+
+-- Force server-controlled timestamps on insert (client must not set them).
+create or replace function public.force_support_message_defaults()
+returns trigger
+language plpgsql set search_path = public
+as $$
+begin
+  new.created_at := now();
+  new.read_at := null;
+  return new;
+end $$;
+
+create trigger before_support_message_insert
+  before insert on public.support_messages
+  for each row execute procedure public.force_support_message_defaults();
+
+create or replace function public.bump_support_conversation()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_sender_is_staff boolean;
+begin
+  select (p.role in ('manager', 'admin')) into v_sender_is_staff
+  from public.profiles p where p.id = new.sender_id;
+
+  update public.support_conversations set
+    last_message_at = new.created_at,
+    last_message_preview = left(new.content, 120),
+    unread_for_staff = case
+      when coalesce(v_sender_is_staff, false) then unread_for_staff
+      else unread_for_staff + 1 end,
+    unread_for_customer = case
+      when coalesce(v_sender_is_staff, false) then unread_for_customer + 1
+      else unread_for_customer end
+  where id = new.conversation_id;
+  return new;
+end $$;
+
+create trigger on_support_message_insert
+  after insert on public.support_messages
+  for each row execute procedure public.bump_support_conversation();
+
+create or replace function public.mark_conversation_read(p_conversation_id uuid)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_is_staff boolean;
+  v_customer_id uuid;
+begin
+  select (p.role in ('manager', 'admin')) into v_is_staff
+  from public.profiles p where p.id = auth.uid();
+
+  select customer_id into v_customer_id
+  from public.support_conversations where id = p_conversation_id;
+
+  if not coalesce(v_is_staff, false) and v_customer_id is distinct from auth.uid() then
+    raise exception 'not a participant';
+  end if;
+
+  if coalesce(v_is_staff, false) then
+    update public.support_messages set read_at = now()
+      where conversation_id = p_conversation_id
+        and read_at is null
+        and sender_id = v_customer_id;
+    update public.support_conversations set unread_for_staff = 0
+      where id = p_conversation_id;
+  else
+    update public.support_messages set read_at = now()
+      where conversation_id = p_conversation_id
+        and read_at is null
+        and sender_id <> auth.uid();
+    update public.support_conversations set unread_for_customer = 0
+      where id = p_conversation_id;
+  end if;
+end $$;
+
+grant execute on function public.is_staff() to authenticated;
+grant execute on function public.get_or_create_my_conversation() to authenticated;
+grant execute on function public.mark_conversation_read(uuid) to authenticated;
+
+alter table public.support_conversations enable row level security;
+alter table public.support_messages enable row level security;
+
+create policy "Customer sees own conversation"
+  on public.support_conversations for select
+  using (customer_id = auth.uid());
+
+create policy "Staff sees all conversations"
+  on public.support_conversations for select
+  using (public.is_staff());
+
+create policy "Participants see conversation messages"
+  on public.support_messages for select
+  using (
+    public.is_staff()
+    or exists (
+      select 1 from public.support_conversations c
+      where c.id = support_messages.conversation_id
+        and c.customer_id = auth.uid()
+    )
+  );
+
+create policy "Customer sends to own conversation"
+  on public.support_messages for insert
+  with check (
+    sender_id = auth.uid()
+    and exists (
+      select 1 from public.support_conversations c
+      where c.id = support_messages.conversation_id
+        and c.customer_id = auth.uid()
+    )
+  );
+
+create policy "Staff sends to any conversation"
+  on public.support_messages for insert
+  with check (public.is_staff() and sender_id = auth.uid());

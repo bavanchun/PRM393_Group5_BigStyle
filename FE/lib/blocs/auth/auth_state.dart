@@ -53,3 +53,16 @@ class AuthError extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+/// Sign-up succeeded but requires email confirmation before a session exists
+/// (hosted "Confirm email" ON). Defensive path — the demo turns confirmations
+/// OFF, but the code still handles it.
+class AuthSignUpConfirmationPending extends AuthState {
+  const AuthSignUpConfirmationPending();
+}
+
+/// A password-reset email was sent. Distinct from [AuthInitial] so it's
+/// never deduped away (same reasoning as [AuthUnauthenticated]).
+class AuthPasswordResetEmailSent extends AuthState {
+  const AuthPasswordResetEmailSent();
+}
