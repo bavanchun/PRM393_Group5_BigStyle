@@ -32,17 +32,6 @@ class ManagerShell extends StatefulWidget {
 class _ManagerShellState extends State<ManagerShell> {
   int _currentIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId = context.read<AuthBloc>().state.user?.id;
-      if (userId != null) {
-        context.read<NotificationBloc>().add(NotificationLoad(userId));
-      }
-    });
-  }
-
   final _screens = const [
     ManagerDashboard(),
     ManagerProductListScreen(),
@@ -56,6 +45,12 @@ class _ManagerShellState extends State<ManagerShell> {
     super.initState();
     // Start the live staff inbox so the nav badge stays current.
     context.read<SupportInboxBloc>().add(const SupportInboxSubscribe());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<AuthBloc>().state.user?.id;
+      if (userId != null) {
+        context.read<NotificationBloc>().add(NotificationLoad(userId));
+      }
+    });
   }
 
   @override
