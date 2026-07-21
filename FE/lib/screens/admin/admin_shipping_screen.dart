@@ -82,7 +82,7 @@ class _AdminShippingScreenState extends State<AdminShippingScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  value: fromProvince,
+                  initialValue: fromProvince,
                   decoration: const InputDecoration(labelText: 'Từ tỉnh/thành *'),
                   items: _provinces
                       .map((p) => DropdownMenuItem(value: p, child: Text(p)))
@@ -91,7 +91,7 @@ class _AdminShippingScreenState extends State<AdminShippingScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: toProvince,
+                  initialValue: toProvince,
                   decoration: const InputDecoration(labelText: 'Đến tỉnh/thành *'),
                   items: _provinces
                       .map((p) => DropdownMenuItem(value: p, child: Text(p)))
