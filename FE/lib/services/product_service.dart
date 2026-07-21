@@ -10,6 +10,17 @@ class ProductService {
   final SupabaseClient _client = Supabase.instance.client;
   final http.Client _httpClient = http.Client();
 
+  Future<List<ProductModel>> getTopSellingProducts({int limit = 4}) async {
+    final data = await _client
+        .from('products')
+        .select(
+          '*, category:categories(*), variants:product_variants(*), store:profiles(brand_name)',
+        )
+        .order('sold_count', ascending: false)
+        .limit(limit);
+    return data.map((e) => ProductModel.fromMap(e)).toList();
+  }
+
   Future<List<ProductModel>> getProducts({
     String? categoryId,
     String? searchQuery,

@@ -54,6 +54,8 @@ class ProductState extends Equatable {
     }
 
     switch (sortBy) {
+      case 'bestselling':
+        result.sort((a, b) => b.soldCount.compareTo(a.soldCount));
       case 'price-asc':
         result.sort((a, b) => a.price.compareTo(b.price));
       case 'price-desc':

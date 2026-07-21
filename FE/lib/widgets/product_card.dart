@@ -137,20 +137,28 @@ class ProductCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                formatVnd(price),
-                style: AppTypography.priceSmall,
+              Flexible(
+                child: Text(
+                  formatVnd(price),
+                  style: AppTypography.priceSmall,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
               if (hasDiscount) ...[
                 const SizedBox(width: 4),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 1),
-                  child: Text(
-                    formatVnd(originalPrice!),
-                    style: AppTypography.caption.copyWith(
-                      fontSize: 10,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: AppColors.textHint,
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 1),
+                    child: Text(
+                      formatVnd(originalPrice!),
+                      style: AppTypography.caption.copyWith(
+                        fontSize: 10,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: AppColors.textHint,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),

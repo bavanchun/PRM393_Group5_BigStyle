@@ -47,7 +47,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     Emitter<ProductState> emit,
   ) async {
     try {
-      final products = await _productService.getProducts(featured: true);
+      final products = await _productService.getTopSellingProducts(limit: 4);
       emit(state.copyWith(featuredProducts: products));
     } catch (e, stackTrace) {
       debugPrint('ProductLoadFeatured error: $e\n$stackTrace');

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart' as supa;
 import 'config/theme/app_theme.dart';
@@ -32,6 +33,7 @@ import 'services/review_service.dart';
 import 'services/wishlist_service.dart';
 import 'services/payment_service.dart';
 import 'services/admin_service.dart';
+import 'providers/flash_sale_provider.dart';
 
 import 'blocs/manager_product/manager_product_bloc.dart';
 import 'blocs/manager_category/manager_category_bloc.dart';
@@ -137,6 +139,7 @@ class _BigStyleAppState extends State<BigStyleApp> {
             create: (_) => PaymentBloc(paymentService, CartService()),
           ),
           BlocProvider(create: (_) => AdminBloc(AdminService())),
+          ChangeNotifierProvider(create: (_) => FlashSaleProvider()),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listenWhen: (previous, current) =>
